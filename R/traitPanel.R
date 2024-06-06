@@ -215,10 +215,6 @@ traitPanelOutput <- function(id) { # Plots or Tables
 #' @rdname traitPanelServer
 #' @export
 traitPanelApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "LiverData.R"), package = "foundrShiny"))
-  source(system.file(file.path("shinyApp", "LiverCustom.R"), package = "foundrShiny"))
-
   title <- "Test Shiny Trait Panel"
   
   ui <- shiny::fluidPage(
