@@ -79,9 +79,6 @@ timePanelOutput <- function(id) { # Response; Plots or Tables
 #' @rdname timePanelServer
 #' @export
 timePanelApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test shinyTime Module"
   
   ui <- function() {

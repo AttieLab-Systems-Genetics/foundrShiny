@@ -69,9 +69,6 @@ corPlotOutput <- function(id) {
 #' @rdname corPlotServer
 #' @export
 corPlotApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Trait Correlation Plot"
   
   ui <- shiny::fluidPage(

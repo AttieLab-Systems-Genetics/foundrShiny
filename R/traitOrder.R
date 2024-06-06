@@ -111,9 +111,6 @@ traitOrderUI <- function(id) {
 #' @rdname traitOrderServer
 #' @export
 traitOrderApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Trait Order Table"
   
   ui <- function() {

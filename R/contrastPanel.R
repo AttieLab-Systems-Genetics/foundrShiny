@@ -239,10 +239,6 @@ contrastPanelOutput <- function(id) {
 #' @rdname contrastPanelServer
 #' @export
 contrastPanelApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "LiverData.R"), package = "foundrShiny"))
-  source(system.file(file.path("shinyApp", "LiverCustom.R"), package = "foundrShiny"))
-
   title <- "Test Shiny Contrast Trait Panel"
   
   ui <- function() {

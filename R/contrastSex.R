@@ -66,9 +66,6 @@ contrastSexOutput <- function(id) {
 #' @rdname contrastSexServer
 #' @export
 contrastSexApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "LiverData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Module"
   
   ui <- function() {

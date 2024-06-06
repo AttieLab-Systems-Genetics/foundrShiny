@@ -71,9 +71,6 @@ statsPanelOutput <- function(id) {
 #' @rdname statsPanelServer
 #' @export
 statsPanelApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Stats Module"
   
   ui <- shiny::fluidPage(

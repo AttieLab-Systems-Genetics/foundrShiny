@@ -91,9 +91,6 @@ traitPairsUI <- function(id) {
 #' @rdname traitPairsServer
 #' @export
 traitPairsApp <- function(id) {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Trait Pairs"
   
   ui <- function() {

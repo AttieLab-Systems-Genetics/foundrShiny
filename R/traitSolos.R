@@ -70,9 +70,6 @@ traitSolosUI <- function(id) {
 #' @rdname traitSolosServer
 #' @export
 traitSolosApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Trait Solos"
   
   ui <- shiny::fluidPage(

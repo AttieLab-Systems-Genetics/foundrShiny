@@ -71,9 +71,6 @@ corTableOutput <- function(id) {
 #' @rdname corTableServer
 #' @export
 corTableApp <- function() {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "TraitData.R"), package = "foundrShiny"))
-  
   title <- "Test Shiny Trait Correlation Table"
   
   ui <- shiny::fluidPage(

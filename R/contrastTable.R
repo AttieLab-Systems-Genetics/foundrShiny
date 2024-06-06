@@ -62,9 +62,6 @@ contrastTableUI <- function(id) {
 #' @rdname contrastTableServer
 #' @export
 contrastTableApp <- function(id) {
-  # Read trait data.
-  source(system.file(file.path("shinyApp", "LiverData.R"), package = "foundrShiny"))
-  
   title <- "Shiny Module Contrast Table"
   
   ui <- function() {
