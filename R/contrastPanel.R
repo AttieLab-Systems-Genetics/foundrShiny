@@ -17,49 +17,33 @@ contrastPanelServer <- function(id, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    # RETURNS
-    #   mods_table
-    
-    # *** not totally set with the Time button
-    # *** make sure data are really there, and make Time plot work
-    
-    # *** changes to shinyContrastPanel for MixMod:
-    # *** reset of Module when sex changes--do not do for MixMod
-    # *** MixMod traits calculations are slow: only do for selected Module?
-    # *** this may require moving input$module up one level
-    # *** this involves keptDatatraits in eigen_traits.R, which is passed to shinyContrastTable
-    # *** which is before module is identified in shinyContrastModule
-    
-    # *** not sure we need shinyModule{Eigen,Datasets} anymore
-    # *** also reconsdier shinyModule{Comp,Dendro,Names,s}
-    # *** think about better naming conventions
-    
     # Identify all Time Traits.
     timetrait_all <- timetraitsall(traitSignal)
     # Subset Stats to time traits.
     traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
     
     # MODULES
-    # Contrast Module Table
-    mods_table <- contrastTableServer("shinyContrastTable",
-                                         input, main_par, traitSignal, traitStats, customSettings)
+    # Contrast Module Table. Note reuse of `id` for `contrastTableServer`.
+    mods_table <- contrastTableServer("trait_table", input, main_par,
+      traitSignal, traitStats, customSettings)
     # Contrast Trait Table
-    trait_table <- contrastTableServer("shinyContrastTable",
-                                        input, main_par, traitSignal, traitStats, customSettings, keepDatatraits)
+    trait_table <- contrastTableServer("trait_table", input, main_par,
+      traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Trait Plots by Sex
-    contrastSexServer("shinyContrastSex",
-                     input, main_par, mods_table, customSettings)
+    contrastSexServer("contrast_sex", input, main_par,
+      mods_table, customSettings)
     # Contrast Time Trait Table
-    times_table <- contrastTableServer("shinyContrastTimeTable",
-                                             input, main_par, traitSignal, traitStatsTime, customSettings)
+    times_table <- contrastTableServer("times_table", input, main_par,
+      traitSignal, traitStatsTime, customSettings)
     # Contrast Time Traits
-    trait_times <- contrastTimeServer("shinyContrastTime", input, main_par,
-                                    traitSignal, traitStatsTime, times_table, customSettings)
+    trait_times <- contrastTimeServer("trait_times", input, main_par,
+      traitSignal, traitStatsTime, times_table, customSettings)
     # Contrast Time Plots and Tables
-    timePlotServer("shinyTimePlot", input, main_par, traitSignal, trait_times)
+    timePlotServer("shinyTimePlot", input, main_par,
+      traitSignal, trait_times)
     # Contrast Modules.
-    contrastModuleServer("shinyContrastModule", input, main_par, traitModule, mods_table, trait_table)
+    contrastModuleServer("contrast_module", input, main_par,
+      traitModule, mods_table, trait_table)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
@@ -109,10 +93,13 @@ contrastPanelServer <- function(id, main_par,
       shiny::req(input$sex, main_par$dataset, datamodule())
       
       if(foundr:::is_sex_module(datamodule())) {
-        out <- unique(datamodule()[[main_par$dataset[1]]][[input$sex]]$modules$module)
-        paste0(main_par$dataset[1], ": ", names(sexes)[match(input$sex, sexes)], "_", out)
+        out <- unique(
+          datamodule()[[main_par$dataset[1]]][[input$sex]]$modules$module)
+        paste0(main_par$dataset[1], ": ",
+          names(sexes)[match(input$sex, sexes)], "_", out)
       } else {
-        paste0(main_par$dataset[1], ": ", unique(datamodule()[[main_par$dataset]]$value$modules$module))
+        paste0(main_par$dataset[1], ": ",
+          unique(datamodule()[[main_par$dataset]]$value$modules$module))
       }
     }, label = "datatraits")
     
@@ -121,7 +108,8 @@ contrastPanelServer <- function(id, main_par,
       if(shiny::isTruthy(input$module))
         module <- input$module
       
-      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1], module)
+      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1],
+                              module)
     })
     
     # Input
@@ -130,18 +118,18 @@ contrastPanelServer <- function(id, main_par,
       switch(
         contr_selection(),
         Sex =, Module = {
-          shiny::column(4, contrastTableInput(ns("shinyContrastTable")))
+          shiny::column(4, contrastTableInput(ns("trait_table")))
         },
         Time = {
           shiny::fluidRow(
-            shiny::column(4, contrastTableInput(ns("shinyContrastTimeTable"))), # Order
-            shiny::column(8, contrastTimeInput(ns("shinyContrastTime")))) # Traits
+            shiny::column(4, contrastTableInput(ns("times_table"))), # Order
+            shiny::column(8, contrastTimeInput(ns("trait_times")))) # Traits
         })
     })
     output$shinyUI <- shiny::renderUI({
       shiny::req(contr_selection())
       if(contr_selection() == "Time") {
-        contrastTimeUI(ns("shinyContrastTime")) # Time Unit
+        contrastTimeUI(ns("trait_times")) # Time Unit
       }
     })
     
@@ -152,19 +140,20 @@ contrastPanelServer <- function(id, main_par,
         shiny::uiOutput(ns("text")),
         
         switch(contr_selection(),
-               Sex    = contrastSexInput(ns("shinyContrastSex")),
-               Module = contrastModuleInput(ns("shinyContrastModule"))),
+               Sex    = contrastSexInput(ns("contrast_sex")),
+               Module = contrastModuleInput(ns("contrast_module"))),
         
         if(contr_selection() == "Time") {
           shiny::fluidRow(
             shiny::column(9, shiny::uiOutput(ns("strains"))),
-            shiny::column(3, shiny::checkboxInput(ns("facet"), "Facet by strain?", TRUE)))
+            shiny::column(3, shiny::checkboxInput(ns("facet"),
+                                                  "Facet by strain?", TRUE)))
         } else { # Sex, Module
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput(ns("sex"))),
             shiny::column(8, 
                           switch(contr_selection(),
-                                 Sex    = contrastSexUI(ns("shinyContrastSex")),
+                                 Sex    = contrastSexUI(ns("contrast_sex")),
                                  Module = shiny::uiOutput(ns("module")))))
         },
         
@@ -174,8 +163,8 @@ contrastPanelServer <- function(id, main_par,
                    timePlotUI(ns("shinyTimePlot")),
                    timePlotOutput(ns("shinyTimePlot")))
                },
-               Sex = contrastSexOutput(ns("shinyContrastSex")),
-               Module = contrastModuleOutput(ns("shinyContrastModule"))))
+               Sex = contrastSexOutput(ns("contrast_sex")),
+               Module = contrastModuleOutput(ns("contrast_module"))))
     })
     
     output$text <- shiny::renderUI({
@@ -258,7 +247,8 @@ contrastPanelApp <- function() {
             shiny::column(3, shiny::uiOutput("dataset")),
             shiny::column(9, contrastPanelInput("shinyPanel"))),
           contrastPanelUI("shinyPanel"),
-          shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)),
+          shiny::sliderInput("height", "Plot height (in):", 3, 10, 6,
+                             step = 1)),
         
         shiny::mainPanel(
           contrastPanelOutput("shinyPanel")
@@ -270,7 +260,8 @@ contrastPanelApp <- function() {
     #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
     
     # CALL MODULES
-    contrastPanelServer("shinyPanel", input, traitSignal, traitStats, traitModule, customSettings)
+    contrastPanelServer("shinyPanel", input,
+      traitSignal, traitStats, traitModule, customSettings)
     
     # SERVER-SIDE INPUTS
     output$dataset <- shiny::renderUI({

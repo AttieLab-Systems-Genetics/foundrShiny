@@ -22,3 +22,5 @@ Nearly all files in the `R` function directory have built-in apps following
 - order module list on contrast by p-values
 - SD and logp calc and guideline defaults
 - add pct eigenvalue from module
+- larger points on several plots
+- MixMod as only dataset does not display for Contrasts tab. Seems to be related to not showing order.

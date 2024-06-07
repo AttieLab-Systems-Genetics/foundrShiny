@@ -8,8 +8,8 @@
 #' 
 #' @export
 #' 
-#' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive reactiveVal
-#'             renderUI req showTab
+#' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
+#'             reactiveVal renderUI req showTab
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
@@ -38,19 +38,19 @@ foundrServer <- function(id,
     # SERVER-SIDE INPUTS
     output$dataset <- shiny::renderUI({
       # Dataset selection.
-      browser()
       datasets <- unique(traitStats$dataset)
       selected <- data_selection()
       
       # Get datasets.
-      shiny::selectInput(ns("dataset"), "Datasets:", datasets, selected, multiple = TRUE)
+      shiny::selectInput(ns("dataset"), "Datasets:", datasets, selected,
+                         multiple = TRUE)
     })
-    data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1], label = "data_selection")
+    data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1],
+                                         label = "data_selection")
     shiny::observeEvent(input$dataset, data_selection(input$dataset))
     
     # Entry key
     entrykey <- shiny::reactive({
-      browser()
       out <- !shiny::isTruthy(customSettings$entrykey)
       if(!out & shiny::isTruthy(input$appEntry)) {
         out <- (input$appEntry == customSettings$entrykey)
@@ -62,7 +62,6 @@ foundrServer <- function(id,
     shiny::observeEvent(
       shiny::tagList(input$height, entrykey()),
       {
-        browser()
         if(shiny::isTruthy(entrykey())) {
           shiny::showTab("tabpanel", target = "Traits")
           if(length(timetraits_all()))
@@ -117,8 +116,10 @@ foundrServer <- function(id,
           
           switch(input$tabpanel,
             Traits    = traitPanelUI(ns("tabTraits")),
-            Contrasts = if(length(timetraits_all())) contrastPanelUI(ns("tabContrasts")),
-            Times     = if(length(timetraits_all())) timePanelUI(ns("tabTimes"))),
+            Contrasts = if(length(timetraits_all()))
+              contrastPanelUI(ns("tabContrasts")),
+            Times     = if(length(timetraits_all()))
+              timePanelUI(ns("tabTimes"))),
           
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           
@@ -150,7 +151,7 @@ foundrServer <- function(id,
 #' @export
 #' @rdname foundrServer
 foundrInput <- function(id) {
-  ns <- shiny::NS
+  ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("sideInput")),
     shiny::uiOutput(ns("entrykey")))
@@ -158,7 +159,7 @@ foundrInput <- function(id) {
 #' @export
 #' @rdname foundrServer
 foundrOutput <- function(id) {
-  ns <- shiny::NS
+  ns <- shiny::NS(id)
   shiny::uiOutput(ns("mainOutput"))
 }
 #' @param title title of app

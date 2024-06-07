@@ -4,12 +4,21 @@
 \alias{foundrSetup}
 \title{Setup Data for Foundr App}
 \usage{
-foundrSetup(instance = c("Liver", "Trait"), custom = FALSE)
+foundrSetup(
+  data_instance = c("Liver", "Trait"),
+  data_subset = NULL,
+  custom_settings = TRUE,
+  install_packages = FALSE
+)
 }
 \arguments{
-\item{instance}{type of data}
+\item{data_instance}{type of data}
 
-\item{custom}{setup custom if `TRUE`}
+\item{data_subset}{focus instance to selected dataset(s) if not `NULL`}
+
+\item{custom_settings}{setup custom if `TRUE`}
+
+\item{install_packages}{install packages if `TRUE` (for deployment)}
 }
 \value{
 invisible
