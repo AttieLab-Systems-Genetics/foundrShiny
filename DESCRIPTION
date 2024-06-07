@@ -12,7 +12,6 @@ Imports:
     broom, cowplot, dplyr, DT, foundr, ggdendro, ggplot2, ggrepel, grDevices,
     grid, ordr, plotly, purrr, RColorBrewer, readr, readxl, rlang,
     shiny, stats, stringr, tibble, tidyr, tools, utils, zoo
-LazyData: true
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.1
