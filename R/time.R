@@ -30,9 +30,9 @@ timeServer <- function(id, main_par,
     #   input$facet
     
     # MODULES
-    timeOutput <- timeTableServer("shinyTimeTable", input, main_par, 
+    time_table <- timeTableServer("shinyTimeTable", input, main_par, 
                                   traitData, traitSignal, traitStats)
-    timePlotServer("shinyTimePlot", input, main_par, traitSignal, timeOutput)
+    timePlotServer("shinyTimePlot", input, main_par, traitSignal, time_table)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({

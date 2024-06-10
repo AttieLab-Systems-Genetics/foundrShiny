@@ -1,0 +1,64 @@
+node, type, origin, detail
+
+dataset, input, mainPar, Dataset
+height, input, mainPar, Plot Height
+butshow, input, mainPar, Show Tables or Plots
+
+butresp, input, TraitTable, Response Button
+butshow_contr, input, ContrastPlot, (Plots, Tables)
+butshow_time, input, TraitPanel, (Plots, Tables)
+buttable_contr, input, TimePlot_contr, Download (Cell Means, Stats)
+buttable_time, input, TimePlot_time, Download (Cell Means, Stats)
+buttable_trait, input, TraitPanel, Download (Cell Means, Correlations, Stats)
+buttime_contr, input, TimePlot_contr, (Plots, Tables) 
+buttime_time, input, TimePlot_time, (Plots, Tables)
+contrast, input, ContrastPanel, (Contrasts by Sex, Contrasts over Time)
+
+abscor, input, CorPlot, Absolute Correlation?
+corterm, input, CorTable, Correlation Term (value, cellmean)
+plot_choice, input, TraitPanel, Plot Choice (Solos, Cors, Pairs)
+plots, input, TraitPanel, Plots Shown
+keydataset_contr, input, TraitOrder_contr, Key Dataset
+keydataset_time, input, TraitOrder_time, Key Dataset
+keydataset_trait, input, TraitOrder_trait, Key Dataset
+mincor, input, TraitPanel, Minimum Correlation
+order, input, TraitOrder, Order Preference (by p-value)
+reldataset, input, TraitPanel, Related Datasets
+relTraits, input, TraitNames_rel, Trait Names
+keyTrait, input, TraitNames_key, Trait Names
+
+traitData, arg, data,
+traitSignal, arg, data,
+traitStats, arg, data,
+
+foundr, module, server,
+contrast, module, panel,
+time, module, panel, 
+trait, module, panel,
+stats, module, panel,
+
+contrastModule, module, module, 
+contrastPlot, module, module, 
+contrastSex, module, module, 
+contrastTable, module, module, 
+contrastTime, module, module,
+corPlot, module, module,
+corTable, module, module,
+timePlot, module, module,
+timeTable, module, module,
+traitNames, module, module,
+traitOrder, module, module,
+traitTable, module, module,
+traitPairs, module, module,
+traitSolos, module, module,
+
+contrastOutput, output, ContrastTable,
+contrastTimeOutput, output, ContrastTable_time, 
+timeOutput, output, ContrastTime, 
+corTableOutput, output, CorTable, 
+keyTraitOutput, output, TraitNames_key, 
+relTraitsOutput, output, TraitNames_rel, 
+orderOutput, output, TraitOrder, 
+pairsOutput, output, TraitPairs, 
+solosOutput, output, TraitSolos, 
+tableOutput, output, TraitTable, 
