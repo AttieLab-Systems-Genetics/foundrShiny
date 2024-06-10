@@ -7,7 +7,7 @@ devtools::install_github("byandell/foundrShiny")
 options(shiny.sanitize.errors = FALSE)
 
 foundrShiny::foundrSetup(data_instance = "Liver",
-                         data_subset = NULL,
+                         data_subset = c("Physio","MixMod"),
                          custom_settings = TRUE)
 
 title <- "Founder Diet Study"
