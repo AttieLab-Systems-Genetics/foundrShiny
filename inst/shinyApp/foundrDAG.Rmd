@@ -1,3 +1,6 @@
+See [qtl2shiny/inst/scripts
+/network_igraph.Rmd](https://github.com/byandell/qtl2shiny/blob/master/inst/scripts/network_igraph.Rmd) for more ways to plot. Can also make interactive.
+
 ```{r message=FALSE}
 nodes <- 
   readr::read_csv(system.file("data/foundrNode.csv", package = "foundrShiny"),
@@ -7,6 +10,15 @@ links <-
   readr::read_csv(system.file("data/foundrEdge.csv", package = "foundrShiny"),
                   comment = "#") |>
   dplyr::filter(assign %in% c("module","arg"))
+```
+
+```{r eval=FALSE}
+ulinks <- sort(unique(c(links$source, links$target)))
+unodes <- sort(unique(nodes$node))
+m <- match(ulinks, unodes)
+ulinks[which(is.na(m))]
+mm <- match(unodes, ulinks)
+unodes[which(is.na(mm))]
 ```
 
 ```{r}
@@ -41,8 +53,12 @@ netModule <-
   igraph::delete_vertices(
     igraph::delete_edges(
       net,
-      igraph::E(net)[assign == "output"]),
-    unclass(igraph::V(net)[shiny != "module"]))
+      igraph::E(net)[assign == "arg"]),
+    unclass(igraph::V(net)[origin == "server"]))
+```
+
+```{r}
+plot(net)
 ```
 
 ```{r message=FALSE, warning=FALSE, fig.width=7, fig.height=7}

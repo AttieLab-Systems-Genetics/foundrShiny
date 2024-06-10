@@ -1,4 +1,8 @@
 source,target,assign
+foundr,trait,module
+foundr,contrast,module
+foundr,stats,module
+foundr,time,module
 contrast,contrastTable,module
 contrast,contrastSex,module
 contrast,contrastTime,module
@@ -7,7 +11,7 @@ contrast,contrastModule,module
 contrastTable,traitOrder,module
 contrastSex,contrastPlot,module
 contrastModule,contrastPlot,module
-contrastTime,timeTraits_contr,module
+contrastTime,timeTraits,module
 contrastTable,contrastSex,arg
 contrastTable,contrastModule,arg
 contrastTable,contrastTime,arg
