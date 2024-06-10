@@ -69,14 +69,14 @@ contrastTimeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, datasetInput("dataset")),
+            shiny::column(3, mainParInput("main_par")),
             shiny::column(3, contrastTableInput("times_table")), # Order
             shiny::column(6, contrastTimeInput("contrast_time"))), # Traits
           
           contrastTimeUI("contrast_time"),
           shiny::uiOutput("strains"),
           
-          datasetUI("dataset")
+          mainParUI("main_par")
         ),
         shiny::mainPanel(
           shiny::h3("Time Table"),
@@ -93,7 +93,7 @@ contrastTimeApp <- function() {
     traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
     
     # MODULES
-    main_par <- datasetServer("dataset", traitStatsTime)
+    main_par <- mainParServer("main_par", traitStatsTime)
     # Contrast Time Trait Table
     times_table <- contrastTableServer("times_table", input, main_par,
       traitSignal, traitStatsTime, customSettings)

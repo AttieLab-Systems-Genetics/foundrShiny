@@ -114,7 +114,7 @@ traitTableApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          datasetInput("dataset"),
+          mainParInput("main_par"),
           shiny::uiOutput("traits"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
           
@@ -130,7 +130,7 @@ traitTableApp <- function() {
   server <- function(input, output, session) {
     
     # MODULES
-    main_par <- datasetServer("dataset", traitSignal)
+    main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("shinyTest", input,
       keyTrait, relTraits, traitData, traitSignal)
     # Mockup of trait names

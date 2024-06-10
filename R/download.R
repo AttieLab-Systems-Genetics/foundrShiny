@@ -62,3 +62,27 @@ downloadOutput <- function(id) {
       shiny::column(3, shiny::uiOutput(ns("downloads"))),
       shiny::column(9, shiny::uiOutput(ns("filename")))))
 }
+#' Shiny Module App for Downloads
+#' @return nothing returned
+#' @rdname downloadServer
+#' @export
+downloadApp <- function(id) {
+  ui <- shiny::bootstrapPage(
+    mainParInput("main_par"),
+    downloadOutput("download"),
+    mainParOutput("main_par")
+  )
+  server <- function(input, output, session) { 
+    # Test sets
+    prefix <- "Download"
+    postfix <- shiny::reactive("postfix")
+    plotObject <- shiny::reactive(print(foundr:::plot_null()))
+    tableObject <- shiny::reactive(matrix(1:12,nrow=3))
+    
+    # Modules
+    main_par <- mainParServer("main_par", traitStats)
+    downloadServer("download", prefix, main_par, postfix,
+                   plotObject, tableObject)
+  }
+  shiny::shinyApp(ui, server)
+}

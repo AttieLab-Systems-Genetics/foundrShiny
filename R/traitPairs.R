@@ -109,13 +109,13 @@ traitPairsApp <- function(id) {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, datasetInput("dataset")),
+            shiny::column(3, mainParInput("main_par")),
             shiny::column(9, shiny::uiOutput("traits"))),
           shiny::uiOutput("reltraits"),
           traitTableUI("trait_table"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
           shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-          datasetUI("dataset"),
+          mainParUI("main_par"),
           shiny::fluidRow(
             shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
             shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
@@ -131,7 +131,7 @@ traitPairsApp <- function(id) {
   server <- function(input, output, session) {
     
     # SHINY MODULES
-    main_par <- datasetServer("dataset", traitSignal)
+    main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("trait_table", input,
       keyTrait, relTraits, traitData, traitSignal)
     traitPairsServer("pairs_plot", input, main_par, trait_names, trait_table)

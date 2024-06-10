@@ -77,8 +77,8 @@ statsApp <- function() {
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        datasetInput("dataset"),
-        datasetUI("dataset")),
+        mainParInput("main_par"),
+        mainParUI("main_par")),
       
       shiny::mainPanel(
         statsOutput("StatsPanel")
@@ -87,7 +87,7 @@ statsApp <- function() {
   )
   
   server <- function(input, output, session) {
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     statsServer("StatsPanel", main_par, traitStats)
   }
   

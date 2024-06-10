@@ -1,14 +1,15 @@
-#' Shiny Server for dataset INput
+#' Shiny Server for mainPar Server
 #'
 #' @param id identifier for shiny reactive
 #' @param traitStats static object
 #' @return reactive input
 #' 
 #' @export
-#' @importFrom shiny bootstrapPage moduleServer NS observeEvent reactiveVal 
-#'             renderUI req selectInput shinyApp sliderInput uiOutput
+#' @importFrom shiny bootstrapPage h4 moduleServer NS observeEvent radioButtons
+#'             reactiveVal reactiveValues renderUI req selectInput shinyApp
+#'             sliderInput uiOutput
 #'
-datasetServer <- function(id, traitStats = NULL) {
+mainParServer <- function(id, traitStats = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -34,27 +35,39 @@ datasetServer <- function(id, traitStats = NULL) {
   })
 }
 #' @export
-#' @rdname datasetServer
-datasetInput <- function(id) {
+#' @rdname mainParServer
+mainParInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("dataset"))
 }
 #' @export
-#' @rdname datasetServer
-datasetUI <- function(id) {
+#' @rdname mainParServer
+mainParUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
 }
+#' @export
+#' @rdname mainParServer
+mainParOutput <- function(id) {
+  ns <- shiny::NS(id)
+  # *** This does not work properly in trait.R
+  shiny::radioButtons(ns("butshow"), "", c("Plots","Tables"), "Plots",
+                      inline = TRUE)
+}
 #' @param title title of app
 #' @export
-#' @rdname datasetServer
-datasetApp <- function(title = "") {
+#' @rdname mainParServer
+mainParApp <- function(title = "") {
   ui <- shiny::bootstrapPage(
-    datasetInput("dataset"), 
-    datasetUI("dataset")
+    shiny::h4("main_par$dataset"),
+    mainParInput("main_par"), 
+    shiny::h4("main_par$height"),
+    mainParUI("main_par"),
+    shiny::h4("main_par$butshow"),
+    mainParOutput("main_par")
   )
   server <- function(input, output, session) {
-    datasetServer("dataset", traitStats)
+    mainParServer("main_par", traitStats)
   }
   shiny::shinyApp(ui, server)
 }

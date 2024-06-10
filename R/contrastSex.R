@@ -75,7 +75,7 @@ contrastSexApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(4, datasetInput("dataset")),
+            shiny::column(4, mainParInput("main_par")),
             shiny::column(8, contrastTableInput("contrast_table")))
         ),
         shiny::mainPanel(
@@ -99,7 +99,7 @@ contrastSexApp <- function() {
     
     # MODULE
     # Contrast Trait Table
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     contrastOutput <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     # Contrast Modules.

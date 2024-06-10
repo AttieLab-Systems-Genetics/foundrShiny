@@ -244,10 +244,10 @@ contrastApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, datasetInput("dataset")),
+            shiny::column(3, mainParInput("main_par")),
             shiny::column(9, contrastInput("shinyPanel"))),
           contrastUI("shinyPanel"),
-          datasetUI("dataset")),
+          mainParUI("main_par")),
         
         shiny::mainPanel(
           contrastOutput("shinyPanel")
@@ -259,7 +259,7 @@ contrastApp <- function() {
     #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
     
     # CALL MODULES
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     contrastServer("shinyPanel", main_par,
       traitSignal, traitStats, traitModule, customSettings)
   }

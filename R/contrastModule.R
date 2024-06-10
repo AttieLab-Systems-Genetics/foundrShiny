@@ -93,7 +93,7 @@ contrastModuleApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(4, datasetInput("dataset")),
+            shiny::column(4, mainParInput("main_par")),
             shiny::column(8, contrastTableInput("contrast_table"))
           )
         ),
@@ -131,7 +131,7 @@ contrastModuleApp <- function() {
     # *** and mods to `eigen_traits_dataset_value`
     
     # MODULE
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     # Contrast Module Table
     mods_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)

@@ -63,7 +63,7 @@ contrastTableApp <- function(id) {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          datasetInput("dataset"),
+          mainParInput("main_par"),
           shiny::uiOutput("sex"),
           contrastTableInput("contrast_table")
         ),
@@ -80,7 +80,7 @@ contrastTableApp <- function(id) {
     
     # MODULE
     # Contrast Module Table
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     tableContrast <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     

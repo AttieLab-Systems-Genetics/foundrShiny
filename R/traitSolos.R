@@ -77,12 +77,12 @@ traitSolosApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, datasetInput("dataset")),
+          shiny::column(3, mainParInput("main_par")),
           shiny::column(9, shiny::uiOutput("traits"))),
         traitTableUI("trait_table"),
         shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
         shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-        datasetUI("dataset"),
+        mainParUI("main_par"),
         shiny::fluidRow(
           shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
           shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
@@ -99,7 +99,7 @@ traitSolosApp <- function() {
   
   server <- function(input, output, session) {
     # MODULES
-    main_par <- datasetServer("dataset", traitSignal)
+    main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("trait_table", input,
       keyTrait, relTraits, traitData, traitSignal)
     traitSolosServer("solos_plot", input, main_par, trait_table)

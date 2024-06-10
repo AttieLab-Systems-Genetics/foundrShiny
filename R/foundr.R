@@ -26,12 +26,12 @@ foundrServer <- function(id,
     #    input$tabpanel
     
     # CALL MODULES
-    datasetServer("dataset", traitStats)
-    traitServer("tabTraits", input, traitData, traitSignal, traitStats,
+    main_par <- mainParServer("main_par", traitStats)
+    traitServer("tabTraits", main_par, traitData, traitSignal, traitStats,
                     customSettings)
-    timeServer("tabTimes", input, traitData, traitSignal, traitStats)
-    statsServer("tabStats", input, traitStats, customSettings)
-    contrastServer("tabContrasts", input,
+    timeServer("tabTimes", main_par, traitData, traitSignal, traitStats)
+    statsServer("tabStats", main_par, traitStats, customSettings)
+    contrastServer("tabContrasts", main_par,
                        traitSignal, traitStats, traitModule, customSettings)
     
     output$intro <- foundr:::foundrIntro(customSettings$help)
@@ -91,7 +91,7 @@ foundrServer <- function(id,
         shiny::req(input$tabpanel)
         shiny::tagList(
           shiny::fluidRow(
-            shiny::column(3, datasetInput(ns("dataset"))),
+            shiny::column(3, mainParInput(ns("main_par"))),
             if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
               shiny::column(9, 
                 switch(input$tabpanel,
@@ -108,7 +108,7 @@ foundrServer <- function(id,
             Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
           
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          datasetUI(ns("dataset")))
+          mainParUI(ns("main_par")))
       }
     })
     # Don't show Entry Key if there is no need.

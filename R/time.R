@@ -87,11 +87,11 @@ timeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, datasetInput("dataset")),
+            shiny::column(3, mainParInput("main_par")),
             shiny::column(9, timeInput("time"))),
           timeUI("time"),
           
-          datasetUI("dataset"),
+          mainParUI("main_par"),
         ),
         
         shiny::mainPanel(
@@ -101,7 +101,7 @@ timeApp <- function() {
   
   server <- function(input, output, session) {
     # MODULES
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     timeServer("time", main_par, traitData, traitSignal, traitStats)
   }
   

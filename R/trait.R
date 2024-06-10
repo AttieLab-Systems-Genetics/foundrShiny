@@ -18,9 +18,8 @@ traitServer <- function(id, main_par,
     ns <- session$ns
     
     # INPUTS
-    # shinyTraitPanel inputs
+    # trait inputs
     #   main_par$height: Plot Height
-    #   input$butshow: show Plots or Tables
     #   input$mincor: minimum correlation
     #   input$reldataset: relative datasets
     #   input$facet: Facet by strain?
@@ -51,13 +50,14 @@ traitServer <- function(id, main_par,
     pairs_plot  <- traitPairsServer("shinyPairs", input, main_par, trait_names,
                                    trait_table)
     # Downloads
-    downloadServer("downloads", "Trait", input, postfix, plotObject, tableObject)
+    downloadServer("downloads", "Trait", input, postfix, plotObject,
+                   tableObject)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput(ns("strains"), "Strains",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
     })
 
     # Trait Names.
@@ -99,7 +99,7 @@ traitServer <- function(id, main_par,
         }))
     })
     output$downtable <- shiny::renderUI({
-      if(shiny::req(input$butshow == "Tables")) {
+      if(shiny::req(input$butshow) == "Tables") {
         shiny::radioButtons(ns("buttable"), "Download:",
                             c("Cell Means","Correlations","Stats"), "Cell Means", inline = TRUE)
       }
@@ -199,6 +199,7 @@ traitOutput <- function(id) { # Plots or Tables
   shiny::tagList(
     shiny::uiOutput(ns("text")),
     shiny::fluidRow(
+#      shiny::column(4, mainParOutput(ns("main_par"))),
       shiny::column(4, shiny::radioButtons(ns("butshow"),
         "", c("Plots","Tables"), "Plots", inline = TRUE)),
       shiny::column(8, downloadOutput(ns("downloads")))),
@@ -222,11 +223,11 @@ traitApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, datasetInput("dataset")),
+          shiny::column(3, mainParInput("main_par")),
           shiny::column(9, traitInput("trait_panel"))),
         traitUI("trait_panel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        datasetUI("dataset")
+        mainParUI("main_par")
       ),
       
       shiny::mainPanel(
@@ -236,7 +237,7 @@ traitApp <- function() {
   )
   server <- function(input, output, session) {
     # CALL MODULES
-    main_par <- datasetServer("dataset", traitStats)
+    main_par <- mainParServer("main_par", traitStats)
     traitServer("trait_panel", main_par,
                             traitData, traitSignal, traitStats,
                             customSettings)

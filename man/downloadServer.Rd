@@ -3,11 +3,14 @@
 \name{downloadServer}
 \alias{downloadServer}
 \alias{downloadOutput}
+\alias{downloadApp}
 \title{Shiny Module Server for Downloads}
 \usage{
 downloadServer(id, prefix, main_par, postfix, plotObject, tableObject)
 
 downloadOutput(id)
+
+downloadApp(id)
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
@@ -26,9 +29,13 @@ downloadOutput(id)
 nothing
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Module Server for Downloads
 
 Shiny Module Output for Downloads
+
+Shiny Module App for Downloads
 }
