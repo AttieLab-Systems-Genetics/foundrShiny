@@ -6,7 +6,7 @@
 #' @param customSettings list of custom settings
 #' @param facet facet on `strain` if `TRUE`
 #'
-#' @return reactive object for `statsPanelOutput`
+#' @return reactive object for `statsOutput`
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent plotOutput
 #'             reactive renderPlot renderUI req selectInput selectizeInput
 #'             sliderInput tagList uiOutput updateSelectInput
@@ -15,7 +15,7 @@
 #' @importFrom rlang .data
 #' @export
 #'
-statsPanelServer <- function(id, main_par, traitStats, customSettings = NULL,
+statsServer <- function(id, main_par, traitStats, customSettings = NULL,
                              facet = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -57,9 +57,9 @@ statsPanelServer <- function(id, main_par, traitStats, customSettings = NULL,
 }
 #' Shiny Module Output for Stats Plot
 #' @return nothing returned
-#' @rdname statsPanelServer
+#' @rdname statsServer
 #' @export
-statsPanelOutput <- function(id) {
+statsOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     contrastPlotInput(ns("contrast_plot")),
@@ -68,9 +68,9 @@ statsPanelOutput <- function(id) {
 }
 #' Shiny Module App for Stats Plot
 #' @return nothing returned
-#' @rdname statsPanelServer
+#' @rdname statsServer
 #' @export
-statsPanelApp <- function() {
+statsApp <- function() {
   title <- "Test Shiny Stats Module"
   
   ui <- shiny::fluidPage(
@@ -81,7 +81,7 @@ statsPanelApp <- function() {
         shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)),
       
       shiny::mainPanel(
-        statsPanelOutput("StatsPanel")
+        statsOutput("StatsPanel")
       )
     )
   )
@@ -96,7 +96,7 @@ statsPanelApp <- function() {
       shiny::selectInput("dataset", "Datasets:",
                          datasets, datasets[1], multiple = TRUE)
     })
-    statsPanelServer("StatsPanel", input, traitStats)
+    statsServer("StatsPanel", input, traitStats)
   }
   
   shiny::shinyApp(ui = ui, server = server)}

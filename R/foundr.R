@@ -26,11 +26,11 @@ foundrServer <- function(id,
     #    input$tabpanel
     
     # CALL MODULES
-    traitPanelServer("tabTraits", input, traitData, traitSignal, traitStats,
+    traitServer("tabTraits", input, traitData, traitSignal, traitStats,
                     customSettings)
-    timePanelServer("tabTimes", input, traitData, traitSignal, traitStats)
-    statsPanelServer("tabStats", input, traitStats, customSettings)
-    contrastPanelServer("tabContrasts", input,
+    timeServer("tabTimes", input, traitData, traitSignal, traitStats)
+    statsServer("tabStats", input, traitStats, customSettings)
+    contrastServer("tabContrasts", input,
                        traitSignal, traitStats, traitModule, customSettings)
     
     output$intro <- foundr:::foundrIntro(customSettings$help)
@@ -108,18 +108,17 @@ foundrServer <- function(id,
             if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
               shiny::column(9, 
                 switch(input$tabpanel,
-                  Traits    = traitPanelInput(ns("tabTraits")),
-                  Contrasts = contrastPanelInput(ns("tabContrasts")),
+                  Traits    = traitInput(ns("tabTraits")),
+                  Contrasts = contrastInput(ns("tabContrasts")),
                   Times     = if(length(timetraits_all()))
-                    timePanelInput(ns("tabTimes"))))
+                    timeInput(ns("tabTimes"))))
             }),
           
           switch(input$tabpanel,
-            Traits    = traitPanelUI(ns("tabTraits")),
+            Traits    = traitUI(ns("tabTraits")),
             Contrasts = if(length(timetraits_all()))
-              contrastPanelUI(ns("tabContrasts")),
-            Times     = if(length(timetraits_all()))
-              timePanelUI(ns("tabTimes"))),
+              contrastUI(ns("tabContrasts")),
+            Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
           
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           
@@ -138,10 +137,10 @@ foundrServer <- function(id,
       if(shiny::isTruthy(entrykey())) {
         shiny::tabsetPanel(
           type = "tabs", header = "", id = ns("tabpanel"),
-          shiny::tabPanel("Traits",    traitPanelOutput(ns("tabTraits"))),
-          shiny::tabPanel("Contrasts", contrastPanelOutput(ns("tabContrasts"))),
-          shiny::tabPanel("Stats",     statsPanelOutput(ns("tabStats"))),
-          shiny::tabPanel("Times",     timePanelOutput(ns("tabTimes"))),
+          shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
+          shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
+          shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
+          shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
           shiny::tabPanel("About",     shiny::uiOutput(ns("intro")))
         )
       }

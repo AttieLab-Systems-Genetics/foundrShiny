@@ -8,7 +8,7 @@
 #' @importFrom shiny moduleServer NS
 #' @export
 #'
-timePanelServer <- function(id, main_par,
+timeServer <- function(id, main_par,
                            traitData, traitSignal, traitStats) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -44,25 +44,25 @@ timePanelServer <- function(id, main_par,
 }
 #' Shiny Module Input for Time Panel
 #' @return nothing returned
-#' @rdname timePanelServer
+#' @rdname timeServer
 #' @export
-timePanelInput <- function(id) { # 4:Order, 8:Traits
+timeInput <- function(id) { # 4:Order, 8:Traits
   ns <- shiny::NS(id)
   timeTableInput(ns("shinyTimeTable"))
 }
 #' Shiny Module UI for Time Panel
 #' @return nothing returned
-#' @rdname timePanelServer
+#' @rdname timeServer
 #' @export
-timePanelUI <- function(id) { # Time Unit
+timeUI <- function(id) { # Time Unit
   ns <- shiny::NS(id)
   timeTableUI(ns("shinyTimeTable"))
 }
 #' Shiny Module Output for Times Plot
 #' @return nothing returned
-#' @rdname timePanelServer
+#' @rdname timeServer
 #' @export
-timePanelOutput <- function(id) { # Response; Plots or Tables
+timeOutput <- function(id) { # Response; Plots or Tables
   ns <- shiny::NS(id)
   shiny::tagList(
     timePlotUI(ns("shinyTimePlot")),
@@ -76,9 +76,9 @@ timePanelOutput <- function(id) { # Response; Plots or Tables
 }
 #' Shiny Module App for Times Plot
 #' @return nothing returned
-#' @rdname timePanelServer
+#' @rdname timeServer
 #' @export
-timePanelApp <- function() {
+timeApp <- function() {
   title <- "Test shinyTime Module"
   
   ui <- function() {
@@ -88,20 +88,20 @@ timePanelApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(3, shiny::uiOutput("dataset")),
-            shiny::column(9, timePanelInput("shinyTimePanel"))),
-          timePanelUI("shinyTimePanel"),
+            shiny::column(9, timeInput("shinyTimePanel"))),
+          timeUI("shinyTimePanel"),
           
           shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1),
         ),
         
         shiny::mainPanel(
-          timePanelOutput("shinyTimePanel")
+          timeOutput("shinyTimePanel")
         )))
   }
   
   server <- function(input, output, session) {
     # MODULES
-    timePanelServer("shinyTimePanel", input, traitData, traitSignal, traitStats)
+    timeServer("shinyTimePanel", input, traitData, traitSignal, traitStats)
     
     # SERVER-SIDE INPUTS
     output$dataset <- shiny::renderUI({

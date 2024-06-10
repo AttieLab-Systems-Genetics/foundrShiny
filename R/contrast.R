@@ -11,7 +11,7 @@
 #' @importFrom stringr str_to_title
 #' @export
 #'
-contrastPanelServer <- function(id, main_par,
+contrastServer <- function(id, main_par,
                                traitSignal, traitStats, traitModule,
                                customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -199,17 +199,17 @@ contrastPanelServer <- function(id, main_par,
 }
 #' Shiny Module Input for Contrast Panel
 #' @return nothing returned
-#' @rdname contrastPanelServer
+#' @rdname contrastServer
 #' @export
-contrastPanelInput <- function(id) {
+contrastInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("shinyInput")) # Order, Traits (if butby == "Time")
 }
 #' Shiny Module Input for Contrast Panel
 #' @return nothing returned
-#' @rdname contrastPanelServer
+#' @rdname contrastServer
 #' @export
-contrastPanelUI <- function(id) {
+contrastUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("shinyUI")), # Time Unit (if butby == "Time")
@@ -217,17 +217,17 @@ contrastPanelUI <- function(id) {
 }
 #' Shiny Module Output for Contrast Panel
 #' @return nothing returned
-#' @rdname contrastPanelServer
+#' @rdname contrastServer
 #' @export
-contrastPanelOutput <- function(id) {
+contrastOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("shinyOutput"))
 }
 #' Shiny Module App for Contrast Panel
 #' @return nothing returned
-#' @rdname contrastPanelServer
+#' @rdname contrastServer
 #' @export
-contrastPanelApp <- function() {
+contrastApp <- function() {
   title <- "Test Shiny Contrast Trait Panel"
   
   ui <- function() {
@@ -245,13 +245,13 @@ contrastPanelApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(3, shiny::uiOutput("dataset")),
-            shiny::column(9, contrastPanelInput("shinyPanel"))),
-          contrastPanelUI("shinyPanel"),
+            shiny::column(9, contrastInput("shinyPanel"))),
+          contrastUI("shinyPanel"),
           shiny::sliderInput("height", "Plot height (in):", 3, 10, 6,
                              step = 1)),
         
         shiny::mainPanel(
-          contrastPanelOutput("shinyPanel")
+          contrastOutput("shinyPanel")
         )))
   }
   
@@ -260,7 +260,7 @@ contrastPanelApp <- function() {
     #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
     
     # CALL MODULES
-    contrastPanelServer("shinyPanel", input,
+    contrastServer("shinyPanel", input,
       traitSignal, traitStats, traitModule, customSettings)
     
     # SERVER-SIDE INPUTS

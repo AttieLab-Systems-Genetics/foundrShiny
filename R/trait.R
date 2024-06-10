@@ -11,7 +11,7 @@
 #' @importFrom stringr str_remove str_replace
 #' @importFrom foundr is_bestcor summary_bestcor summary_strainstats
 #' @export
-traitPanelServer <- function(id, main_par,
+traitServer <- function(id, main_par,
                             traitData, traitSignal, traitStats,
                             customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -168,9 +168,9 @@ traitPanelServer <- function(id, main_par,
 }
 #' Shiny Module Input for Trait Panel
 #' @return nothing returned
-#' @rdname traitPanelServer
+#' @rdname traitServer
 #' @export
-traitPanelInput <- function(id) { # 4:Order, 8:Traits
+traitInput <- function(id) { # 4:Order, 8:Traits
   ns <- shiny::NS(id)
   shiny::tagList(
     # Key Datasets and Trait.
@@ -180,9 +180,9 @@ traitPanelInput <- function(id) { # 4:Order, 8:Traits
 }
 #' Shiny Module UI for Trait Panel
 #' @return nothing returned
-#' @rdname traitPanelServer
+#' @rdname traitServer
 #' @export
-traitPanelUI <- function(id) { # Related Datasets and Traits
+traitUI <- function(id) { # Related Datasets and Traits
   ns <- shiny::NS(id)
   shiny::tagList(
     # Related Datasets and Traits.
@@ -192,9 +192,9 @@ traitPanelUI <- function(id) { # Related Datasets and Traits
 }
 #' Shiny Module Output for Trait Panel
 #' @return nothing returned
-#' @rdname traitPanelServer
+#' @rdname traitServer
 #' @export
-traitPanelOutput <- function(id) { # Plots or Tables
+traitOutput <- function(id) { # Plots or Tables
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("text")),
@@ -212,9 +212,9 @@ traitPanelOutput <- function(id) { # Plots or Tables
 }
 #' Shiny Module App for Trait Panel
 #' @return nothing returned
-#' @rdname traitPanelServer
+#' @rdname traitServer
 #' @export
-traitPanelApp <- function() {
+traitApp <- function() {
   title <- "Test Shiny Trait Panel"
   
   ui <- shiny::fluidPage(
@@ -223,20 +223,20 @@ traitPanelApp <- function() {
       shiny::sidebarPanel(
         shiny::fluidRow(
           shiny::column(3, shiny::uiOutput("dataset")),
-          shiny::column(9, traitPanelInput("shinyPanel"))),
-        traitPanelUI("shinyPanel"),
+          shiny::column(9, traitInput("shinyPanel"))),
+        traitUI("shinyPanel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
         shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)
       ),
       
       shiny::mainPanel(
-        traitPanelOutput("shinyPanel")
+        traitOutput("shinyPanel")
       )
     )
   )
   server <- function(input, output, session) {
     # CALL MODULES
-    traitPanelServer("shinyPanel", input,
+    traitServer("shinyPanel", input,
                             traitData, traitSignal, traitStats,
                             customSettings)
     

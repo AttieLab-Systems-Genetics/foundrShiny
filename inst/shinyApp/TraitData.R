@@ -44,10 +44,10 @@ if(exists("custom_settings") && custom_settings) {
   # Need to first put `help.Rmd` in `file.path(dirpath, "AppSetup", dataInstance)`
   foundr::link_datasets(traitSignal, file.path(dirpath, "../RawData/source.csv"),
                         file.path(dirpath, "AppSetup", dataInstance))
-  datasets <- readRDS(file.path(dirpath, "AppSetup", "Liver", "datasets.rds"))
+  datasets <- readRDS(file.path(dirpath, "AppSetup", dataInstance, "datasets.rds"))
   
   customSettings <- list(
-    help = file.path(dirpath, "AppSetup", "Liver", "help.md"),
+    help = file.path(dirpath, "AppSetup", dataInstance, "help.md"),
     condition = "diet",
     entrykey = "Founder",
     dataset = datasets)
