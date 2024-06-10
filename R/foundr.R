@@ -34,7 +34,7 @@ foundrServer <- function(id,
     contrastServer("tabContrasts", main_par,
                        traitSignal, traitStats, traitModule, customSettings)
     
-    output$intro <- foundr:::foundrIntro(customSettings$help)
+    output$about <- about(customSettings$help)
 
     # Entry key
     entrykey <- shiny::reactive({
@@ -126,7 +126,7 @@ foundrServer <- function(id,
           shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
           shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
           shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
-          shiny::tabPanel("About",     shiny::uiOutput(ns("intro")))
+          shiny::tabPanel("About",     shiny::uiOutput(ns("about")))
         )
       }
     })
