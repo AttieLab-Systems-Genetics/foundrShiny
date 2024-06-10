@@ -44,7 +44,7 @@ traitServer <- function(id, main_par,
     cors_plot   <- corPlotServer("cors_plot", input, main_par,
                                   cors_table, customSettings)
     # Trait Table.
-    trait_table <- traitTableServer("trait_table", input, main_par,
+    trait_table <- traitTableServer("trait_table", input,
       keyTrait, relTraits, traitData, traitSignal, customSettings)
     # Solo and Pairs Plots.
     solos_plot  <- traitSolosServer("shinySolos", input, main_par, trait_table)
@@ -59,7 +59,7 @@ traitServer <- function(id, main_par,
       shiny::checkboxGroupInput(ns("strains"), "Strains",
                                 choices = choices, selected = choices, inline = TRUE)
     })
-    
+
     # Trait Names.
     trait_names <- shiny::reactive({
       c(shiny::req(keyTrait()), relTraits())
@@ -222,39 +222,24 @@ traitApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, shiny::uiOutput("dataset")),
-          shiny::column(9, traitInput("shinyPanel"))),
-        traitUI("shinyPanel"),
+          shiny::column(3, datasetInput("dataset")),
+          shiny::column(9, traitInput("trait_panel"))),
+        traitUI("trait_panel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)
+        datasetUI("dataset")
       ),
       
       shiny::mainPanel(
-        traitOutput("shinyPanel")
+        traitOutput("trait_panel")
       )
     )
   )
   server <- function(input, output, session) {
     # CALL MODULES
-    traitServer("shinyPanel", input,
+    main_par <- datasetServer("dataset", traitStats)
+    traitServer("trait_panel", main_par,
                             traitData, traitSignal, traitStats,
                             customSettings)
-    
-    # SERVER-SIDE INPUTS
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(
-        "strains", "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
   }
   
   shiny::shinyApp(ui = ui, server = server)  

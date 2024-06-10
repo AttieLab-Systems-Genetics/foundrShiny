@@ -1,4 +1,4 @@
-#' Shiny Module Server for Times Plots
+#' Shiny Server for Times Plots
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par reactive arguments 
@@ -10,6 +10,7 @@
 #'             selectizeInput tagList uiOutput updateSelectizeInput
 #' @importFrom shiny column fluidRow NS
 #' @importFrom foundr timetraitsall traitTimes
+#' @importFrom DT renderDataTable
 #' @export
 timeTableServer <- function(id, panel_par, main_par,
                            traitData, traitSignal, traitStats) {
@@ -47,7 +48,7 @@ timeTableServer <- function(id, panel_par, main_par,
     }, label = "traitTimes")
   })
 }
-#' Shiny Module Input for Times Table
+#' Shiny Input for Times Table
 #' @return nothing returned
 #' @rdname timeTableServer
 #' @export
@@ -57,7 +58,7 @@ timeTableInput <- function(id) {
     shiny::column(4, traitOrderInput(ns("shinyOrder"))), # Order
     shiny::column(8, timeTraitsInput(ns("time_trait_names")))) # Traits
 }
-#' Shiny Module UI for Times Table
+#' Shiny UI for Times Table
 #' @return nothing returned
 #' @rdname timeTableServer
 #' @export
@@ -65,11 +66,56 @@ timeTableUI <- function(id) {
   ns <- shiny::NS(id)
   timeTraitsUI(ns("time_trait_names")) # Time Unit
 }
-#' Shiny Module Output for Times Table
+#' Shiny Output for Times Table
 #' @return nothing returned
 #' @rdname timeTableServer
 #' @export
 timeTableOutput <- function(id) {
   ns <- shiny::NS(id)
   timeTraitsOutput(ns("time_trait_names")) # Response
+}
+#' Shiny App for Times Table
+#' @return nothing returned
+#' @rdname timeTableServer
+#' @export
+timeTableApp <- function() {
+  title <- "Test shinyTime Module"
+  
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(3, datasetInput("dataset")),
+            shiny::column(9, timeTableInput("time_table"))),
+          timeTableUI("time_table"),
+          
+          timeTableOutput("time_table"),
+          datasetUI("dataset")
+        ),
+        shiny::mainPanel(
+          shiny::h3("Time Table"),
+          shiny::uiOutput("time_table")
+        )
+      )
+    )
+  }
+  
+  server <- function(input, output, session) {
+    # MODULES
+    main_par <- datasetServer("dataset", traitStats)
+    time_table <- timeTableServer("time_table", input, main_par,
+      traitData, traitSignal, traitStats)
+    
+    output$time_table <- shiny::renderUI({
+      shiny::req(time_table())
+      DT::renderDataTable(
+        time_table()$stats[[1]],
+        escape = FALSE,
+        options = list(scrollX = TRUE, pageLength = 10))
+    })
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
 }

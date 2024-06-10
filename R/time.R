@@ -87,30 +87,22 @@ timeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, shiny::uiOutput("dataset")),
-            shiny::column(9, timeInput("shinyTimePanel"))),
-          timeUI("shinyTimePanel"),
+            shiny::column(3, datasetInput("dataset")),
+            shiny::column(9, timeInput("time"))),
+          timeUI("time"),
           
-          shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1),
+          datasetUI("dataset"),
         ),
         
         shiny::mainPanel(
-          timeOutput("shinyTimePanel")
+          timeOutput("time")
         )))
   }
   
   server <- function(input, output, session) {
     # MODULES
-    timeServer("shinyTimePanel", input, traitData, traitSignal, traitStats)
-    
-    # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
+    main_par <- datasetServer("dataset", traitStats)
+    timeServer("time", main_par, traitData, traitSignal, traitStats)
   }
   
   shiny::shinyApp(ui = ui, server = server)

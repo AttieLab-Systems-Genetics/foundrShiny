@@ -92,25 +92,25 @@ contrastModuleApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::uiOutput("dataset"),
-          contrastTableInput("shinyContrastTable")
-        ),
-        
-        shiny::mainPanel(
-          shiny::tagList(
-            contrastModuleInput("shinyContrastModule"),
-            shiny::fluidRow(
-              shiny::column(4, shiny::uiOutput("sex")),
-              shiny::column(8, shiny::uiOutput("module"))),
-            contrastModuleOutput("shinyContrastModule")
+          shiny::fluidRow(
+            shiny::column(4, datasetInput("dataset")),
+            shiny::column(8, contrastTableInput("contrast_table"))
           )
+        ),
+        shiny::mainPanel(
+          contrastModuleInput("contrast_module"),
+          shiny::fluidRow(
+            shiny::column(4, shiny::uiOutput("sex")),
+            shiny::column(8, shiny::uiOutput("module"))),
+          contrastModuleOutput("contrast_module")
         )
-      ))
+      )
+    )
   }
   
   server <- function(input, output, session) {
     
-    # This now works with two calls to shinyContrastTable.
+    # This now works with two calls to contrast_table.
     # However, it is slow because the second call to create `traitContrast`
     # pulls in all 52965 traits.
     # Would like to only pull in those for selected module.
@@ -131,26 +131,18 @@ contrastModuleApp <- function() {
     # *** and mods to `eigen_traits_dataset_value`
     
     # MODULE
+    main_par <- datasetServer("dataset", traitStats)
     # Contrast Module Table
-    moduleContrast <- contrastTableServer("shinyContrastTable",
-                                                 input, input, traitSignal, traitStats, customSettings)
+    mods_table <- contrastTableServer("contrast_table", input, main_par,
+      traitSignal, traitStats, customSettings)
     # Contrast Trait Table
-    traitContrast <- contrastTableServer("shinyContrastTable",
-                                                input, input, traitSignal, traitStats, customSettings, keepDatatraits)
+    trait_table <- contrastTableServer("contrast_table", input, main_par,
+      traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Modules.
-    # *** problem for MixMod is that traitContrast and moduleContrast may be wrong.
-    moduleOutput <- contrastModuleServer("shinyContrastModule",
-                                                input, input, traitModule, moduleContrast, traitContrast)
+    contrastModuleServer("contrast_module", input, main_par,
+      traitModule, mods_table, trait_table)
     
     # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     output$sex <- shiny::renderUI({
       shiny::selectInput("sex", "", as.vector(sexes))
@@ -159,7 +151,7 @@ contrastModuleApp <- function() {
       shiny::selectizeInput("module", "Module:", NULL)
     })
     shiny::observeEvent(
-      shiny::req(datatraits(), input$dataset, input$sex),
+      shiny::req(datatraits(), main_par$dataset, input$sex),
       {
         # First zero out input$module.
         shiny::updateSelectizeInput(session, "module",
@@ -170,16 +162,15 @@ contrastModuleApp <- function() {
       })
     
     datamodule <- shiny::reactive({
-      traitModule[shiny::req(input$dataset[1])]
+      traitModule[shiny::req(main_par$dataset[1])]
     })
     datatraits <- shiny::reactive({
-      shiny::req(input$sex, input$dataset, datamodule())
-      
+      shiny::req(input$sex, main_par$dataset, datamodule())
       if(foundr:::is_sex_module(datamodule())) {
-        out <- unique(datamodule()[[input$dataset[1]]][[input$sex]]$modules$module)
-        paste0(input$dataset[1], ": ", names(sexes)[match(input$sex, sexes)], "_", out)
+        out <- unique(datamodule()[[main_par$dataset[1]]][[input$sex]]$modules$module)
+        paste0(main_par$dataset[1], ": ", names(sexes)[match(input$sex, sexes)], "_", out)
       } else {
-        paste0(input$dataset[1], ": ", unique(datamodule()[[input$dataset]]$value$modules$module))
+        paste0(main_par$dataset[1], ": ", unique(datamodule()[[main_par$dataset]]$value$modules$module))
       }
     }, label = "datatraits")
     
@@ -188,7 +179,7 @@ contrastModuleApp <- function() {
       if(shiny::isTruthy(input$module))
         module <- input$module
       
-      foundr:::keptDatatraits(traitModule, shiny::req(input$dataset)[1], module)
+      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1], module)
     })
   }
   

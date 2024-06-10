@@ -2,7 +2,7 @@
 #'
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
-#' @param panel_par,main_par reactive arguments
+#' @param panel_par reactive arguments
 #' @param keyTrait,relTraits reactives with trait names
 #' @param traitData,traitSignal static objects 
 #'
@@ -15,7 +15,7 @@
 #' @importFrom utils write.csv
 #' @export
 #'
-traitTableServer <- function(id, panel_par, main_par, keyTrait, relTraits,
+traitTableServer <- function(id, panel_par, keyTrait, relTraits,
                             traitData, traitSignal,
                             customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -114,6 +114,7 @@ traitTableApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
+          datasetInput("dataset"),
           shiny::uiOutput("traits"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
           
@@ -129,7 +130,8 @@ traitTableApp <- function() {
   server <- function(input, output, session) {
     
     # MODULES
-    trait_table <- traitTableServer("shinyTest", input, input,
+    main_par <- datasetServer("dataset", traitSignal)
+    trait_table <- traitTableServer("shinyTest", input,
       keyTrait, relTraits, traitData, traitSignal)
     # Mockup of trait names
     keyTrait <- shiny::reactive(shiny::req(input$trait), label = "keyTrait")
@@ -142,8 +144,10 @@ traitTableApp <- function() {
         choices = choices, selected = choices, inline = TRUE)
     })
     output$traits <- shiny::renderUI({
-      traits <- unique(foundr::unite_datatraits(traitSignal))[1:5]
-      
+      traits <- foundr::unite_datatraits(
+        dplyr::distinct(
+          dplyr::filter(traitSignal, .data$dataset %in% main_par$dataset),
+          .data$dataset, .data$trait))
       shiny::selectInput("trait","Traits:", traits)
     })
 

@@ -5,7 +5,8 @@
 \alias{timeTableInput}
 \alias{timeTableUI}
 \alias{timeTableOutput}
-\title{Shiny Module Server for Times Plots}
+\alias{timeTableApp}
+\title{Shiny Server for Times Plots}
 \usage{
 timeTableServer(id, panel_par, main_par, traitData, traitSignal, traitStats)
 
@@ -14,6 +15,8 @@ timeTableInput(id)
 timeTableUI(id)
 
 timeTableOutput(id)
+
+timeTableApp()
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
@@ -30,13 +33,17 @@ nothing returned
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
-Shiny Module Server for Times Plots
+Shiny Server for Times Plots
 
-Shiny Module Input for Times Table
+Shiny Input for Times Table
 
-Shiny Module UI for Times Table
+Shiny UI for Times Table
 
-Shiny Module Output for Times Table
+Shiny Output for Times Table
+
+Shiny App for Times Table
 }

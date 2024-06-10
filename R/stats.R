@@ -77,8 +77,8 @@ statsApp <- function() {
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        shiny::uiOutput("dataset"),
-        shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)),
+        datasetInput("dataset"),
+        datasetUI("dataset")),
       
       shiny::mainPanel(
         statsOutput("StatsPanel")
@@ -87,16 +87,8 @@ statsApp <- function() {
   )
   
   server <- function(input, output, session) {
-    # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get new input parameters for Stats.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
-    statsServer("StatsPanel", input, traitStats)
+    main_par <- datasetServer("dataset", traitStats)
+    statsServer("StatsPanel", main_par, traitStats)
   }
   
   shiny::shinyApp(ui = ui, server = server)}

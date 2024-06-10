@@ -74,19 +74,19 @@ contrastSexApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::uiOutput("dataset"),
-          contrastTableInput("contrast_table")),
-        
+          shiny::fluidRow(
+            shiny::column(4, datasetInput("dataset")),
+            shiny::column(8, contrastTableInput("contrast_table")))
+        ),
         shiny::mainPanel(
-          shiny::tagList(
-            contrastSexInput("sex_plot"),
-            shiny::fluidRow(
-              shiny::column(4, shiny::uiOutput("sex")),
-              shiny::column(8, contrastSexUI("sex_plot"))),
-            contrastSexOutput("sex_plot")
-          )
+          contrastSexInput("sex_plot"),
+          shiny::fluidRow(
+            shiny::column(4, shiny::uiOutput("sex")),
+            shiny::column(8, contrastSexUI("sex_plot"))),
+          contrastSexOutput("sex_plot")
         )
-      ))
+      )
+    )
   }
   
   server <- function(input, output, session) {
@@ -99,10 +99,12 @@ contrastSexApp <- function() {
     
     # MODULE
     # Contrast Trait Table
-    contrastOutput <- contrastTableServer("contrast_table",
-                                         input, input, traitSignal, traitStats, customSettings)
+    main_par <- datasetServer("dataset", traitStats)
+    contrastOutput <- contrastTableServer("contrast_table", input, main_par,
+      traitSignal, traitStats, customSettings)
     # Contrast Modules.
-    moduleOutput <- contrastSexServer("sex_plot", input, input, traitContrPval, traitModule)
+    moduleOutput <- contrastSexServer("sex_plot", input, main_par,
+      traitContrPval, traitModule)
     
     traitContrPval <- reactive({
       shiny::req(contrastOutput())
@@ -114,14 +116,6 @@ contrastSexApp <- function() {
     })
     
     # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput(

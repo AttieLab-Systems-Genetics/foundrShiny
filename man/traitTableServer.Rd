@@ -10,7 +10,6 @@
 traitTableServer(
   id,
   panel_par,
-  main_par,
   keyTrait,
   relTraits,
   traitData,
@@ -27,7 +26,7 @@ traitTableApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{panel_par, main_par}{reactive arguments}
+\item{panel_par}{reactive arguments}
 
 \item{keyTrait, relTraits}{reactives with trait names}
 

@@ -12,6 +12,8 @@
 #'             reactive renderPlot renderUI req tagList uiOutput
 #' @importFrom DT renderDataTable dataTableOutput
 #' @importFrom foundr ggplot_traitPairs traitPairs
+#' @importFrom dplyr distinct filter
+#' @importFrom rlang .data
 #' @export
 #'
 traitPairsServer <- function(id, panel_par, main_par, trait_names, traitSolosObject) {
@@ -21,10 +23,7 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names, traitSolosObj
     # INPUTS
     # Main inputs:
     #   main_par$height
-    #   panel_par$facet
-    # TraitPairs inputs:
-    #   input$pair (obsolete)
-    
+
     # OUTPUTS
     # output$pairs_plot
     
@@ -109,12 +108,14 @@ traitPairsApp <- function(id) {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::uiOutput("traits"),
+          shiny::fluidRow(
+            shiny::column(3, datasetInput("dataset")),
+            shiny::column(9, shiny::uiOutput("traits"))),
           shiny::uiOutput("reltraits"),
-          traitTableUI("shinyObject"),
+          traitTableUI("trait_table"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
           shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-          shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1),
+          datasetUI("dataset"),
           shiny::fluidRow(
             shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
             shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
@@ -122,16 +123,18 @@ traitPairsApp <- function(id) {
         ),
         
         shiny::mainPanel(
-          traitPairsUI("shinyPairs"),
-          traitTableOutput("shinyObject")
+          traitPairsUI("pairs_plot"),
+          traitTableOutput("trait_table")
         )))
   }
   
   server <- function(input, output, session) {
     
     # SHINY MODULES
-    trait_table <- traitTableServer("shinyObject", input, input, keyTrait, relTraits, traitData, traitSignal)
-    pairs_plot <- traitPairsServer("shinyPairs", input, input, trait_names, trait_table)
+    main_par <- datasetServer("dataset", traitSignal)
+    trait_table <- traitTableServer("trait_table", input,
+      keyTrait, relTraits, traitData, traitSignal)
+    traitPairsServer("pairs_plot", input, main_par, trait_names, trait_table)
     
     # SERVER-SIDE INPUTS
     output$strains <- shiny::renderUI({
@@ -140,7 +143,10 @@ traitPairsApp <- function(id) {
         choices = choices, selected = choices, inline = TRUE)
     })
     output$traits <- shiny::renderUI({
-      traits <- unique(foundr::unite_datatraits(traitSignal))[1:5]
+      traits <- foundr::unite_datatraits(
+        dplyr::distinct(
+          dplyr::filter(traitSignal, .data$dataset %in% main_par$dataset),
+          .data$dataset, .data$trait))
       
       shiny::selectInput("trait", "Trait:", traits)
     })

@@ -24,10 +24,10 @@ contrastServer <- function(id, main_par,
     
     # MODULES
     # Contrast Module Table. Note reuse of `id` for `contrastTableServer`.
-    mods_table <- contrastTableServer("trait_table", input, main_par,
+    mods_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     # Contrast Trait Table
-    trait_table <- contrastTableServer("trait_table", input, main_par,
+    trait_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Trait Plots by Sex
     contrastSexServer("contrast_sex", input, main_par,
@@ -118,7 +118,7 @@ contrastServer <- function(id, main_par,
       switch(
         contr_selection(),
         Sex =, Module = {
-          shiny::column(4, contrastTableInput(ns("trait_table")))
+          shiny::column(4, contrastTableInput(ns("contrast_table")))
         },
         Time = {
           shiny::fluidRow(
@@ -232,8 +232,8 @@ contrastApp <- function() {
   
   ui <- function() {
     # INPUTS
-    #   input$dataset: Datasets to select
-    #   input$height: Plot Height
+    #   main_par$dataset: Datasets to select
+    #   main_par$height: Plot Height
     # OUTPUTS (see shinyTraitPairs)
     #   output$filename: 
     #   output$downloadPlot
@@ -244,11 +244,10 @@ contrastApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, shiny::uiOutput("dataset")),
+            shiny::column(3, datasetInput("dataset")),
             shiny::column(9, contrastInput("shinyPanel"))),
           contrastUI("shinyPanel"),
-          shiny::sliderInput("height", "Plot height (in):", 3, 10, 6,
-                             step = 1)),
+          datasetUI("dataset")),
         
         shiny::mainPanel(
           contrastOutput("shinyPanel")
@@ -260,18 +259,9 @@ contrastApp <- function() {
     #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
     
     # CALL MODULES
-    contrastServer("shinyPanel", input,
+    main_par <- datasetServer("dataset", traitStats)
+    contrastServer("shinyPanel", main_par,
       traitSignal, traitStats, traitModule, customSettings)
-    
-    # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
   }
   
   shiny::shinyApp(ui = ui, server = server)  

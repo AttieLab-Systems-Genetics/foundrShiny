@@ -26,6 +26,7 @@ foundrServer <- function(id,
     #    input$tabpanel
     
     # CALL MODULES
+    datasetServer("dataset", traitStats)
     traitServer("tabTraits", input, traitData, traitSignal, traitStats,
                     customSettings)
     timeServer("tabTimes", input, traitData, traitSignal, traitStats)
@@ -34,21 +35,7 @@ foundrServer <- function(id,
                        traitSignal, traitStats, traitModule, customSettings)
     
     output$intro <- foundr:::foundrIntro(customSettings$help)
-    
-    # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      selected <- data_selection()
-      
-      # Get datasets.
-      shiny::selectInput(ns("dataset"), "Datasets:", datasets, selected,
-                         multiple = TRUE)
-    })
-    data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1],
-                                         label = "data_selection")
-    shiny::observeEvent(input$dataset, data_selection(input$dataset))
-    
+
     # Entry key
     entrykey <- shiny::reactive({
       out <- !shiny::isTruthy(customSettings$entrykey)
@@ -104,7 +91,7 @@ foundrServer <- function(id,
         shiny::req(input$tabpanel)
         shiny::tagList(
           shiny::fluidRow(
-            shiny::column(3, shiny::uiOutput(ns("dataset"))),
+            shiny::column(3, datasetInput(ns("dataset"))),
             if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
               shiny::column(9, 
                 switch(input$tabpanel,
@@ -121,9 +108,7 @@ foundrServer <- function(id,
             Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
           
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          
-          shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6,
-                             step = 1))
+          datasetUI(ns("dataset")))
       }
     })
     # Don't show Entry Key if there is no need.

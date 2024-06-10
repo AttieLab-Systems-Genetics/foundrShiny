@@ -3,7 +3,7 @@
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param panel_par,main_par reactive arguments from `server`
-#' @param traitSolosObject reactive objects from `server`
+#' @param trait_table reactive objects from `server`
 #'
 #' @return reactive object
 #' 
@@ -13,7 +13,7 @@
 #' @importFrom foundr ggplot_traitSolos
 #' @export
 #'
-traitSolosServer <- function(id, panel_par, main_par, traitSolosObject) {
+traitSolosServer <- function(id, panel_par, main_par, trait_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -38,10 +38,10 @@ traitSolosServer <- function(id, panel_par, main_par, traitSolosObject) {
     
     # Plot
     solos_plot <- shiny::reactive({
-      shiny::req(traitSolosObject())
+      shiny::req(trait_table())
       
       foundr::ggplot_traitSolos(
-        traitSolosObject(),
+        trait_table(),
         facet_strain = panel_par$facet,
         boxplot = TRUE)
     },
@@ -76,12 +76,13 @@ traitSolosApp <- function() {
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        shiny::column(3, shiny::uiOutput("dataset")),
-        shiny::selectInput("trait","Traits:",c("Enrich: 15N2-Urea_enrichment_120_18wk","Enrich: N-Methyl-D3-Creatinine_enrichment_0_18wk","Enrich: 5,5,5-D3-Leucine_enrichment_120_18wk","Enrich: Trimethyl-D9-Carnitine_enrichment_60_18wk")),
-        traitTableUI("shinyObject"),
+        shiny::fluidRow(
+          shiny::column(3, datasetInput("dataset")),
+          shiny::column(9, shiny::uiOutput("traits"))),
+        traitTableUI("trait_table"),
         shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
         shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-        shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1),
+        datasetUI("dataset"),
         shiny::fluidRow(
           shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
           shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
@@ -90,40 +91,39 @@ traitSolosApp <- function() {
       ),
       
       shiny::mainPanel(
-        traitSolosUI("shinySolos"),
-        traitTableOutput("shinyObject")
+        traitSolosUI("solos_plot"),
+        traitTableOutput("trait_table")
       )
     )
   )
   
   server <- function(input, output, session) {
     # MODULES
-    trait_table <- traitTableServer("shinyObject", input, input,
+    main_par <- datasetServer("dataset", traitSignal)
+    trait_table <- traitTableServer("trait_table", input,
       keyTrait, relTraits, traitData, traitSignal)
-    traitSolosServer("shinySolos", input, input, trait_table)
+    traitSolosServer("solos_plot", input, main_par, trait_table)
     
     # SERVER-SIDE INPUTS
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput("strains", "Strains",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
+    })
+    output$traits <- shiny::renderUI({
+      traits <- foundr::unite_datatraits(
+        dplyr::distinct(
+          dplyr::filter(traitSignal, .data$dataset %in% main_par$dataset),
+          .data$dataset, .data$trait))
+      
+      shiny::selectInput("traits", "Trait:", traits)
     })
     
     # REACTIVES
-    keyTrait <- shiny::reactive(shiny::req(input$trait)[1])
+    keyTrait <- shiny::reactive({
+      shiny::req(input$traits)[1]
+      })
     relTraits <- shiny::reactive(NULL)
-    datasets <- shiny::reactive({
-      shiny::req(trait_table())
-      unique(trait_table()$dataset)
-    })
   }
   
   shiny::shinyApp(ui = ui, server = server)
