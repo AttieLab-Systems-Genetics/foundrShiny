@@ -56,3 +56,67 @@ contrastTimeUI <- function(id) {
   ns <- shiny::NS(id)
   timeTraitsUI(ns("times_list"))
 }
+#' Shiny App for Contrast Times
+#' @return nothing returned
+#' @rdname contrastTimeServer
+#' @export
+contrastTimeApp <- function() {
+  title <- "Test Contrast Time Module"
+  
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(3, datasetInput("dataset")),
+            shiny::column(3, contrastTableInput("times_table")), # Order
+            shiny::column(6, contrastTimeInput("contrast_time"))), # Traits
+          
+          contrastTimeUI("contrast_time"),
+          shiny::uiOutput("strains"),
+          
+          datasetUI("dataset")
+        ),
+        shiny::mainPanel(
+          shiny::h3("Time Table"),
+          shiny::uiOutput("contrast_time")
+        )
+      )
+    )
+  }
+  
+  server <- function(input, output, session) {
+    # Identify all Time Traits.
+    timetrait_all <- timetraitsall(traitSignal)
+    # Subset Stats to time traits.
+    traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
+    
+    # MODULES
+    main_par <- datasetServer("dataset", traitStatsTime)
+    # Contrast Time Trait Table
+    times_table <- contrastTableServer("times_table", input, main_par,
+      traitSignal, traitStatsTime, customSettings)
+    # Contrast Time Traits
+    contrast_time <- contrastTimeServer("contrast_time", input, main_par,
+      traitSignal, traitStatsTime, times_table)
+    
+    # SERVER-SIDE Inputs
+    output$strains <- shiny::renderUI({
+      choices <- names(foundr::CCcolors)
+      shiny::checkboxGroupInput("strains", "Strains",
+                                choices = choices, selected = choices, inline = TRUE)
+    })
+
+    # Output    
+    output$contrast_time <- shiny::renderUI({
+      shiny::req(contrast_time())
+      DT::renderDataTable(
+        contrast_time()$stats[[1]],
+        escape = FALSE,
+        options = list(scrollX = TRUE, pageLength = 10))
+    })
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
+}

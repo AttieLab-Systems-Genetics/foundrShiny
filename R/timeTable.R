@@ -91,8 +91,7 @@ timeTableApp <- function() {
             shiny::column(9, timeTableInput("time_table"))),
           timeTableUI("time_table"),
           
-          timeTableOutput("time_table"),
-          datasetUI("dataset")
+          timeTableOutput("time_table")
         ),
         shiny::mainPanel(
           shiny::h3("Time Table"),

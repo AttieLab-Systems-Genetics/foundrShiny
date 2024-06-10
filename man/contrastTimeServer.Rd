@@ -4,6 +4,7 @@
 \alias{contrastTimeServer}
 \alias{contrastTimeInput}
 \alias{contrastTimeUI}
+\alias{contrastTimeApp}
 \title{Shiny Module Server for Contrasts over Time}
 \usage{
 contrastTimeServer(
@@ -19,6 +20,8 @@ contrastTimeServer(
 contrastTimeInput(id)
 
 contrastTimeUI(id)
+
+contrastTimeApp()
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
@@ -35,6 +38,8 @@ reactive object
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Module Server for Contrasts over Time
@@ -42,4 +47,6 @@ Shiny Module Server for Contrasts over Time
 Shiny Module Input for Contrasts over Time
 
 Shiny Module UI for Contrasts over Time
+
+Shiny App for Contrast Times
 }

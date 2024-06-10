@@ -36,11 +36,11 @@ contrastServer <- function(id, main_par,
     times_table <- contrastTableServer("times_table", input, main_par,
       traitSignal, traitStatsTime, customSettings)
     # Contrast Time Traits
-    trait_times <- contrastTimeServer("trait_times", input, main_par,
+    contrast_time <- contrastTimeServer("contrast_time", input, main_par,
       traitSignal, traitStatsTime, times_table, customSettings)
     # Contrast Time Plots and Tables
     timePlotServer("shinyTimePlot", input, main_par,
-      traitSignal, trait_times)
+      traitSignal, contrast_time)
     # Contrast Modules.
     contrastModuleServer("contrast_module", input, main_par,
       traitModule, mods_table, trait_table)
@@ -123,13 +123,13 @@ contrastServer <- function(id, main_par,
         Time = {
           shiny::fluidRow(
             shiny::column(4, contrastTableInput(ns("times_table"))), # Order
-            shiny::column(8, contrastTimeInput(ns("trait_times")))) # Traits
+            shiny::column(8, contrastTimeInput(ns("contrast_time")))) # Traits
         })
     })
     output$shinyUI <- shiny::renderUI({
       shiny::req(contr_selection())
       if(contr_selection() == "Time") {
-        contrastTimeUI(ns("trait_times")) # Time Unit
+        contrastTimeUI(ns("contrast_time")) # Time Unit
       }
     })
     
