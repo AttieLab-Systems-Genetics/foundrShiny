@@ -28,7 +28,7 @@ timeTableServer <- function(id, panel_par, main_par,
     
     # MODULES
     # Order Traits by Stats.
-    stats_table <- traitOrderServer("shinyOrder", panel_par, main_par,
+    stats_table <- traitOrderServer("shinyOrder", main_par,
                                    time_trait_table, customSettings)
     
     # Identify Time Traits.
@@ -54,9 +54,7 @@ timeTableServer <- function(id, panel_par, main_par,
 #' @export
 timeTableInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::fluidRow(
-    shiny::column(4, traitOrderInput(ns("shinyOrder"))), # Order
-    shiny::column(8, timeTraitsInput(ns("time_trait_names")))) # Traits
+  timeTraitsInput(ns("time_trait_names")) # Traits
 }
 #' Shiny UI for Times Table
 #' @return nothing returned

@@ -2,30 +2,23 @@
 % Please edit documentation in R/traitOrder.R
 \name{traitOrderServer}
 \alias{traitOrderServer}
-\alias{traitOrderInput}
-\alias{traitOrderUI}
 \alias{traitOrderApp}
 \title{Shiny Module Server for Trait Order}
 \usage{
 traitOrderServer(
   id,
-  panel_par,
   main_par,
   traitStats,
   customSettings = NULL,
   keepDatatraits = shiny::reactive(NULL)
 )
 
-traitOrderInput(id)
-
-traitOrderUI(id)
-
 traitOrderApp()
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{panel_par, main_par}{input reactive list}
+\item{main_par}{input reactive list}
 
 \item{traitStats}{static data frame}
 
@@ -38,10 +31,6 @@ reactive object
 }
 \description{
 Shiny Module Server for Trait Order
-
-Shiny Module Input for Trait Order
-
-Shiny Module UI for Trait Order
 
 Shiny Module App for Trait Order
 }

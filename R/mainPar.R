@@ -27,9 +27,15 @@ mainParServer <- function(id, traitStats = NULL) {
       shiny::selectInput(ns("dataset"), "Datasets:", datasets, selected,
                          multiple = TRUE)
     })
-    data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1],
-                                         label = "data_selection")
+    data_selection <- shiny::reactiveVal("", label = "data_selection")
     shiny::observeEvent(input$dataset, data_selection(input$dataset))
+    output$order <- shiny::renderUI({
+      # Order Criteria for Trait Names
+      choices <- order_choices(traitStats)
+      shiny::selectInput(ns("order"), "Order traits by", choices)
+    })
+    order_selection <- shiny::reactiveVal(NULL, label = "order_selection")
+    shiny::observeEvent(input$order, order_selection(input$order))
     
     output$butshow <- shiny::renderUI({
       if(input$butshow == "Plots") {
@@ -44,7 +50,9 @@ mainParServer <- function(id, traitStats = NULL) {
 #' @rdname mainParServer
 mainParInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("dataset"))
+  shiny::fluidRow(
+    shiny::column(6, shiny::uiOutput(ns("dataset"))),
+    shiny::column(6, shiny::uiOutput(ns("order"))))
 }
 #' @export
 #' @rdname mainParServer
@@ -64,9 +72,7 @@ mainParApp <- function(title = "") {
     shiny::h4("main_par$dataset"),
     mainParInput("main_par"), 
     shiny::h4("main_par$height"),
-    mainParUI("main_par"),
-    shiny::h4("main_par$butshow"),
-    mainParOutput("main_par")
+    mainParUI("main_par")
   )
   server <- function(input, output, session) {
     mainParServer("main_par", traitStats)

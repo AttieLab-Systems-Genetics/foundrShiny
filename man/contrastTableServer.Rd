@@ -2,7 +2,6 @@
 % Please edit documentation in R/contrastTable.R
 \name{contrastTableServer}
 \alias{contrastTableServer}
-\alias{contrastTableInput}
 \alias{contrastTableUI}
 \alias{contrastTableApp}
 \title{Shiny Module Server for Contrast Panel}
@@ -16,8 +15,6 @@ contrastTableServer(
   customSettings = NULL,
   keepDatatraits = shiny::reactive(NULL)
 )
-
-contrastTableInput(id)
 
 contrastTableUI(id)
 
@@ -40,13 +37,9 @@ reactive object
 nothing returned
 
 nothing returned
-
-nothing returned
 }
 \description{
 Shiny Module Server for Contrast Panel
-
-Shiny Module Input for Trait Panel
 
 Shiny Module UI for Trait Panel
 

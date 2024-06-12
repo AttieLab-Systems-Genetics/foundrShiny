@@ -97,7 +97,8 @@ corPlotApp <- function() {
   server <- function(input, output, session) {
     # MODULES
     # Order Traits by Stats.
-    stats_table <- traitOrderServer("shinyOrder", input, input, traitStats)
+    main_par <- mainParServer("main_par", traitStats)
+    stats_table <- traitOrderServer("shinyOrder", input, traitStats)
     # Key Trait.
     keyTrait    <- traitNamesServer("shinyKeyTrait", input, stats_table)
     # Correlation Table.

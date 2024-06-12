@@ -89,8 +89,8 @@ timeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")),
-            shiny::column(9, timeInput("time"))),
+            shiny::column(6, mainParInput("main_par")),
+            shiny::column(6, timeInput("time"))),
           timeUI("time"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),

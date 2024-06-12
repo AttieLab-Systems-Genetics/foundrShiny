@@ -21,7 +21,7 @@ contrastTableServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    orderOutput <- traitOrderServer("shinyOrder", panel_par, main_par,
+    orderOutput <- traitOrderServer("shinyOrder", main_par,
                                     traitStats, customSettings, keepDatatraits)
     
     ###############################################################
@@ -33,14 +33,6 @@ contrastTableServer <- function(id, panel_par, main_par,
         termname = orderOutput()$term[1], rawStats = traitStats)
     }, label = "contrastTable")
   })
-}
-#' Shiny Module Input for Trait Panel
-#' @return nothing returned
-#' @rdname contrastTableServer
-#' @export
-contrastTableInput <- function(id) {
-  ns <- shiny::NS(id)
-  traitOrderInput(ns("shinyOrder"))
 }
 #' Shiny Module UI for Trait Panel
 #' @return nothing returned
@@ -64,8 +56,7 @@ contrastTableApp <- function(id) {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           mainParInput("main_par"),
-          shiny::uiOutput("sex"),
-          contrastTableInput("contrast_table")
+          shiny::uiOutput("sex")
         ),
         
         shiny::mainPanel(

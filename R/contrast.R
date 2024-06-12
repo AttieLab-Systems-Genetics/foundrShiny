@@ -115,16 +115,8 @@ contrastServer <- function(id, main_par,
     # Input
     output$shinyInput <- shiny::renderUI({
       shiny::req(contr_selection())
-      switch(
-        contr_selection(),
-        Sex =, Module = {
-          shiny::column(4, contrastTableInput(ns("contrast_table")))
-        },
-        Time = {
-          shiny::fluidRow(
-            shiny::column(4, contrastTableInput(ns("times_table"))), # Order
-            shiny::column(8, contrastTimeInput(ns("contrast_time")))) # Traits
-        })
+      if(contr_selection() == "Time")
+        contrastTimeInput(ns("contrast_time")) # Traits
     })
     output$shinyUI <- shiny::renderUI({
       shiny::req(contr_selection())
@@ -253,8 +245,8 @@ contrastApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")),
-            shiny::column(9, contrastInput("shinyPanel"))),
+            shiny::column(6, mainParInput("main_par")),
+            shiny::column(6, contrastInput("shinyPanel"))),
           contrastUI("shinyPanel"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),

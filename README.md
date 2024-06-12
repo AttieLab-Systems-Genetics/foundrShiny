@@ -17,7 +17,6 @@ Nearly all files in the `R` function directory have built-in apps following
 
 ## Improvements Planned
 
-- blank dataseet and trait
 - fix contrast tab module list
 - order module list on contrast by p-values
 - SD and logp calc and guideline defaults

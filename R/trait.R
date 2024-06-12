@@ -31,8 +31,8 @@ traitServer <- function(id, main_par,
     
     # MODULES
     # Order Traits by Stats.
-    stats_table <- traitOrderServer("stats_table", input, main_par,
-                                   traitStats, customSettings)
+    stats_table <- traitOrderServer("stats_table", main_par,
+                                    traitStats, customSettings)
     # Key Trait.
     keyTrait    <- traitNamesServer("keyTrait", main_par, stats_table)
     # Key Trait and Correlation Table.
@@ -167,11 +167,7 @@ traitServer <- function(id, main_par,
 #' @export
 traitInput <- function(id) { # 4:Order, 8:Traits
   ns <- shiny::NS(id)
-  shiny::tagList(
-    # Key Datasets and Trait.
-    shiny::fluidRow(
-      shiny::column(4, traitOrderInput(ns("stats_table"))),
-      shiny::column(8, traitNamesUI(ns("keyTrait")))))
+  traitNamesUI(ns("keyTrait"))
 }
 #' Shiny Module UI for Trait Panel
 #' @return nothing returned
@@ -214,14 +210,13 @@ traitApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, mainParInput("main_par")),
-          shiny::column(9, traitInput("trait_panel"))),
+          shiny::column(6, mainParInput("main_par")),
+          shiny::column(6, traitInput("trait_panel"))),
         traitUI("trait_panel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
         mainParUI("main_par"),
         downloadOutput("download")
       ),
-      
       shiny::mainPanel(
         traitOutput("trait_panel")
       )

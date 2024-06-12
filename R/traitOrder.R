@@ -2,7 +2,7 @@
 #'
 #' 
 #' @param id identifier for shiny reactive
-#' @param panel_par,main_par input reactive list
+#' @param main_par input reactive list
 #' @param traitStats static data frame
 #' @param customSettings custom settings list
 #' @param keepDatatraits keep datatraits if not `NULL`
@@ -16,39 +16,10 @@
 #' @importFrom foundr summary_strainstats
 #' @export
 #'
-traitOrderServer <- function(id, panel_par, main_par,
-                            traitStats,
-                            customSettings = NULL, keepDatatraits = shiny::reactive(NULL)) {
+traitOrderServer <- function(id, main_par,
+  traitStats, customSettings = NULL, keepDatatraits = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    #   main_par$tabpanel
-    # shinyTraitOrder inputs
-    #   input$keydataset
-    #   input$order
-    #
-    # RETURNS
-    #   stats_table()
-    
-    # Key Datasets.
-    #    output$keydataset <- renderUI({
-    #      datasets <- unique(traitStats$dataset)
-    #      choices <- datasets[1]
-    #      if(allDatasets) choices <- datasets
-    #      shiny::selectInput(ns("keydataset"), "Key Datasets:",
-    #                         datasets, choices, multiple = TRUE)
-    #    })
-    key_selection <- shiny::reactiveVal(NULL, label = "key_selection")
-    shiny::observeEvent(main_par$dataset, key_selection(main_par$dataset))
-
-    # Order Criteria for Trait Names
-    output$order <- shiny::renderUI({
-      choices <- order_choices(traitStats)
-      shiny::selectInput(ns("order"), "Order traits by", choices)
-    })
-    order_selection <- shiny::reactiveVal(NULL, label = "order_selection")
-    shiny::observeEvent(input$order, order_selection(input$order))
     
     # Table
     output$key_stats <- DT::renderDataTable(
@@ -62,9 +33,8 @@ traitOrderServer <- function(id, panel_par, main_par,
       options = list(scrollX = TRUE, pageLength = 5))
     
     stats_table <- shiny::reactive({
-      shiny::req(order_selection(), key_stats())
-      
-      order_trait_stats(order_selection(), key_stats())
+      shiny::req(main_par$order, key_stats())
+      order_trait_stats(main_par$order, key_stats())
     })
     key_stats <- shiny::reactive({
       if(shiny::isTruthy(keepDatatraits())) {
@@ -76,10 +46,10 @@ traitOrderServer <- function(id, panel_par, main_par,
             datatraits %in% keepDatatraits()),
           -datatraits)
       } else {
-        if(shiny::isTruthy(key_selection())) {
+        if(shiny::isTruthy(main_par$dataset)) {
           dplyr::filter(
             traitStats,
-            .data$dataset %in% key_selection())
+            .data$dataset %in% main_par$dataset)
         } else {
           NULL
         }
@@ -91,16 +61,6 @@ traitOrderServer <- function(id, panel_par, main_par,
     stats_table
   })
 }
-#' Shiny Module Input for Trait Order
-#' @rdname traitOrderServer
-#' @export
-traitOrderInput <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::uiOutput(ns("order"))
-}
-#' Shiny Module UI for Trait Order
-#' @rdname traitOrderServer
-#' @export
 traitOrderUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(  
@@ -120,8 +80,7 @@ traitOrderApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           # Key Datasets and Trait.
-          shiny::uiOutput("dataset"),
-          traitOrderInput("shinyOrder"),
+          mainParInput("main_par"),
           # Related Datasets and Traits.
           shiny::uiOutput("reldataset")),
         
@@ -142,7 +101,8 @@ traitOrderApp <- function() {
     
     # MODULES
     # Order Traits by Stats.
-    stats_table <- traitOrderServer("shinyOrder", input, input, traitStats)
+    main_par <- mainParServer("main_par", traitStats)
+    stats_table <- traitOrderServer("shinyOrder", main_par, traitStats)
     
     # I/O FROM MODULE
     output$dataset <- shiny::renderUI({
