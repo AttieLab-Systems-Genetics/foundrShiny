@@ -6,7 +6,8 @@
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow h3 moduleServer NS observeEvent reactive
-#'             reactiveVal renderUI req selectInput tagList uiOutput updateSelectInput
+#'             reactiveVal reactiveValues renderUI req selectInput tagList
+#'             uiOutput updateSelectInput
 #' @importFrom DT renderDataTable
 #' @importFrom stringr str_remove str_replace
 #' @importFrom foundr is_bestcor summary_bestcor summary_strainstats
@@ -49,9 +50,6 @@ traitServer <- function(id, main_par,
     solos_plot  <- traitSolosServer("shinySolos", input, main_par, trait_table)
     pairs_plot  <- traitPairsServer("shinyPairs", input, main_par, trait_names,
                                    trait_table)
-    # Downloads
-    downloadServer("downloads", "Trait", input, postfix, plotObject,
-                   tableObject)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
@@ -99,14 +97,14 @@ traitServer <- function(id, main_par,
         }))
     })
     output$downtable <- shiny::renderUI({
-      if(shiny::req(input$butshow) == "Tables") {
+      if(shiny::req(main_par$butshow) == "Tables") {
         shiny::radioButtons(ns("buttable"), "Download:",
                             c("Cell Means","Correlations","Stats"), "Cell Means", inline = TRUE)
       }
     })
     output$traitOutput <- shiny::renderUI({
       shiny::tagList(
-        switch(shiny::req(input$butshow),
+        switch(shiny::req(main_par$butshow),
                Plots = {
                  shiny::tagList(
                    shiny::h3("Trait Plots"),
@@ -125,45 +123,42 @@ traitServer <- function(id, main_par,
                }),
         
         # Correlation Plots or Tables
-        switch(shiny::req(input$butshow),
+        switch(shiny::req(main_par$butshow),
                Plots = {
                  if(foundr::is_bestcor(cors_table()))
                    corPlotOutput(ns("cors_plot"))
                },
-               Table = {
-                 corTableOutput(ns("shinyCorTable"))
-               }))
+               Table = corTableOutput(ns("shinyCorTable")))
+        )
     })
-    
-    # DOWNLOADS
-    postfix <- shiny::reactive({
-      filename <- stringr::str_replace(trait_names()[1], ": ", "_")
-      if(shiny::req(input$butshow) == "Tables")
-        filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
-                           filename)
-      filename
-    })
-    plotObject <- shiny::reactive({
-      shiny::req(solos_plot(), main_par$height)
-      
-      print(solos_plot())
-      if(length(shiny::req(trait_names())) > 1)
-        print(pairs_plot())
-      if(foundr::is_bestcor(cors_table()) & shiny::isTruthy(cors_table()))
-        print(cors_table())
-    })
-    tableObject <- shiny::reactive({
-      shiny::req(trait_table())
-      switch(shiny::req(input$buttable),
-             "Cell Means" = summary(trait_table()),
-             Correlations = foundr::summary_bestcor(
-               mutate_datasets(cors_table(), customSettings$dataset), 0.0),
-             Stats = foundr::summary_strainstats(stats_table(),
-                       threshold = c(deviance = 0, p = 1)))
-    })
-    
     ###############################################################
-    trait_names
+    shiny::reactiveValues(
+      postfix = shiny::reactive({
+        filename <- stringr::str_replace(trait_names()[1], ": ", "_")
+        if(shiny::req(main_par$butshow) == "Tables")
+          filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
+                             filename)
+        filename
+      }),
+      plotObject = shiny::reactive({
+        shiny::req(solos_plot(), main_par$height)
+        
+        print(solos_plot())
+        if(length(shiny::req(trait_names())) > 1)
+          print(pairs_plot())
+        if(foundr::is_bestcor(cors_table()) & shiny::isTruthy(cors_table()))
+          print(cors_table())
+      }),
+      tableObject = shiny::reactive({
+        shiny::req(trait_table())
+        switch(shiny::req(input$buttable),
+               "Cell Means" = summary(trait_table()),
+               Correlations = foundr::summary_bestcor(
+                 mutate_datasets(cors_table(), customSettings$dataset), 0.0),
+               Stats = foundr::summary_strainstats(stats_table(),
+                                                   threshold = c(deviance = 0, p = 1)))
+      })
+    )
   })
 }
 #' Shiny Module Input for Trait Panel
@@ -188,7 +183,8 @@ traitUI <- function(id) { # Related Datasets and Traits
     # Related Datasets and Traits.
     shiny::fluidRow(
       shiny::column(6, shiny::uiOutput(ns("reldataset"))),
-      shiny::column(6, traitNamesUI(ns("relTraits")))))
+      shiny::column(6, traitNamesUI(ns("relTraits"))))
+  )
 }
 #' Shiny Module Output for Trait Panel
 #' @return nothing returned
@@ -198,11 +194,6 @@ traitOutput <- function(id) { # Plots or Tables
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("text")),
-    shiny::fluidRow(
-#      shiny::column(4, mainParOutput(ns("main_par"))),
-      shiny::column(4, shiny::radioButtons(ns("butshow"),
-        "", c("Plots","Tables"), "Plots", inline = TRUE)),
-      shiny::column(8, downloadOutput(ns("downloads")))),
     shiny::fluidRow(
       shiny::column(6, traitTableUI(ns("trait_table"))), # Response
       shiny::column(6, shiny::uiOutput(ns("downtable")))),
@@ -227,7 +218,8 @@ traitApp <- function() {
           shiny::column(9, traitInput("trait_panel"))),
         traitUI("trait_panel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        mainParUI("main_par")
+        mainParUI("main_par"),
+        downloadOutput("download")
       ),
       
       shiny::mainPanel(
@@ -238,9 +230,9 @@ traitApp <- function() {
   server <- function(input, output, session) {
     # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
-    traitServer("trait_panel", main_par,
-                            traitData, traitSignal, traitStats,
-                            customSettings)
+    trait_list <- traitServer("trait_panel", main_par,
+      traitData, traitSignal, traitStats, customSettings)
+    downloadServer("download", "Trait", main_par, trait_list)
   }
   
   shiny::shinyApp(ui = ui, server = server)  

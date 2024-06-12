@@ -30,7 +30,7 @@ contrastServer <- function(id, main_par,
     trait_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Trait Plots by Sex
-    contrastSexServer("contrast_sex", input, main_par,
+    sex_list <- contrastSexServer("contrast_sex", input, main_par,
       mods_table, customSettings)
     # Contrast Time Trait Table
     times_table <- contrastTableServer("times_table", input, main_par,
@@ -39,10 +39,10 @@ contrastServer <- function(id, main_par,
     contrast_time <- contrastTimeServer("contrast_time", input, main_par,
       traitSignal, traitStatsTime, times_table, customSettings)
     # Contrast Time Plots and Tables
-    timePlotServer("shinyTimePlot", input, main_par,
+    time_list <- timePlotServer("shinyTimePlot", input, main_par,
       traitSignal, contrast_time)
     # Contrast Modules.
-    contrastModuleServer("contrast_module", input, main_par,
+    module_list <- contrastModuleServer("contrast_module", input, main_par,
       traitModule, mods_table, trait_table)
     
     # SERVER-SIDE Inputs
@@ -139,10 +139,9 @@ contrastServer <- function(id, main_par,
       shiny::tagList(
         shiny::uiOutput(ns("text")),
         
-        switch(contr_selection(),
-               Sex    = contrastSexInput(ns("contrast_sex")),
-               Module = contrastModuleInput(ns("contrast_module"))),
-        
+        if(contr_selection() == "Module") {
+          contrastModuleInput(ns("contrast_module"))
+        },
         if(contr_selection() == "Time") {
           shiny::fluidRow(
             shiny::column(9, shiny::uiOutput(ns("strains"))),
@@ -192,9 +191,27 @@ contrastServer <- function(id, main_par,
           out
         }))
     })
-    
     ###############################################################
-    mods_table
+    shiny::reactiveValues(
+      postfix     = shiny::reactive({
+        switch(shiny::req(contr_selection()),
+               Sex    = sex_list$postfix(),
+               Module = module_list$postfix(),
+               Time   = time_list$postfix())
+      }),
+      plotObject  = shiny::reactive({
+        switch(shiny::req(contr_selection()),
+               Sex    = sex_list$plotObject(),
+               Module = module_list$plotObject(),
+               Time   = time_list$plotObject())
+      }),
+      tableObject = shiny::reactive({
+        switch(shiny::req(contr_selection()),
+               Sex    = sex_list$tableObject(),
+               Module = module_list$tableObject(),
+               Time   = time_list$tableObject())
+      })
+    )
   })
 }
 #' Shiny Module Input for Contrast Panel
@@ -231,14 +248,6 @@ contrastApp <- function() {
   title <- "Test Shiny Contrast Trait Panel"
   
   ui <- function() {
-    # INPUTS
-    #   main_par$dataset: Datasets to select
-    #   main_par$height: Plot Height
-    # OUTPUTS (see shinyTraitPairs)
-    #   output$filename: 
-    #   output$downloadPlot
-    #   output$downloadTable
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
@@ -247,21 +256,25 @@ contrastApp <- function() {
             shiny::column(3, mainParInput("main_par")),
             shiny::column(9, contrastInput("shinyPanel"))),
           contrastUI("shinyPanel"),
-          mainParUI("main_par")),
-        
+          shiny::hr(style="border-width:5px;color:black;background-color:black"),
+          mainParUI("main_par"),
+          downloadOutput("download")
+        ),
         shiny::mainPanel(
           contrastOutput("shinyPanel")
-        )))
+        )
+      )
+    )
   }
-  
   server <- function(input, output, session) {
     
     #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
     
     # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
-    contrastServer("shinyPanel", main_par,
+    contrast_list <- contrastServer("shinyPanel", main_par,
       traitSignal, traitStats, traitModule, customSettings)
+    downloadServer("download", "Contrast", main_par, contrast_list)
   }
   
   shiny::shinyApp(ui = ui, server = server)  

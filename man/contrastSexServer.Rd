@@ -2,7 +2,6 @@
 % Please edit documentation in R/contrastSex.R
 \name{contrastSexServer}
 \alias{contrastSexServer}
-\alias{contrastSexInput}
 \alias{contrastSexUI}
 \alias{contrastSexOutput}
 \alias{contrastSexApp}
@@ -15,8 +14,6 @@ contrastSexServer(
   contrastTable,
   customSettings = NULL
 )
-
-contrastSexInput(id)
 
 contrastSexUI(id)
 
@@ -41,13 +38,9 @@ nothing returned
 nothing returned
 
 nothing returned
-
-nothing returned
 }
 \description{
 Shiny Sex Server for Contrast Plots
-
-Shiny Sex Input for Contrast Plots
 
 Shiny Sex UI for Contrast Plots
 

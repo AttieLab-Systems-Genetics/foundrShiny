@@ -31,8 +31,9 @@ timeServer <- function(id, main_par,
     
     # MODULES
     time_table <- timeTableServer("shinyTimeTable", input, main_par, 
-                                  traitData, traitSignal, traitStats)
-    timePlotServer("shinyTimePlot", input, main_par, traitSignal, time_table)
+      traitData, traitSignal, traitStats)
+    time_list <- timePlotServer("shinyTimePlot", input, main_par,
+      traitSignal, time_table)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
@@ -40,6 +41,8 @@ timeServer <- function(id, main_par,
       shiny::checkboxGroupInput(ns("strains"), "Strains",
                                 choices = choices, selected = choices, inline = TRUE)
     })
+    ###############################################################
+    time_list
   })
 }
 #' Shiny Module Input for Time Panel
@@ -65,7 +68,6 @@ timeUI <- function(id) { # Time Unit
 timeOutput <- function(id) { # Response; Plots or Tables
   ns <- shiny::NS(id)
   shiny::tagList(
-    timePlotUI(ns("shinyTimePlot")),
     shiny::fluidRow(
       shiny::column(6, timeTableOutput(ns("shinyTimeTable"))), # Response
       shiny::column(6, timePlotInput(ns("shinyTimePlot")))),
@@ -90,8 +92,9 @@ timeApp <- function() {
             shiny::column(3, mainParInput("main_par")),
             shiny::column(9, timeInput("time"))),
           timeUI("time"),
-          
+          shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),
+          downloadOutput("download")
         ),
         
         shiny::mainPanel(
@@ -102,7 +105,8 @@ timeApp <- function() {
   server <- function(input, output, session) {
     # MODULES
     main_par <- mainParServer("main_par", traitStats)
-    timeServer("time", main_par, traitData, traitSignal, traitStats)
+    time_list <- timeServer("time", main_par, traitData, traitSignal, traitStats)
+    downloadServer("download", "Trait", main_par, time_list)
   }
   
   shiny::shinyApp(ui = ui, server = server)

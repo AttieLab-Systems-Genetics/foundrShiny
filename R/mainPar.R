@@ -30,6 +30,12 @@ mainParServer <- function(id, traitStats = NULL) {
     data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1],
                                          label = "data_selection")
     shiny::observeEvent(input$dataset, data_selection(input$dataset))
+    
+    output$butshow <- shiny::renderUI({
+      if(input$butshow == "Plots") {
+        shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
+      }
+    })
     ######################################################################
     input
   })
@@ -44,15 +50,11 @@ mainParInput <- function(id) {
 #' @rdname mainParServer
 mainParUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
-}
-#' @export
-#' @rdname mainParServer
-mainParOutput <- function(id) {
-  ns <- shiny::NS(id)
-  # *** This does not work properly in trait.R
-  shiny::radioButtons(ns("butshow"), "", c("Plots","Tables"), "Plots",
-                      inline = TRUE)
+  shiny::fluidRow(
+    shiny::column(6, shiny::radioButtons(ns("butshow"), "", c("Plots","Tables"), "Plots",
+                                         inline = TRUE)),
+    shiny::column(6, shiny::uiOutput(ns("butshow")))
+  )
 }
 #' @param title title of app
 #' @export

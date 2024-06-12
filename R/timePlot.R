@@ -8,8 +8,9 @@
 #'
 #' @return nothing returned
 #' @importFrom shiny column fluidRow h3 moduleServer NS observeEvent plotOutput
-#'             radioButtons reactive reactiveVal renderPlot renderUI req
-#'             selectInput selectizeInput tagList uiOutput updateSelectizeInput
+#'             radioButtons reactive reactiveVal reactiveValues renderPlot
+#'             renderUI req selectInput selectizeInput tagList uiOutput
+#'             updateSelectizeInput
 #' @importFrom DT renderDataTable
 #' @importFrom stringr str_remove str_replace_all
 #' @importFrom foundr ggplot_traitTimes timetraitsall
@@ -19,18 +20,7 @@ timePlotServer <- function(id, panel_par, main_par,
                           traitSignal, traitTimesData) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    # passed inputs:
-    #   main_par$height
-    #   panel_par$facet
-    #   panel_par$strains
-    
-    # MODULES
-    downloadServer("downloads", "Time", input, postfix, plotObject, tableObject)
-    
-    # OUTPUTS
-    
+
     # Identify all Time Traits.
     timetrait_all <- foundr::timetraitsall(traitSignal)
     
@@ -42,13 +32,13 @@ timePlotServer <- function(id, panel_par, main_par,
     relTraits <- shiny::reactiveVal(NULL)
     
     output$plotfront <- shiny::renderUI({
-      if(shiny::req(input$butshow) == "Tables") {
+      if(shiny::req(main_par$butshow) == "Tables") {
         shiny::radioButtons(ns("buttable"), "Download:",
                             c("Cell Means","Stats"), "Cell Means", inline = TRUE)
       }
     })
     output$plotstables <- shiny::renderUI({
-      switch(shiny::req(input$butshow),
+      switch(shiny::req(main_par$butshow),
              Plots  = shiny::uiOutput(ns("plots")),
              Tables = shiny::uiOutput(ns("tables")))
     })
@@ -56,12 +46,10 @@ timePlotServer <- function(id, panel_par, main_par,
     # Tables.
     statstable <- shiny::reactive({
       shiny::req(traitTimesData())
-      
       stats_time_table(traitTimesData()$stats)
     }, label = "statstable")
     traitstable <- shiny::reactive({
       shiny::req(traitTimesData())
-      
       summary_traitTime(traitTimesData())
     }, label = "statstable")
     output$tables <- shiny::renderUI({
@@ -102,24 +90,26 @@ timePlotServer <- function(id, panel_par, main_par,
       foundr::ggplot_traitTimes(traitTimesData()$stats)
     }, label = "timestats")
     
-    # DOWNLOADS
-    postfix <- shiny::reactive({
-      filename <- paste(names(traitTimesData()$traits), collapse = ",")
-      if(shiny::req(input$butshow) == "Tables")
-        filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
-                           filename)
-      stringr::str_replace_all(filename, ": ", "_")
-    })
-    plotObject <- shiny::reactive({
-      print(shiny::req(timeplots()))
-      print(shiny::req(timestats()))
-    })
-    tableObject <- shiny::reactive({
-      shiny::req(traitTimesData())
-      switch(shiny::req(input$buttable),
-             "Cell Means" = traitstable(),
-             Stats        = statstable())
-    })
+    ###############################################################
+    shiny::reactiveValues(
+      postfix = shiny::reactive({
+        filename <- paste(names(traitTimesData()$traits), collapse = ",")
+        if(shiny::req(main_par$butshow) == "Tables")
+          filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
+                             filename)
+        stringr::str_replace_all(filename, ": ", "_")
+      }),
+      plotObject = shiny::reactive({
+        print(shiny::req(timeplots()))
+        print(shiny::req(timestats()))
+      }),
+      tableObject = shiny::reactive({
+        shiny::req(traitTimesData())
+        switch(shiny::req(input$buttable),
+               "Cell Means" = traitstable(),
+               Stats        = statstable())
+      })
+    )
   })
 }
 #' Shiny Module UI for Time Plots
@@ -129,17 +119,6 @@ timePlotServer <- function(id, panel_par, main_par,
 timePlotInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("plotfront"))
-}
-#' Shiny Module UI for Time Plots
-#' @return nothing returned
-#' @rdname timePlotServer
-#' @export
-timePlotUI <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::fluidRow(
-    shiny::column(4, shiny::radioButtons(ns("butshow"),
-      "", c("Plots","Tables"), "Plots", inline = TRUE)),
-    shiny::column(8, downloadOutput(ns("downloads"))))
 }
 #' Shiny Module Output for Time Plots
 #' @return nothing returned

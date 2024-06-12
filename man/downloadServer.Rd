@@ -6,7 +6,7 @@
 \alias{downloadApp}
 \title{Shiny Module Server for Downloads}
 \usage{
-downloadServer(id, prefix, main_par, postfix, plotObject, tableObject)
+downloadServer(id, prefix, main_par, download_list)
 
 downloadOutput(id)
 
@@ -19,11 +19,7 @@ downloadApp(id)
 
 \item{main_par}{input parameters from calling routine}
 
-\item{postfix}{reactive postfix for filename}
-
-\item{tableObject}{reactive table pring object}
-
-\item{plotObjec}{reactive plot print object}
+\item{download_list}{reactiveValues with  postfix,plotObject,tableObject}
 }
 \value{
 nothing

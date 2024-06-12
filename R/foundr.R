@@ -19,20 +19,42 @@ foundrServer <- function(id,
                    customSettings = NULL, traitModule = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    #    input$dataset
-    #    input$height
-    #    input$tabpanel
-    
+
     # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
-    traitServer("tabTraits", main_par, traitData, traitSignal, traitStats,
-                    customSettings)
-    timeServer("tabTimes", main_par, traitData, traitSignal, traitStats)
-    statsServer("tabStats", main_par, traitStats, customSettings)
-    contrastServer("tabContrasts", main_par,
-                       traitSignal, traitStats, traitModule, customSettings)
+    trait_list <- traitServer("tabTraits", main_par,
+      traitData, traitSignal, traitStats, customSettings)
+    contrast_list <- contrastServer("tabContrasts", main_par,
+      traitSignal, traitStats, traitModule, customSettings)
+    stats_list <- statsServer("tabStats", main_par,
+      traitStats, customSettings)
+    time_list <- timeServer("tabTimes", main_par,
+      traitData, traitSignal, traitStats)
+    downloadServer("download", "Contrast", main_par, download_list)
+
+    download_list <- shiny::reactiveValues(
+      postfix     = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = trait_list$postfix(),
+               Contrasts = contrast_list$postfix(),
+               Stats     = stats_list$postfix(),
+               Times     = time_list$postfix())
+      }),
+      plotObject  = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = trait_list$plotObject(),
+               Contrasts = contrast_list$plotObject(),
+               Stats     = stats_list$plotObject(),
+               Times     = time_list$plotObject())
+      }),
+      tableObject = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = trait_list$tableObject(),
+               Contrasts = contrast_list$tableObject(),
+               Stats     = stats_list$tableObject(),
+               Times     = time_list$tableObject())
+      })
+    )
     
     output$about <- about(customSettings$help)
 
@@ -89,26 +111,30 @@ foundrServer <- function(id,
       if(shiny::isTruthy(entrykey())) {
         # Tab-specific side panel.
         shiny::req(input$tabpanel)
-        shiny::tagList(
-          shiny::fluidRow(
-            shiny::column(3, mainParInput(ns("main_par"))),
-            if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
-              shiny::column(9, 
-                switch(input$tabpanel,
-                  Traits    = traitInput(ns("tabTraits")),
-                  Contrasts = contrastInput(ns("tabContrasts")),
-                  Times     = if(length(timetraits_all()))
-                    timeInput(ns("tabTimes"))))
-            }),
-          
-          switch(input$tabpanel,
-            Traits    = traitUI(ns("tabTraits")),
-            Contrasts = if(length(timetraits_all()))
-              contrastUI(ns("tabContrasts")),
-            Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
-          
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          mainParUI(ns("main_par")))
+        if(input$tabpanel != "About") {
+          shiny::tagList(
+            shiny::fluidRow(
+              shiny::column(3, mainParInput(ns("main_par"))),
+              if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
+                shiny::column(9, 
+                              switch(input$tabpanel,
+                                     Traits    = traitInput(ns("tabTraits")),
+                                     Contrasts = contrastInput(ns("tabContrasts")),
+                                     Times     = if(length(timetraits_all()))
+                                       timeInput(ns("tabTimes"))))
+              }),
+            
+            switch(input$tabpanel,
+                   Traits    = traitUI(ns("tabTraits")),
+                   Contrasts = if(length(timetraits_all()))
+                     contrastUI(ns("tabContrasts")),
+                   Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
+            
+            shiny::hr(style="border-width:5px;color:black;background-color:black"),
+            mainParUI(ns("main_par")),
+            downloadOutput(ns("download"))
+          )
+        }
       }
     })
     # Don't show Entry Key if there is no need.

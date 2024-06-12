@@ -20,7 +20,7 @@ contrastModuleServer <- function(id, panel_par, main_par,
     
     # MODULES
     # Contrast Eigen Plots
-    contrastPlotServer("contrast_plot",
+    contrast_list <- contrastPlotServer("contrast_plot",
                       panel_par, main_par, contrastTable, customSettings,
                       modTitle)
     
@@ -58,7 +58,7 @@ contrastModuleServer <- function(id, panel_par, main_par,
     })
     
     ##############################################################
-    eigens
+    contrast_list
   })
 }
 #' Shiny Module Input for Modules of Contrasts
@@ -67,9 +67,7 @@ contrastModuleServer <- function(id, panel_par, main_par,
 #' @export
 contrastModuleInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    contrastPlotInput(ns("contrast_plot")),
-    contrastPlotUI(ns("contrast_plot")))
+  contrastPlotUI(ns("contrast_plot"))
 }
 #' Shiny Module Output for Modules of Contrasts
 #' @return nothing returned
@@ -94,8 +92,10 @@ contrastModuleApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(4, mainParInput("main_par")),
-            shiny::column(8, contrastTableInput("contrast_table"))
-          )
+            shiny::column(8, contrastTableInput("contrast_table"))),
+          shiny::hr(style="border-width:5px;color:black;background-color:black"),
+          mainParUI("main_par"),
+          downloadOutput("download")
         ),
         shiny::mainPanel(
           contrastModuleInput("contrast_module"),
@@ -139,8 +139,10 @@ contrastModuleApp <- function() {
     trait_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Modules.
-    contrastModuleServer("contrast_module", input, main_par,
+    contrast_list <- contrastModuleServer("contrast_module", input, main_par,
       traitModule, mods_table, trait_table)
+    # Download
+    downloadServer("download", "Module", main_par, contrast_list)
     
     # SERVER-SIDE INPUTS
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")

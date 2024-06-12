@@ -4,16 +4,17 @@
 #'
 #' @return data frame
 #'
-#' @importFrom dplyr across arrange everything filter mutate rename select
+#' @importFrom dplyr across arrange as_tibble bind_rows everything filter
+#'             mutate rename select
 #' @importFrom rlang .data
 #' @importFrom stringr str_remove
-#' @importFrom tidyr unite
+#' @importFrom tidyr separate_wider_delim unite
 #' @importFrom utils combn
 #' 
 contrast_signal <- function(contrasts) {
   if(is.null(contrasts))
-    return(NULL)
-  
+  return(NULL)
+
   dplyr::mutate(
     dplyr::select(
       dplyr::rename(
@@ -195,6 +196,81 @@ select_data_pairs <- function(object, key_trait, rel_dataset = NULL) {
       (.data$datatraits %in% key_trait) |
         (.data$dataset %in% rel_dataset)),
     -datatraits)
+}
+#' Stats Time Table
+#'
+#' @param object list of data frames 
+#' @param logp raise values to power 10 if not `TRUE`
+#'
+#' @return data frame
+stats_time_table <- function(object, logp = FALSE) {
+  if(is.null(object))
+    return(NULL)
+  
+  logfn <- ifelse(logp, function(x) x, function(x) 10^-x)
+  
+  class(object) <- "list"
+  for(i in names(object)) {
+    object[[i]] <- as.data.frame(
+      tidyr::separate_wider_delim(
+        dplyr::select(
+          dplyr::mutate(
+            dplyr::rename(
+              object[[i]], 
+              p.value = i),
+            p.value = signif(logfn(p.value), 4)),
+          -strain),
+        datatraits,
+        delim = ": ",
+        names = c("dataset", "trait")))
+  }
+  
+  object <- dplyr::as_tibble(
+    dplyr::bind_rows(
+      object))
+  
+  # Find out time column.
+  timecols <- c("week", "minute", "week_summary", "minute_summary")
+  timecol <- match(timecols, names(object), nomatch = 0)
+  timecol <- timecols[timecol > 0]
+  
+  dplyr::arrange(
+    tidyr::pivot_wider(
+      dplyr::mutate(
+        object,
+        term = factor(.data$term, unique(.data$term))),
+      names_from = "term", values_from = p.value),
+    .data$dataset, .data$trait, .data[[timecol]])
+}
+#' Summary fo traitTime Object
+#'
+#' @param object data frame
+#' @param traitnames character list
+#'
+#' @return data frame
+summary_traitTime <- function(object, traitnames = names(object$traits)) {
+  # This is messy as it has to reverse engineer `value` in list.
+  object <- 
+    dplyr::bind_rows(
+      purrr::map(
+        object$traits[traitnames],
+        function(x) {
+          names(x)[match(attr(x, "pair")[2], names(x))] <- 
+            "value"
+          x
+        }))
+  object <- 
+    tidyr::separate_wider_delim(
+      dplyr::mutate(
+        object,
+        strain = factor(.data$strain, names(foundr::CCcolors)),
+        value = signif(.data$value, 4)),
+      datatraits,
+      delim = ": ",
+      names = c("dataset", "trait"))
+  
+  tidyr::pivot_wider(object, names_from = "strain", values_from = "value",
+                     names_sort = TRUE)
 }
 #' Stat Terms
 #'

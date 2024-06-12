@@ -24,3 +24,8 @@ Nearly all files in the `R` function directory have built-in apps following
 - add pct eigenvalue from module
 - larger points on several plots
 - MixMod as only dataset does not display for Contrasts tab. Seems to be related to not showing order.
+
+```
+foundrSetup(data_subset = "Physio",
+  dirpath = "~/Documents/Research/attie_alan/FounderDietStudy/deployLiver")
+```

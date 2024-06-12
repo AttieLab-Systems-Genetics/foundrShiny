@@ -39,7 +39,7 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
     
     # MODULES
     # Contrast Trait Plots
-    contrastPlotServer("contrast_plot", input, main_par,
+    contrast_list <- contrastPlotServer("contrast_plot", input, main_par,
       traitStatsSelected, customSettings, shiny::reactive("Stats Contrasts"))
     
     # Dataset selection.
@@ -53,6 +53,8 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
       
       dplyr::filter(traitStats, .data$dataset %in% data_selection())
     })
+    ###############################################################
+    contrast_list
   })
 }
 #' Shiny Module Output for Stats Plot
@@ -62,7 +64,6 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
 statsOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    contrastPlotInput(ns("contrast_plot")),
     contrastPlotUI(ns("contrast_plot")),
     contrastPlotOutput(ns("contrast_plot")))
 }
@@ -78,6 +79,7 @@ statsApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         mainParInput("main_par"),
+        shiny::hr(style="border-width:5px;color:black;background-color:black"),
         mainParUI("main_par")),
       
       shiny::mainPanel(

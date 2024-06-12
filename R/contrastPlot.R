@@ -8,8 +8,8 @@
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
-#'             radioButtons reactive reactiveVal renderUI req selectInput
-#'             tagList uiOutput updateSelectInput
+#'             radioButtons reactive reactiveVal reactiveValues renderUI
+#'             req selectInput tagList uiOutput updateSelectInput
 #' @importFrom DT renderDataTable
 #' @importFrom foundr ggplot_conditionContrasts summary_conditionContrasts
 #'             summary_strainstats
@@ -23,9 +23,6 @@ contrastPlotServer <- function(id, panel_par, main_par,
     
     # INPUTS
     # RETURNS
-    
-    # MODULES
-    downloadServer("downloads", "Contrast", input, postfix, plotObject, tableObject)
     
     # Input
     output$ordername <- shiny::renderUI({
@@ -71,7 +68,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
     
     # Output
     output$traitOutput <- shiny::renderUI({
-      switch(shiny::req(input$butshow),
+      switch(shiny::req(main_par$butshow),
              Plots  = shiny::uiOutput(ns("plot")),
              Tables = DT::renderDataTable(tableObject(), escape = FALSE,
                                           options = list(scrollX = TRUE, pageLength = 10)))
@@ -197,30 +194,21 @@ contrastPlotServer <- function(id, panel_par, main_par,
       }
     })
     
-    # DOWNLOADS
-    postfix <- shiny::reactive({
-      shiny::req(contrastTable())
-      
-      paste(unique(contrastTable()$dataset), collapse = ",")
-    })
-    plotObject <- shiny::reactive({
-      print(shiny::req(contrastVolcano()))
-      print(shiny::req(contrastBiPlot()))
-      print(shiny::req(contrastDotPlot()))
-    })
+    ###############################################################
+    shiny::reactiveValues(
+      postfix = shiny::reactive({
+        shiny::req(contrastTable())
+        
+        paste(unique(contrastTable()$dataset), collapse = ",")
+      }),
+      plotObject = shiny::reactive({
+        print(shiny::req(contrastVolcano()))
+        print(shiny::req(contrastBiPlot()))
+        print(shiny::req(contrastDotPlot()))
+      }),
+      tableObject = tableObject
+    )
   })
-}
-#' Shiny Module Input for Contrast Plots
-#' @return nothing returned
-#' @rdname contrastPlotServer
-#' @export
-contrastPlotInput <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::fluidRow(
-      shiny::column(4, shiny::radioButtons(ns("butshow"),
-        "", c("Plots","Tables"), "Plots", inline = TRUE)),
-      shiny::column(8, downloadOutput(ns("downloads")))))
 }
 #' Shiny Module UI for Contrast Plots
 #' @return nothing returned

@@ -21,7 +21,7 @@ mm <- match(unodes, ulinks)
 unodes[which(is.na(mm))]
 ```
 
-```{r}
+```{r eval=FALSE}
 out <- links %>% filter(!(source %in% c("output","input")), !(target %in% c("output","input"))) %>%
   mutate(origin = source)
 out <- bind_rows(
@@ -43,9 +43,105 @@ net <- igraph::simplify(net, remove.multiple = F, remove.loops = TRUE)
 ```
 
 ```{r}
+plot(net, 
+     edge.arrow.size = 0.4,
+     vertex.label = NA)
+```
+
+```{r}
+# Generate colors based on media type:
+colrs <- c("skyblue", "gold", "tomato", "lightgrey","lightgreen")
+igraph::V(net)$color <- colrs[factor(igraph::V(net)$origin)]
+
+# Compute node degree (#links) and use it to set node size:
+deg <- igraph::degree(net, mode="all")
+igraph::V(net)$size <- sqrt(deg)*10
+#V(net)$size <- V(net)$audience.size*0.6
+
+# The labels are currently node IDs.
+# Setting them to NA will render no labels:
+igraph::V(net)$label.color <- "black"
+igraph::V(net)$label[igraph::V(net)$origin == "module"] <- NA
+igraph::V(net)$label[igraph::V(net)$origin != "module"] <-
+  toupper(stringr::str_extract(names(igraph::V(net))[igraph::V(net)$origin != "module"], "^.{1}"))
+igraph::V(net)$label[names(igraph::V(net)) == "trait"] <- "R"
+
+# Set edge width based on weight:
+#E(net)$width <- E(net)$weight/6
+
+#change arrow size and edge color:
+igraph::E(net)$arrow.size <- .4
+igraph::E(net)$edge.color <- "black"
+
+plot(net) 
+```
+
+```{r}
+print(net, full = TRUE)
+```
+
+```{r}
+netPanel <- 
+  igraph::subgraph.edges(net, c(1:4))
+plot(netPanel)
+```
+
+```{r}
+netTrait <- 
+  igraph::subgraph.edges(net, c(1, 25:37))
+plot(netTrait)
+```
+
+```{r}
+netContrast <- 
+  igraph::subgraph.edges(net, c(2, 5:17))
+plot(netContrast)
+```
+
+```{r}
+netStats <- 
+  igraph::subgraph.edges(net, c(3, 18))
+plot(netStats)
+```
+
+```{r}
+netTime <- 
+  igraph::subgraph.edges(net, c(4, 19:24))
+plot(netTime)
+```
+
+
+```{r}
+plot(net) 
+legend(2,0,legend = levels(factor(V(net)$origin)), 
+       pch = 21,
+       col = "#777777", pt.bg = colrs, 
+       pt.cex = 1, 
+       bty = "n", ncol = 1)
+```
+
+```{r}
 #change arrow size and edge color:
 igraph::E(net)$arrow.size <- .2
 igraph::E(net)$edge.color <- "gray80"
+```
+
+```{r}
+netCore <- 
+  igraph::delete_vertices(
+    igraph::delete_edges(
+      net,
+      igraph::E(net)[assign == "arg"]),
+    unclass(igraph::V(net)[origin == "module"]))
+```
+
+```{r eval=FALSE}
+netTrait <- 
+  igraph::delete_vertices(
+    igraph::delete_edges(
+      net,
+      igraph::E(net)[assign == "arg"]),
+    unclass(igraph::V(net)[origin == "module"]))
 ```
 
 ```{r}
@@ -59,6 +155,10 @@ netModule <-
 
 ```{r}
 plot(net)
+```
+
+```{r}
+plot(netCore)
 ```
 
 ```{r message=FALSE, warning=FALSE, fig.width=7, fig.height=7}

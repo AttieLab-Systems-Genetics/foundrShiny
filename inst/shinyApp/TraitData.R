@@ -4,8 +4,13 @@
 #       custom_settings: add customSettings if `TRUE`
 #       data_instance: one of "Trait" or "Liver" (default "Trait")
 
-dirpath <- file.path("~", "founder_diet_study")
-dirpath <- file.path(dirpath, "HarmonizedData")
+if(!exists("dirpath")) {
+  dirpath <- file.path("~", "founder_diet_study")
+  dirpath <- file.path(dirpath, "HarmonizedData")
+  datapath <- file.path(dirpath, "AppSetup", dataInstance)
+} else {
+  datapath <- dirpath
+}
 cat("dirpath (...) =", dirpath, "\n")
 
 if(!(exists("data_instance") & tolower(data_instance) %in% c("trait","liver"))) {
@@ -39,15 +44,17 @@ traitModule <- readRDS(file.path(dirpath, "traitModule.rds"))
 
 if(exists("custom_settings") && custom_settings) {
   cat("Custom settings\n")
-  cat("Assumes", file.path("...", "AppSetup", dataInstance), "has proper files\n")
-  # Set up help.md using datasets in `traitSignal`
-  # Need to first put `help.Rmd` in `file.path(dirpath, "AppSetup", dataInstance)`
-  foundr::link_datasets(traitSignal, file.path(dirpath, "../RawData/source.csv"),
-                        file.path(dirpath, "AppSetup", dataInstance))
-  datasets <- readRDS(file.path(dirpath, "AppSetup", dataInstance, "datasets.rds"))
+  cat("Assumes", datapath, "has proper files\n")
+  if(exists("new_help")) {
+    # Set up help.md using datasets in `traitSignal`
+    # Need to first put `help.Rmd` in `file.path(dirpath, "AppSetup", dataInstance)`
+    foundr::link_datasets(traitSignal, file.path(dirpath, "../RawData/source.csv"),
+                          file.path(dirpath, "AppSetup", dataInstance))
+  }
+  datasets <- readRDS(file.path(datapath, "datasets.rds"))
   
   customSettings <- list(
-    help = file.path(dirpath, "AppSetup", dataInstance, "help.md"),
+    help = file.path(datapath, "help.md"),
     condition = "diet",
     entrykey = "Founder",
     dataset = datasets)

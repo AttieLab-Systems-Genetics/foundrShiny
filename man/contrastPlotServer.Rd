@@ -2,7 +2,6 @@
 % Please edit documentation in R/contrastPlot.R
 \name{contrastPlotServer}
 \alias{contrastPlotServer}
-\alias{contrastPlotInput}
 \alias{contrastPlotUI}
 \alias{contrastPlotOutput}
 \title{Shiny Module Server for Contrast Plots}
@@ -15,8 +14,6 @@ contrastPlotServer(
   customSettings = NULL,
   modTitle = shiny::reactive("Eigentrait Contrasts")
 )
-
-contrastPlotInput(id)
 
 contrastPlotUI(id)
 
@@ -39,13 +36,9 @@ reactive object
 nothing returned
 
 nothing returned
-
-nothing returned
 }
 \description{
 Shiny Module Server for Contrast Plots
-
-Shiny Module Input for Contrast Plots
 
 Shiny Module UI for Contrast Plots
 

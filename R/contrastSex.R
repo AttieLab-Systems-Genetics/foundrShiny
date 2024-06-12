@@ -16,31 +16,13 @@ contrastSexServer <- function(id, panel_par, main_par,
                              contrastTable, customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    # contrastSex inputs
-    #   main_par$tabpanel
-    #   main_par$height
-    #   main_par$strains
-    #   panel_par$sex
-    
-    # RETURNS
-    
+
     # Contrast Trait Plots
     contrastPlotServer("contrast_plot",
                       panel_par, main_par,
                       contrastTable, customSettings, 
                       shiny::reactive("Sex Contrasts"))
   })
-}
-#' Shiny Sex Input for Contrast Plots
-#'
-#' @return nothing returned
-#' @rdname contrastSexServer
-#' @export
-contrastSexInput <- function(id) {
-  ns <- shiny::NS(id)
-  contrastPlotInput(ns("contrast_plot"))
 }
 #' Shiny Sex UI for Contrast Plots
 #'
@@ -76,10 +58,12 @@ contrastSexApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(4, mainParInput("main_par")),
-            shiny::column(8, contrastTableInput("contrast_table")))
+            shiny::column(8, contrastTableInput("contrast_table"))),
+          shiny::hr(style="border-width:5px;color:black;background-color:black"),
+          mainParUI("main_par"),
+          downloadOutput("download")
         ),
         shiny::mainPanel(
-          contrastSexInput("sex_plot"),
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput("sex")),
             shiny::column(8, contrastSexUI("sex_plot"))),
@@ -102,9 +86,11 @@ contrastSexApp <- function() {
     main_par <- mainParServer("main_par", traitStats)
     contrastOutput <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
-    # Contrast Modules.
-    moduleOutput <- contrastSexServer("sex_plot", input, main_par,
+    # Contrast List
+    contrast_list <- contrastSexServer("sex_plot", input, main_par,
       traitContrPval, traitModule)
+    # Download 
+    downloadServer("download", "Contrast", main_par, contrast_list)
     
     traitContrPval <- reactive({
       shiny::req(contrastOutput())

@@ -53,6 +53,9 @@ traitTable, module, module,
 traitPairs, module, module,
 traitSolos, module, module,
 
+about, module, info,
+mainPar, module, param,
+
 contrastOutput, output, ContrastTable,
 contrastTimeOutput, output, ContrastTable_time, 
 timeOutput, output, ContrastTime, 
