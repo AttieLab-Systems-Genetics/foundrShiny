@@ -114,9 +114,9 @@ foundrServer <- function(id,
         if(input$tabpanel != "About") {
           shiny::tagList(
             shiny::fluidRow(
-              shiny::column(3, mainParInput(ns("main_par"))),
+              shiny::column(6, mainParInput(ns("main_par"))),
               if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
-                shiny::column(9, 
+                shiny::column(6, 
                               switch(input$tabpanel,
                                      Traits    = traitInput(ns("tabTraits")),
                                      Contrasts = contrastInput(ns("tabContrasts")),

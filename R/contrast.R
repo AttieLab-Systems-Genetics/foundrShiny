@@ -23,7 +23,7 @@ contrastServer <- function(id, main_par,
     traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
     
     # MODULES
-    # Contrast Module Table. Note reuse of `id` for `contrastTableServer`.
+    # Contrast Group Table. Note reuse of `id` for `contrastTableServer`.
     mods_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     # Contrast Trait Table
@@ -41,8 +41,8 @@ contrastServer <- function(id, main_par,
     # Contrast Time Plots and Tables
     time_list <- timePlotServer("shinyTimePlot", input, main_par,
       traitSignal, contrast_time)
-    # Contrast Modules.
-    module_list <- contrastModuleServer("contrast_module", input, main_par,
+    # Contrast Groups.
+    group_list <- contrastGroupServer("contrast_group", input, main_par,
       traitModule, mods_table, trait_table)
     
     # SERVER-SIDE Inputs
@@ -53,9 +53,9 @@ contrastServer <- function(id, main_par,
     })
     output$butby <- shiny::renderUI({
       if(length(timetraits_dataset())) {
-        buttons <- c("Sex", "Module", "Time")
+        buttons <- c("Sex", "Group", "Time")
       } else {
-        buttons <- c("Sex", "Module")
+        buttons <- c("Sex", "Group")
       }
       shiny::radioButtons(ns("contrast"), "Contrast by ...",
                           buttons, inline = TRUE)
@@ -72,44 +72,44 @@ contrastServer <- function(id, main_par,
     output$sex <- shiny::renderUI({
       shiny::selectInput(ns("sex"), "", as.vector(sexes))
     })
-    output$module <- shiny::renderUI({
-      shiny::selectizeInput(ns("module"), "Module:", NULL)
+    output$group <- shiny::renderUI({
+      shiny::selectizeInput(ns("group"), "Group:", NULL)
     })
     shiny::observeEvent(
       shiny::req(datatraits(), main_par$dataset, input$sex, contr_selection()),
       {
-        # First zero out input$module.
-        shiny::updateSelectizeInput(session, "module",
+        # First zero out input$group.
+        shiny::updateSelectizeInput(session, "group",
                                     selected = "", server = TRUE)
         # Then set choices.
-        shiny::updateSelectizeInput(session, "module", choices = datatraits(),
+        shiny::updateSelectizeInput(session, "group", choices = datatraits(),
                                     selected = "", server = TRUE)
       })
     
-    datamodule <- shiny::reactive({
+    datagroup <- shiny::reactive({
       traitModule[shiny::req(main_par$dataset[1])]
     })
     datatraits <- shiny::reactive({
-      shiny::req(input$sex, main_par$dataset, datamodule())
+      shiny::req(input$sex, main_par$dataset, datagroup())
       
-      if(foundr:::is_sex_module(datamodule())) {
+      if(foundr:::is_sex_module(datagroup())) {
         out <- unique(
-          datamodule()[[main_par$dataset[1]]][[input$sex]]$modules$module)
+          datagroup()[[main_par$dataset[1]]][[input$sex]]$modules$module)
         paste0(main_par$dataset[1], ": ",
           names(sexes)[match(input$sex, sexes)], "_", out)
       } else {
         paste0(main_par$dataset[1], ": ",
-          unique(datamodule()[[main_par$dataset]]$value$modules$module))
+          unique(datagroup()[[main_par$dataset]]$value$modules$module))
       }
     }, label = "datatraits")
     
     keepDatatraits <- reactive({
-      module <- NULL
-      if(shiny::isTruthy(input$module))
-        module <- input$module
+      group <- NULL
+      if(shiny::isTruthy(input$group))
+        group <- input$group
       
       foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1],
-                              module)
+                              group)
     })
     
     # Input
@@ -131,21 +131,21 @@ contrastServer <- function(id, main_par,
       shiny::tagList(
         shiny::uiOutput(ns("text")),
         
-        if(contr_selection() == "Module") {
-          contrastModuleInput(ns("contrast_module"))
+        if(contr_selection() == "Group") {
+          contrastGroupInput(ns("contrast_group"))
         },
         if(contr_selection() == "Time") {
           shiny::fluidRow(
             shiny::column(9, shiny::uiOutput(ns("strains"))),
             shiny::column(3, shiny::checkboxInput(ns("facet"),
                                                   "Facet by strain?", TRUE)))
-        } else { # Sex, Module
+        } else { # Sex, Group
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput(ns("sex"))),
             shiny::column(8, 
                           switch(contr_selection(),
                                  Sex    = contrastSexUI(ns("contrast_sex")),
-                                 Module = shiny::uiOutput(ns("module")))))
+                                 Group = shiny::uiOutput(ns("group")))))
         },
         
         switch(contr_selection(),
@@ -155,7 +155,7 @@ contrastServer <- function(id, main_par,
                    timePlotOutput(ns("shinyTimePlot")))
                },
                Sex = contrastSexOutput(ns("contrast_sex")),
-               Module = contrastModuleOutput(ns("contrast_module"))))
+               Group = contrastGroupOutput(ns("contrast_group"))))
     })
     
     output$text <- shiny::renderUI({
@@ -176,10 +176,10 @@ contrastServer <- function(id, main_par,
             " (Sex Contrast).")
           if(shiny::req(contr_selection()) == "Time")
             out <- paste(out, "Contrasts over time are by trait.")
-          if(shiny::req(contr_selection()) == "Module")
+          if(shiny::req(contr_selection()) == "Group")
             out <- paste(out, "WGCNA modules by dataset and sex have",
                          "power=6, minSize=4.",
-                         "Select a Module to see module members.")
+                         "Select a Group to see module members.")
           out
         }))
     })
@@ -187,21 +187,21 @@ contrastServer <- function(id, main_par,
     shiny::reactiveValues(
       postfix     = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex    = sex_list$postfix(),
-               Module = module_list$postfix(),
-               Time   = time_list$postfix())
+               Sex   = sex_list$postfix(),
+               Group = group_list$postfix(),
+               Time  = time_list$postfix())
       }),
       plotObject  = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex    = sex_list$plotObject(),
-               Module = module_list$plotObject(),
-               Time   = time_list$plotObject())
+               Sex   = sex_list$plotObject(),
+               Group = group_list$plotObject(),
+               Time  = time_list$plotObject())
       }),
       tableObject = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex    = sex_list$tableObject(),
-               Module = module_list$tableObject(),
-               Time   = time_list$tableObject())
+               Sex   = sex_list$tableObject(),
+               Group = group_list$tableObject(),
+               Time  = time_list$tableObject())
       })
     )
   })

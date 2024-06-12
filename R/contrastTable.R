@@ -21,17 +21,17 @@ contrastTableServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    orderOutput <- traitOrderServer("shinyOrder", main_par,
+    stats_table <- traitOrderServer("shinyOrder", main_par,
                                     traitStats, customSettings, keepDatatraits)
     
     ###############################################################
     
     shiny::reactive({
-      shiny::req(orderOutput())
+      shiny::req(stats_table())
       
-      foundr::conditionContrasts(traitSignal, orderOutput(), 
-        termname = orderOutput()$term[1], rawStats = traitStats)
-    }, label = "contrastTable")
+      foundr::conditionContrasts(traitSignal, stats_table(), 
+        termname = stats_table()$term[1], rawStats = traitStats)
+    }, label = "stats_table")
   })
 }
 #' Shiny Module UI for Trait Panel
