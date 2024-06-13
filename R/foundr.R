@@ -30,7 +30,9 @@ foundrServer <- function(id,
       traitStats, customSettings)
     time_list <- timeServer("tabTimes", main_par,
       traitData, traitSignal, traitStats)
+    aboutServer("about", customSettings$help)
     downloadServer("download", "Contrast", main_par, download_list)
+    
 
     download_list <- shiny::reactiveValues(
       postfix     = shiny::reactive({
@@ -55,8 +57,6 @@ foundrServer <- function(id,
                Times     = time_list$tableObject())
       })
     )
-    
-    output$about <- about(customSettings$help)
 
     # Entry key
     entrykey <- shiny::reactive({
@@ -152,7 +152,7 @@ foundrServer <- function(id,
           shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
           shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
           shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
-          shiny::tabPanel("About",     shiny::uiOutput(ns("about")))
+          shiny::tabPanel("About",     aboutOutput(ns("about")))
         )
       }
     })

@@ -56,6 +56,7 @@ if(exists("custom_settings") && custom_settings) {
   customSettings <- list(
     help = file.path(datapath, "help.md"),
     condition = "diet",
+    group = "module",
     entrykey = "Founder",
     dataset = datasets)
 }

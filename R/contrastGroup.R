@@ -18,6 +18,9 @@ contrastGroupServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    groupname <- stringr::str_to_title(customSettings$group)
+    if(!length(groupname)) groupname <- "Group"
+    
     # MODULES
     # Contrast Eigen Plots
     contrast_list <- contrastPlotServer("contrast_plot",
@@ -29,9 +32,9 @@ contrastGroupServer <- function(id, panel_par, main_par,
     })
     modTitle <- shiny::reactive({
       if(shiny::isTruthy(panel_par$group)) 
-        paste("Eigentrait Contrasts for Group", panel_par$group)
+        paste("Eigentrait Contrasts for", groupname, panel_par$group)
       else
-        "Eigentrait Contrasts across Groups"
+        paste0("Eigentrait Contrasts across ", groupname, "s")
     })
     
     # INPUTS
@@ -90,9 +93,7 @@ contrastGroupApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::fluidRow(
-            shiny::column(4, mainParInput("main_par")),
-            shiny::column(8, contrastTableInput("contrast_table"))),
+          mainParInput("main_par"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),
           downloadOutput("download")
@@ -111,14 +112,14 @@ contrastGroupApp <- function() {
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
     # Contrast Group Table
-    mods_table <- contrastTableServer("contrast_table", input, main_par,
+    group_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     # Contrast Trait Table
     trait_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Groups.
     contrast_list <- contrastGroupServer("contrast_group", input, main_par,
-      traitModule, mods_table, trait_table)
+      traitModule, group_table, trait_table)
     # Download
     downloadServer("download", "Group", main_par, contrast_list)
     

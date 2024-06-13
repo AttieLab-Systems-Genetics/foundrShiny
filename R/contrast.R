@@ -17,6 +17,9 @@ contrastServer <- function(id, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    groupname <- stringr::str_to_title(customSettings$group)
+    if(!length(groupname)) groupname <- "Group"
+    
     # Identify all Time Traits.
     timetrait_all <- timetraitsall(traitSignal)
     # Subset Stats to time traits.
@@ -43,7 +46,7 @@ contrastServer <- function(id, main_par,
       traitSignal, contrast_time)
     # Contrast Groups.
     group_list <- contrastGroupServer("contrast_group", input, main_par,
-      traitModule, mods_table, trait_table)
+      traitModule, mods_table, trait_table, customSettings)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
@@ -53,27 +56,30 @@ contrastServer <- function(id, main_par,
     })
     output$butby <- shiny::renderUI({
       if(length(timetraits_dataset())) {
-        buttons <- c("Sex", "Group", "Time")
+        buttons <- c("Sex", groupname, "Time")
       } else {
-        buttons <- c("Sex", "Group")
+        buttons <- c("Sex", groupname)
       }
       shiny::radioButtons(ns("contrast"), "Contrast by ...",
                           buttons, inline = TRUE)
     })
     contr_selection <- shiny::reactiveVal(NULL, label = "contr_selection")
-    shiny::observeEvent(input$contrast, contr_selection(input$contrast))
+    shiny::observeEvent(input$contrast, contr_selection(
+      # Change back to Group from groupname for internal code.
+      ifelse(input$contrast == groupname, "Group", input$contrast)))
     
     timetraits_dataset <- shiny::reactive({
       shiny::req(main_par$dataset)
       
-      foundr::timetraitsall(dplyr::filter(traitSignal, dataset %in% main_par$dataset))
+      foundr::timetraitsall(dplyr::filter(traitSignal,
+                                          dataset %in% main_par$dataset))
     })
-    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
+    sexes <- c(B="Both Sexes", F="Female", M="Male", C="Sex Contrast")
     output$sex <- shiny::renderUI({
       shiny::selectInput(ns("sex"), "", as.vector(sexes))
     })
     output$group <- shiny::renderUI({
-      shiny::selectizeInput(ns("group"), "Group:", NULL)
+      shiny::selectizeInput(ns("group"), paste0(groupname, ":"), NULL)
     })
     shiny::observeEvent(
       shiny::req(datatraits(), main_par$dataset, input$sex, contr_selection()),
@@ -170,7 +176,7 @@ contrastServer <- function(id, main_par,
         shiny::renderText({
           out <- paste0(
             "This panel examines contrasts (differences or ratios) of ",
-            condition, " means by strain and sex.",
+            condition, " means by strain and sex. ",
             "These may be viewed by sex or averaged over sex",
             " (Both Sexes) or by contrast of Female - Male",
             " (Sex Contrast).")
@@ -179,7 +185,7 @@ contrastServer <- function(id, main_par,
           if(shiny::req(contr_selection()) == "Group")
             out <- paste(out, "WGCNA modules by dataset and sex have",
                          "power=6, minSize=4.",
-                         "Select a Group to see module members.")
+                         "Select a", groupname, "to see module members.")
           out
         }))
     })
