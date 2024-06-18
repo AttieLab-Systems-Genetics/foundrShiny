@@ -1,5 +1,24 @@
 # foundrShiny
-Shiny app tools for foundr package
+
+Shiny app tools for foundr package. To install:
+
+```
+devtools::install_github("byandell/foundr", ref = "foundrBase")
+devtools::install_github("byandell/foundrShiny")
+```
+
+This package can be used on its own for analysis and visualization of founder data,
+and is part of a (planned) collection of packages. See
+[Foundr App Developer Guide](https://docs.google.com/presentation/d/171HEopFlSTtf_AbrA28YIAJxJHvkzihB4_lcV6Ct-eI)
+for an overview of package(s) use and components.
+
+- [foundr](https://github.com/byandell/foundr): data analysis and visualization
+  - See [foundrBase tree of foundr](https://github.com/byandell/foundr/tree/foundrBase) for the revised `foundr` package (in testing phase).
+- [foundrShiny](https://github.com/byandell/foundrShiny): interactive shiny app
+- foundrHarmony: harmonize data from multiple sources (to be written)
+- [modulr](https://github.com/byandell/modulr): harmonize WGCNA module objects
+
+
 
 ## Apps
 
