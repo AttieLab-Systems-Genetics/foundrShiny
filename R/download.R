@@ -75,7 +75,7 @@ downloadApp <- function(id) {
     prefix <- "Download"
     download_list <- list(
       postfix = shiny::reactive("postfix"),
-      plotObject = shiny::reactive(print(foundr:::plot_null())),
+      plotObject = shiny::reactive(print(plot_null())),
       tableObject = shiny::reactive(matrix(1:12,nrow=3)))
     
     # Modules

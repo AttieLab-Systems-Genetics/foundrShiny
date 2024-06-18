@@ -147,7 +147,7 @@ contrastGroupApp <- function() {
     })
     datatraits <- shiny::reactive({
       shiny::req(input$sex, main_par$dataset, datagroup())
-      if(foundr:::is_sex_module(datagroup())) {
+      if(is_sex_module(datagroup())) {
         out <- unique(datagroup()[[main_par$dataset[1]]][[input$sex]]$modules$module)
         paste0(main_par$dataset[1], ": ", names(sexes)[match(input$sex, sexes)], "_", out)
       } else {

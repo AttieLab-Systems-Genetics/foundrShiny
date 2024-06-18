@@ -10,7 +10,7 @@
 #' @importFrom stringr str_remove
 #' @importFrom tidyr separate_wider_delim unite
 #' @importFrom utils combn
-#' 
+#' @rdname founder_helpers
 contrast_signal <- function(contrasts) {
   if(is.null(contrasts))
   return(NULL)
@@ -30,9 +30,8 @@ contrast_signal <- function(contrasts) {
 #' @param corterm 
 #' @param mincor 
 #' @param reldataset 
-#' 
-#' @param data frame
-#'
+#' @return data frame
+#' @rdname founder_helpers
 cor_table <- function(key_trait, traitSignal, corterm, mincor = 0,
                       reldataset = NULL) {
   
@@ -55,17 +54,64 @@ cor_table <- function(key_trait, traitSignal, corterm, mincor = 0,
 #' 
 #' @param object 
 #' @param contr_object 
-#' 
 #' @return data frame
-#'
+#' @rdname founder_helpers
 eigen_contrast_dataset <- function(object, contr_object) {
   if(is.null(object) | is.null(contr_object))
     return(NULL)
   
-  if(!foundr:::is_sex_module(object))
-    return(foundr:::eigen_contrast_dataset_value(object, contr_object))
+  if(!is_sex_module(object))
+    return(eigen_contrast_dataset_value(object, contr_object))
   
-  foundr:::eigen_contrast_dataset_sex(object, contr_object)
+  eigen_contrast_dataset_sex(object, contr_object)
+}
+eigen_contrast_dataset_sex <- function(object, contr_object) {
+  datasets <- names(object)
+  if(!all(datasets %in% contr_object$dataset))
+    return(NULL)
+  # Split contrast object by dataset
+  contr_object <- split(contr_object, contr_object$dataset)[datasets]
+  # For each `dataset`, construct contrast of eigens.
+  # The `contr_object` is only used for module information.
+  out <- purrr::map(datasets, function(x) {
+    eigen_contrast(object[[x]], contr_object[[x]])
+  })
+  class(out) <- c("conditionContrasts", class(out))
+  c(out)
+}
+eigen_contrast_dataset_value <- function(object, contr_object) {
+  # Can only handle one trait module right now.
+  if(length(object) > 1)
+    return(NULL)
+  
+  # Should be one module with element `value`.
+  object <- object[[1]]
+  datasets <- names(object)
+  if(!all(datasets %in% "value"))
+    return(NULL)
+  
+  # Get information for each module.
+  # Could add information from `contr_object` later.
+  objectInfo <-
+    dplyr::ungroup(
+      dplyr::summarize(
+        dplyr::group_by(
+          object$value$modules,
+          .data$module),
+        kME = signif(max(abs(kME), na.rm = TRUE), 4),
+        #       p.value = signif(min(p.value, na.rm = TRUE), 4),
+        size = dplyr::n(),
+        drop = signif(sum(dropped) / size, 4),
+        .groups = "drop"))
+  
+  # Join contrast object of eigenvalues with module information
+  dplyr::mutate(
+    dplyr::left_join(
+      dplyr::rename(contr_object, module = "trait"),
+      objectInfo,
+      by = "module"),
+    trait = factor(.data$module, unique(.data$module)),
+    module = match(.data$trait, levels(.data$trait)))
 }
 #' Eigen Traits from Dataset
 #' 
@@ -74,9 +120,8 @@ eigen_contrast_dataset <- function(object, contr_object) {
 #' @param modulename 
 #' @param contr_object 
 #' @param eigen_object 
-#' 
 #' @return data frame
-#'
+#' @rdname founder_helpers
 eigen_traits_dataset <- function(object = NULL,
                                  sexname = NULL,
                                  modulename = NULL,
@@ -85,19 +130,87 @@ eigen_traits_dataset <- function(object = NULL,
   if(is.null(object) | is.null(contr_object))
     return(NULL)
   
-  if(!foundr:::is_sex_module(object))
-    return(foundr:::eigen_traits_dataset_value(object, sexname, modulename, contr_object, eigen_object))
+  if(!is_sex_module(object))
+    return(eigen_traits_dataset_value(object, sexname, modulename, contr_object, eigen_object))
   
-  foundr:::eigen_traits_dataset_sex(object, sexname, modulename, contr_object, eigen_object)
+  eigen_traits_dataset_sex(object, sexname, modulename, contr_object, eigen_object)
+}
+eigen_traits_dataset_sex <- function(object = NULL,
+                                     sexname = NULL,
+                                     modulename = NULL,
+                                     contr_object = NULL,
+                                     eigen_object = eigen_contrast(object, contr_object)) {
+  if(is.null(object) || is.null(contr_object) || is.null(eigen_object) ||
+     is.null(modulename))
+    return(NULL)
+  
+  datasetname <- stringr::str_remove(modulename, ": .*")
+  modulename <- stringr::str_remove(modulename, ".*: ")
+  if(!(datasetname %in% names(object)))
+    return(NULL)
+  sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
+  sexes <- names(sexes)[match(sexname, sexes)]
+  if(sexes != stringr::str_remove(modulename, "_.*"))
+    return(NULL)
+  
+  eigen_traits(object[[datasetname]],
+               sexname,
+               modulename,
+               dplyr::filter(contr_object, .data$dataset == datasetname),
+               dplyr::filter(eigen_object, .data$dataset == datasetname))
+}
+eigen_traits_dataset_value <- function(object = NULL,
+                                       sexname = NULL,
+                                       modulename = NULL,
+                                       contr_object = NULL,
+                                       eigen_object = eigen_contrast(object, contr_object)) {
+  if(is.null(object) | is.null(contr_object))
+    return(NULL)
+  
+  # Can only handle one trait module right now.
+  if(length(object) > 1)
+    return(NULL)
+  
+  # The `object` is one traitModule with element `value`.
+  object <- object[[1]]
+  datasets <- names(object)
+  if(!all(datasets %in% "value"))
+    return(NULL)
+  
+  modulename <- stringr::str_remove(modulename, "^.*: ")
+  contr_object <- 
+    dplyr::left_join(
+      dplyr::filter(contr_object, sex %in% sexname),
+      dplyr::filter(
+        dplyr::mutate(
+          dplyr::select(object$value$modules, -dropped),
+          kME = signif(.data$kME, 4)),
+        .data$module %in% modulename),
+      by = c("dataset", "trait"))
+  # Return contr_object after filtering
+  # Could add columns from `object$value$modules`
+  dplyr::select(
+    dplyr::bind_rows(
+      (dplyr::filter(eigen_object, trait == modulename, sex %in% sexname) |>
+         dplyr::mutate(trait = "Eigen", module = modulename))[names(contr_object)],
+      contr_object),
+    -module)
+}
+#' Is this a sex module?
+#' Apply eigen_contrast over list of `traitModule`s and `contr_object`.
+#' @param object 
+#' @return `TRUE` or `FALSE`
+#' @rdname founder_helpers
+is_sex_module <- function(object) {
+  !("value" %in% names(object[[1]]))
 }
 #' Mutate Datasets
 #' 
 #' @param object 
 #' @param datasets 
 #' @param undo 
-#' 
 #' @return data frame with `dataset` and possibly `probandset` columns
-#'
+#' @rdname founder_helpers
 mutate_datasets <- function(object, datasets = NULL, undo = FALSE) {
   if(is.null(object))
     return(NULL)
@@ -127,10 +240,9 @@ mutate_datasets <- function(object, datasets = NULL, undo = FALSE) {
 }
 #' Order Choices
 #' 
-#' @param traitStats
-#'  
+#' @param traitStats data frame
 #' @return vector of stats terms
-#' 
+#' @rdname founder_helpers
 order_choices <- function(traitStats) {
   p_types <- paste0("p_", unique(traitStats$term))
   p_types <- p_types[!(p_types %in% c("p_cellmean", "p_signal", "p_rest", "p_noise", "p_rawSD"))]
@@ -148,7 +260,7 @@ order_choices <- function(traitStats) {
 #' @importFrom dplyr arrange filter left_join select
 #' @importFrom stringr str_remove
 #' @importFrom rlang .data
-#'
+#' @rdname founder_helpers
 order_trait_stats <- function(orders, traitStats) {
   out <- traitStats
   if(is.null(out))
@@ -179,9 +291,8 @@ order_trait_stats <- function(orders, traitStats) {
 #' @importFrom dplyr filter select
 #' @importFrom tidyr unite
 #' @importFrom rlang .data
-#' 
 #' @return data frame
-#'
+#' @rdname founder_helpers
 select_data_pairs <- function(object, key_trait, rel_dataset = NULL) {
   if(is.null(object))
     return(NULL)
@@ -201,8 +312,8 @@ select_data_pairs <- function(object, key_trait, rel_dataset = NULL) {
 #'
 #' @param object list of data frames 
 #' @param logp raise values to power 10 if not `TRUE`
-#'
 #' @return data frame
+#' @rdname founder_helpers
 stats_time_table <- function(object, logp = FALSE) {
   if(is.null(object))
     return(NULL)
@@ -246,8 +357,8 @@ stats_time_table <- function(object, logp = FALSE) {
 #'
 #' @param object data frame
 #' @param traitnames character list
-#'
 #' @return data frame
+#' @rdname founder_helpers
 summary_traitTime <- function(object, traitnames = names(object$traits)) {
   # This is messy as it has to reverse engineer `value` in list.
   object <- 
@@ -282,7 +393,7 @@ summary_traitTime <- function(object, traitnames = names(object$traits)) {
 #' @param ... 
 #'
 #' @return vector of terms
-#'
+#' @rdname founder_helpers
 term_stats <- function(object, signal = TRUE, condition_name = NULL,
                       drop_noise = TRUE, cellmean = signal, ...) {
   terms <- unique(object$term)
@@ -312,9 +423,8 @@ term_stats <- function(object, signal = TRUE, condition_name = NULL,
 #'
 #' @param object 
 #' @param timetrait_all 
-#'
 #' @return data frame
-#'
+#' @rdname founder_helpers
 time_trait_subset <- function(object, timetrait_all) {
   if(is.null(object) || is.null(timetrait_all))
     return(NULL)
@@ -336,9 +446,8 @@ time_trait_subset <- function(object, timetrait_all) {
 #' Time Units
 #'
 #' @param timetrait_all data frame
-#'
 #' @return data frame
-#'
+#' @rdname founder_helpers
 time_units <- function(timetrait_all) {
   # Find time units in datasets
   timeunits <- NULL
@@ -353,9 +462,8 @@ time_units <- function(timetrait_all) {
 #' @param traitnames 
 #' @param sep 
 #' @param key 
-#'
 #' @return vector or `trait1 ON trait2`
-#'
+#' @rdname founder_helpers
 trait_pairs <- function(traitnames, sep = " ON ", key = TRUE) {
   if(length(traitnames) < 2)
     return(NULL)
@@ -380,9 +488,8 @@ trait_pairs <- function(traitnames, sep = " ON ", key = TRUE) {
 #' Volcano Defaults
 #'
 #' @param ordername name of order column
-#'  
 #' @return list of volcano parameters
-#' 
+#' @rdname founder_helpers
 vol_default <- function(ordername) {
   vol <- list(min = 0, max = 10, step = 1, value = 2)
   switch(

@@ -84,9 +84,13 @@ contrastServer <- function(id, main_par,
     shiny::observeEvent(
       shiny::req(datatraits(), main_par$dataset, input$sex, contr_selection()),
       {
-        # First zero out input$group.
-        shiny::updateSelectizeInput(session, "group",
-                                    selected = "", server = TRUE)
+        # *** input$group choices not set for initial contr_selection() == "Group"
+        # *** need to toggle between "Sex" and "Group" to populate. Why?
+        if(!is.null(input$group)) {
+          # First zero out input$group selected value.
+          shiny::updateSelectizeInput(session, "group", choices = datatraits(),
+                                      selected = "", server = TRUE)
+        }
         # Then set choices.
         shiny::updateSelectizeInput(session, "group", choices = datatraits(),
                                     selected = "", server = TRUE)
@@ -98,7 +102,7 @@ contrastServer <- function(id, main_par,
     datatraits <- shiny::reactive({
       shiny::req(input$sex, main_par$dataset, datagroup())
       
-      if(foundr:::is_sex_module(datagroup())) {
+      if(is_sex_module(datagroup())) {
         out <- unique(
           datagroup()[[main_par$dataset[1]]][[input$sex]]$modules$module)
         paste0(main_par$dataset[1], ": ",
