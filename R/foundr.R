@@ -187,7 +187,7 @@ foundrApp <- function(title = "") {
       )
     )
   )
-  server <- function(input, output, server) {
+  server <- function(input, output, session) {
     foundrServer("foundr",
                  traitData, traitSignal, traitStats,
                  customSettings, traitModule)
