@@ -26,15 +26,15 @@ contrastServer <- function(id, main_par,
     traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
     
     # MODULES
-    # Contrast Group Table. Note reuse of `id` for `contrastTableServer`.
-    mods_table <- contrastTableServer("contrast_table", input, main_par,
-      traitSignal, traitStats, customSettings)
-    # Contrast Trait Table
+    # Contrast Trait Table. Note reuse of `id` for `contrastTableServer`.
     trait_table <- contrastTableServer("contrast_table", input, main_par,
+      traitSignal, traitStats, customSettings)
+    # Contrast of Traits within Group Table
+    group_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Trait Plots by Sex
     sex_list <- contrastSexServer("contrast_sex", input, main_par,
-      mods_table, customSettings)
+      trait_table, customSettings)
     # Contrast Time Trait Table
     times_table <- contrastTableServer("times_table", input, main_par,
       traitSignal, traitStatsTime, customSettings)
@@ -46,7 +46,7 @@ contrastServer <- function(id, main_par,
       traitSignal, contrast_time)
     # Contrast Groups.
     group_list <- contrastGroupServer("contrast_group", input, main_par,
-      traitModule, mods_table, trait_table, customSettings)
+      traitModule, trait_table, group_table, customSettings)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({
@@ -140,7 +140,6 @@ contrastServer <- function(id, main_par,
       shiny::req(contr_selection())
       shiny::tagList(
         shiny::uiOutput(ns("text")),
-        
         if(contr_selection() == "Group") {
           contrastGroupInput(ns("contrast_group"))
         },
@@ -148,23 +147,21 @@ contrastServer <- function(id, main_par,
           shiny::fluidRow(
             shiny::column(9, shiny::uiOutput(ns("strains"))),
             shiny::column(3, shiny::checkboxInput(ns("facet"),
-                                                  "Facet by strain?", TRUE)))
+              "Facet by strain?", TRUE)))
         } else { # Sex, Group
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput(ns("sex"))),
-            shiny::column(8, 
-                          switch(contr_selection(),
-                                 Sex    = contrastSexUI(ns("contrast_sex")),
-                                 Group = shiny::uiOutput(ns("group")))))
+            shiny::column(8, switch(contr_selection(),
+              Sex   = contrastSexUI(ns("contrast_sex")),
+              Group = shiny::uiOutput(ns("group")))))
         },
-        
         switch(contr_selection(),
                Time = {
                  shiny::tagList(
                    timePlotUI(ns("shinyTimePlot")),
                    timePlotOutput(ns("shinyTimePlot")))
                },
-               Sex = contrastSexOutput(ns("contrast_sex")),
+               Sex   = contrastSexOutput(ns("contrast_sex")),
                Group = contrastGroupOutput(ns("contrast_group"))))
     })
     
@@ -248,7 +245,6 @@ contrastOutput <- function(id) {
 #' @export
 contrastApp <- function() {
   title <- "Test Shiny Contrast Trait Panel"
-  
   ui <- function() {
     shiny::fluidPage(
       shiny::titlePanel(title),
@@ -269,15 +265,10 @@ contrastApp <- function() {
     )
   }
   server <- function(input, output, session) {
-    
-    #  shiny::onStop(function() {RSQLite::dbDisconnect(db)})
-    
-    # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
     contrast_list <- contrastServer("shinyPanel", main_par,
       traitSignal, traitStats, traitModule, customSettings)
     downloadServer("download", "Contrast", main_par, contrast_list)
   }
-  
   shiny::shinyApp(ui = ui, server = server)  
 }

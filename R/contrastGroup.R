@@ -2,7 +2,7 @@
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par reactive arguments 
-#' @param groupContrast,traitContast reactive data frames
+#' @param trait_table,traitContast reactive data frames
 #' @param traitModule static data frames
 #' @param customSettings list of custom settings
 #'
@@ -13,7 +13,7 @@
 #' @export
 #'
 contrastGroupServer <- function(id, panel_par, main_par,
-                                traitModule, groupContrast, traitContrast,
+                                traitModule, trait_table, group_table,
                                 customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -39,25 +39,25 @@ contrastGroupServer <- function(id, panel_par, main_par,
     
     # INPUTS
     
-    # Restrict `traitModule` to datasets in `groupContrast()`
+    # Restrict `traitModule` to datasets in `trait_table()`
     datagroup <- shiny::reactive({
       traitModule[shiny::req(main_par$dataset)]
     })
     
     # Eigen Contrasts.
     eigens <- shiny::reactive({
-      shiny::req(datagroup(), groupContrast())
+      shiny::req(datagroup(), trait_table())
       
-      eigen_contrast_dataset(datagroup(), groupContrast())
+      eigen_contrast_dataset(datagroup(), trait_table())
     })
     
     # Compare Selected Group Eigens to Traits in Group
     traits <- shiny::reactive({
       shiny::req(datagroup(), panel_par$sex, panel_par$group, main_par$dataset,
-                 traitContrast(), eigens())
+                 group_table(), eigens())
       
       eigen_traits_dataset(datagroup(), panel_par$sex, panel_par$group,
-                           traitContrast(), eigens())
+                           group_table(), eigens())
     })
     
     ##############################################################
@@ -111,15 +111,15 @@ contrastGroupApp <- function() {
   
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    # Contrast Group Table
-    group_table <- contrastTableServer("contrast_table", input, main_par,
-      traitSignal, traitStats, customSettings)
     # Contrast Trait Table
     trait_table <- contrastTableServer("contrast_table", input, main_par,
+      traitSignal, traitStats, customSettings)
+    # Contrast Traits within Group Table
+    group_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Groups.
     contrast_list <- contrastGroupServer("contrast_group", input, main_par,
-      traitModule, group_table, trait_table)
+      traitModule, trait_table, group_table)
     # Download
     downloadServer("download", "Group", main_par, contrast_list)
     

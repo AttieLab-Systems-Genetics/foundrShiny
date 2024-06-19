@@ -22,7 +22,7 @@ contrastTableServer <- function(id, panel_par, main_par,
     ns <- session$ns
     
     stats_table <- traitOrderServer("shinyOrder", main_par,
-                                    traitStats, customSettings, keepDatatraits)
+      traitStats, customSettings, keepDatatraits)
     
     ###############################################################
     

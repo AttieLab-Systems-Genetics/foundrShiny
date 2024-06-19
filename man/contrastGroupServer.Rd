@@ -12,8 +12,8 @@ contrastGroupServer(
   panel_par,
   main_par,
   traitModule,
-  groupContrast,
-  traitContrast,
+  trait_table,
+  group_table,
   customSettings = NULL
 )
 
@@ -30,7 +30,7 @@ contrastGroupApp()
 
 \item{traitModule}{static data frames}
 
-\item{groupContrast, traitContast}{reactive data frames}
+\item{trait_table, traitContast}{reactive data frames}
 
 \item{customSettings}{list of custom settings}
 }

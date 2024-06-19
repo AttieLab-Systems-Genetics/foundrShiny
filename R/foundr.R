@@ -32,29 +32,28 @@ foundrServer <- function(id,
       traitData, traitSignal, traitStats)
     aboutServer("about", customSettings$help)
     downloadServer("download", "Contrast", main_par, download_list)
-    
 
     download_list <- shiny::reactiveValues(
       postfix     = shiny::reactive({
         switch(shiny::req(input$tabpanel),
-               Traits    = trait_list$postfix(),
-               Contrasts = contrast_list$postfix(),
-               Stats     = stats_list$postfix(),
-               Times     = time_list$postfix())
+               Traits    = shiny::req(trait_list$postfix()),
+               Contrasts = shiny::req(contrast_list$postfix()),
+               Stats     = shiny::req(stats_list$postfix()),
+               Times     = shiny::req(time_list$postfix()))
       }),
       plotObject  = shiny::reactive({
         switch(shiny::req(input$tabpanel),
-               Traits    = trait_list$plotObject(),
-               Contrasts = contrast_list$plotObject(),
-               Stats     = stats_list$plotObject(),
-               Times     = time_list$plotObject())
+               Traits    = shiny::req(trait_list$plotObject()),
+               Contrasts = shiny::req(contrast_list$plotObject()),
+               Stats     = shiny::req(stats_list$plotObject()),
+               Times     = shiny::req(time_list$plotObject()))
       }),
       tableObject = shiny::reactive({
         switch(shiny::req(input$tabpanel),
-               Traits    = trait_list$tableObject(),
-               Contrasts = contrast_list$tableObject(),
-               Stats     = stats_list$tableObject(),
-               Times     = time_list$tableObject())
+               Traits    = shiny::req(trait_list$tableObject()),
+               Contrasts = shiny::req(contrast_list$tableObject()),
+               Stats     = shiny::req(stats_list$tableObject()),
+               Times     = shiny::req(time_list$tableObject()))
       })
     )
 

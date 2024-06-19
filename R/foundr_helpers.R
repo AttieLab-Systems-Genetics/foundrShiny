@@ -164,7 +164,7 @@ eigen_traits_dataset_value <- function(object = NULL,
                                        modulename = NULL,
                                        contr_object = NULL,
                                        eigen_object = eigen_contrast(object, contr_object)) {
-  if(is.null(object) | is.null(contr_object))
+  if(is.null(object) | is.null(contr_object) | is.null(eigen_object))
     return(NULL)
   
   # Can only handle one trait module right now.
@@ -262,10 +262,10 @@ order_choices <- function(traitStats) {
 #' @importFrom rlang .data
 #' @rdname founder_helpers
 order_trait_stats <- function(orders, traitStats) {
-  out <- traitStats
-  if(is.null(out))
+  if(is.null(traitStats))
     return(NULL)
   
+  out <- traitStats
   if(orders == "alphabetical") {
     out <- dplyr::arrange(out, .data$trait)
   } else {

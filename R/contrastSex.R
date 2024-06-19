@@ -58,7 +58,7 @@ contrastSexApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(4, mainParInput("main_par")),
-            shiny::column(8, contrastTableInput("contrast_table"))),
+            shiny::column(8, contrastTableUI("contrast_table"))),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),
           downloadOutput("download")

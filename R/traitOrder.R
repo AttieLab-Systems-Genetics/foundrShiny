@@ -37,6 +37,7 @@ traitOrderServer <- function(id, main_par,
       order_trait_stats(main_par$order, key_stats())
     })
     key_stats <- shiny::reactive({
+      if(is.null(traitStats)) return(NULL)
       if(shiny::isTruthy(keepDatatraits())) {
         dplyr::select(
           dplyr::filter(
