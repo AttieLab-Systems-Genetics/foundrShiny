@@ -68,13 +68,19 @@ foundrServer <- function(id,
     
     # Hide all tabs unless Entry word provided.
     shiny::observeEvent(
-      shiny::tagList(input$height, entrykey()),
+      shiny::tagList(input$height, entrykey(), input$tabpanel),
       {
         if(shiny::isTruthy(entrykey())) {
           shiny::showTab("tabpanel", target = "Traits")
-          if(length(timetraits_all()))
+          if(length(timetraits_all())) {
             shiny::showTab("tabpanel", target = "Times")
-          shiny::showTab("tabpanel", target = "Contrasts")
+            # Hidden for calcium study for now.
+            shiny::showTab("tabpanel", target = "Contrasts")
+          } else {
+            shiny::hideTab("tabpanel", target = "Times")
+            # Hidden for calcium study for now.
+            shiny::hideTab("tabpanel", target = "Contrasts")
+          }
           shiny::showTab("tabpanel", target = "Stats")
           shiny::showTab("tabpanel", target = "About")
         } else {
@@ -84,21 +90,6 @@ foundrServer <- function(id,
           shiny::hideTab("tabpanel", target = "Stats")
           shiny::hideTab("tabpanel", target = "About")
         }
-      })
-    # Hide Time tab unless we have time entries.
-    shiny::observeEvent(
-      input$height,
-      {
-        if(shiny::isTruthy(entrykey())) {
-          if(length(timetraits_all())) {
-            shiny::showTab("tabpanel", target = "Times")
-            # Hidden for calcium study for now.
-            shiny::showTab("tabpanel", target = "Contrasts")
-          } else {
-            shiny::hideTab("tabpanel", target = "Times")
-            # Hidden for calcium study for now.
-            shiny::hideTab("tabpanel", target = "Contrasts")
-          }}
       })
     timetraits_all <- shiny::reactive({
       foundr::timetraitsall(traitSignal)
