@@ -39,7 +39,7 @@ timeServer <- function(id, main_par,
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput(ns("strains"), "Strains",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
     })
     ###############################################################
     time_list

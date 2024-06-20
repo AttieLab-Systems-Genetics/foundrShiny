@@ -105,7 +105,7 @@ contrastTimeApp <- function() {
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput("strains", "Strains",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
     })
 
     # Output    

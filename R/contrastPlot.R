@@ -61,7 +61,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
         choices <- term_stats(contrastTable(), signal = FALSE, drop_noise = TRUE)
       }
       shiny::checkboxGroupInput(ns("rownames"), "",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
     })
     row_selection <- shiny::reactiveVal(NULL, label = "row_selection")
     shiny::observeEvent(input$rownames, row_selection(input$rownames))
@@ -69,9 +69,14 @@ contrastPlotServer <- function(id, panel_par, main_par,
     # Output
     output$traitOutput <- shiny::renderUI({
       switch(shiny::req(main_par$butshow),
-             Plots  = shiny::uiOutput(ns("plot")),
+             Plots  = {
+               shiny::tagList(
+                 shiny::uiOutput(ns("plots")),
+                 shiny::uiOutput(ns("plot"))
+               )
+             }, 
              Tables = DT::renderDataTable(tableObject(), escape = FALSE,
-                                          options = list(scrollX = TRUE, pageLength = 10)))
+               options = list(scrollX = TRUE, pageLength = 10)))
     })
     
     # Plot
@@ -127,15 +132,34 @@ contrastPlotServer <- function(id, panel_par, main_par,
       plotfn(contrasts_strains(), "dotplot")
     }, label = "contrastDotPlot")
     
+    output$plots <- shiny::renderUI({
+      choices <- c("Volcano","BiPlot","DotPlot")
+      shiny::checkboxGroupInput(ns("plots"), "",
+        choices = choices, selected = choices, inline = TRUE)
+    })
+    plot_selection <- shiny::reactiveVal(NULL, label = "plot_selection")
+    shiny::observeEvent(input$plots, plot_selection(input$plots))
     output$plot <- shiny::renderUI({
       shiny::tagList(
-        shiny::h4("Volcano Plot"),
-        shiny::uiOutput(ns("convolcano")),
-        shiny::h4("BiPlot"),
-        shiny::selectInput(ns("strain"), "Vector Highlight", c("NONE", row_selection())),
-        shiny::uiOutput(ns("conbiplot")),
-        shiny::h4("DotPlot"),
-        shiny::uiOutput(ns("condotplot"))
+        if("Volcano" %in% plot_selection()) {
+          shiny::tagList(
+            shiny::h4("Volcano Plot"),
+            shiny::uiOutput(ns("convolcano")),
+          )
+        },
+        if("BiPlot" %in% plot_selection()) {
+          shiny::tagList(
+            shiny::h4("BiPlot"),
+            shiny::selectInput(ns("strain"), "Vector Highlight", c("NONE", row_selection())),
+            shiny::uiOutput(ns("conbiplot")),
+          )
+        },
+        if("DotPlot" %in% plot_selection()) {
+          shiny::tagList(
+            shiny::h4("DotPlot"),
+            shiny::uiOutput(ns("condotplot"))
+          )
+        }
       )
     })
     shiny::observeEvent(
@@ -202,9 +226,12 @@ contrastPlotServer <- function(id, panel_par, main_par,
         paste(unique(contrastTable()$dataset), collapse = ",")
       }),
       plotObject = shiny::reactive({
-        print(shiny::req(contrastVolcano()))
-        print(shiny::req(contrastBiPlot()))
-        print(shiny::req(contrastDotPlot()))
+        if("Volcano" %in% plot_selection())
+          print(shiny::req(contrastVolcano()))
+        if("BiPlot" %in% plot_selection())
+          print(shiny::req(contrastBiPlot()))
+        if("DotPlot" %in% plot_selection())
+          print(shiny::req(contrastDotPlot()))
       }),
       tableObject = tableObject
     )

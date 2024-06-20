@@ -43,6 +43,9 @@ Nearly all files in the `R` function directory have built-in apps following
 - larger points on several plots
 - MixMod as only dataset does not display for Contrasts tab. Seems to be related to not showing order.
 - Need to add group element to customSettings
+- redesign `R/contrastPlot.R`
+  + split out volcano,biplot,dotplot as separate modules
+  + need to rethink foundr::ggplot_conditionContrasts, which is now bloated
 
 ```
 foundrSetup(data_subset = "Physio",
