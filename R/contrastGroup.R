@@ -93,9 +93,7 @@ contrastGroupApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"),
-          border_line(),
-          downloadOutput("download")
+          mainParInput("main_par")
         ),
         shiny::mainPanel(
           mainParOutput("main_par"),
@@ -120,9 +118,7 @@ contrastGroupApp <- function() {
     # Contrast Groups.
     contrast_list <- contrastGroupServer("contrast_group", input, main_par,
       traitModule, trait_table, group_table)
-    # Download
-    downloadServer("download", "Group", main_par, contrast_list)
-    
+
     # SERVER-SIDE INPUTS
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     output$sex <- shiny::renderUI({

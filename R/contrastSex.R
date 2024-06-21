@@ -57,8 +57,7 @@ contrastSexApp <- function() {
         shiny::sidebarPanel(
           mainParInput("main_par"),
           border_line(),
-          mainParOutput("main_par"),
-          downloadOutput("download")
+          mainParOutput("main_par")
         ),
         shiny::mainPanel(
           shiny::fluidRow(
@@ -79,9 +78,7 @@ contrastSexApp <- function() {
     # Contrast List
     contrast_list <- contrastSexServer("sex_plot", input, main_par,
       contrast_table, traitModule)
-    # Download 
-    downloadServer("download", "Contrast", main_par, contrast_list)
-    
+
     # SERVER-SIDE INPUTS
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)

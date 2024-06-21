@@ -92,19 +92,7 @@ traitPairsUI <- function(id) {
 #' @export
 traitPairsApp <- function(id) {
   title <- "Test Shiny Trait Pairs"
-  
   ui <- function() {
-    # INPUTS
-    #   input$facet: Facet by strain?
-    #   input$strains: Strains to select
-    #   input$height: Plot Height
-    #   input$
-    #
-    # OUTPUTS (see shinyTraitSolos)
-    #   output$filename: 
-    #   output$downloadPlot
-    #   output$downloadTable
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
@@ -160,6 +148,7 @@ traitPairsApp <- function(id) {
     },
     label = "trait_names")
     
+    # Outputs
     output$plottable <- shiny::renderUI({
       switch(main_par$butshow,
         Plots = shiny::tagList(
@@ -167,43 +156,6 @@ traitPairsApp <- function(id) {
           traitPairsUI("pairs_plot")),
         Tables = traitTableOutput("trait_table"))
     })
-    
-    # RETURN OBJECTS FROM MODULES
-    datasets <- shiny::reactive({
-      shiny::req(trait_table())
-      unique(trait_table()$dataset)
-    })
-    
-    # I/O FROM MODULE
-    
-    # MODULE INPUT: File Prefix
-    output$filename <- renderUI({
-      shiny::req(datasets())
-      filename <- paste0("module_", paste(datasets(), collapse = "."))
-      shiny::textAreaInput("filename", "File Prefix", filename)
-    })
-    
-    # MODULE OUTPUT: Plot
-    output$downloadPlot <- shiny::downloadHandler(
-      filename = function() {
-        paste0(shiny::req(input$filename), ".pdf")
-      },
-      content = function(file) {
-        grDevices::pdf(file, width = 9, height = 6)
-        print(pairs_plot())
-        grDevices::dev.off()
-      })
-    
-    # MODULE OUTPUT: DataTable
-    output$downloadTable <- shiny::downloadHandler(
-      filename = function() {
-        paste0(shiny::req(input$filename), ".csv")
-      },
-      content = function(file) {
-        utils::write.csv(
-          trait_table(),
-          file, row.names = FALSE)
-      })
   }
   
   shiny::shinyApp(ui = ui, server = server)

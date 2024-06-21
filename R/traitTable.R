@@ -117,9 +117,7 @@ traitTableApp <- function() {
           mainParInput("main_par"),
           shiny::uiOutput("traits"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
-          
-          traitTableUI("shinyTest"),
-          shiny::downloadButton("downloadTable", "Data")
+          traitTableUI("shinyTest")
         ),
         
         shiny::mainPanel(
@@ -150,17 +148,6 @@ traitTableApp <- function() {
           .data$dataset, .data$trait))
       shiny::selectInput("trait","Traits:", traits)
     })
-
-    # MODULE OUTPUT: DataTable
-    output$downloadTable <- shiny::downloadHandler(
-      filename = function() {
-        "traitObject.csv"
-      },
-      content = function(file) {
-        utils::write.csv(
-          trait_table(),
-          file, row.names = FALSE)
-      })
   }
   
   shiny::shinyApp(ui = ui, server = server)
