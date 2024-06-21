@@ -63,7 +63,10 @@ biplotServer <- function(id, panel_par, plot_par, contrast_table) {
         shiny::selectInput(ns("strain"), "Vector Highlight",
                            c("NONE", plot_par$rownames)),
         if(shiny::isTruthy(plot_par$interact)) {
-          plotly::renderPlotly(shiny::req(contrastBiPlot()))
+          shiny::tagList(
+            shiny::renderText("Rays disappear if interactive."),
+            shiny::renderPlot(print(shiny::req(biplot()))),
+            plotly::renderPlotly(shiny::req(contrastBiPlot())))
         } else {
           shiny::renderPlot(print(shiny::req(contrastBiPlot())))
         }
