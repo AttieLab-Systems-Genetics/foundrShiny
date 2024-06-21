@@ -104,7 +104,9 @@ foundrServer <- function(id,
         if(input$tabpanel != "About") {
           shiny::tagList(
             shiny::fluidRow(
-              shiny::column(6, mainParInput(ns("main_par"))),
+              shiny::column(3, mainParInput(ns("main_par"))),
+              if(input$tabpanel %in% c("Traits", "Times"))
+                shiny::column(3, mainParUI(ns("main_par"))),
               if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
                 shiny::column(6, 
                               switch(input$tabpanel,
@@ -120,8 +122,8 @@ foundrServer <- function(id,
                      contrastUI(ns("tabContrasts")),
                    Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
             
-            shiny::hr(style="border-width:5px;color:black;background-color:black"),
-            mainParUI(ns("main_par")),
+            border_line(),
+            mainParOutput(ns("main_par")),
             downloadOutput(ns("download"))
           )
         }

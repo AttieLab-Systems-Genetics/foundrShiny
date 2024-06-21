@@ -198,6 +198,7 @@ contrastPlotApp <- function() {
           mainParUI("main_par")
         ),
         shiny::mainPanel(
+          mainParOutput("main_par"),
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput("sex")),
             shiny::column(8, contrastPlotUI("contrast_plot"))),

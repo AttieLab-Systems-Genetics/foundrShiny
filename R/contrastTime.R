@@ -70,13 +70,10 @@ contrastTimeApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(3, mainParInput("main_par")),
-            shiny::column(3, contrastTableUI("times_table")), # Order
+            shiny::column(3, mainParUI("main_par")), # Order
             shiny::column(6, contrastTimeInput("contrast_time"))), # Traits
-          
           contrastTimeUI("contrast_time"),
-          shiny::uiOutput("strains"),
-          
-          mainParUI("main_par")
+          shiny::uiOutput("strains")
         ),
         shiny::mainPanel(
           shiny::h3("Time Table"),

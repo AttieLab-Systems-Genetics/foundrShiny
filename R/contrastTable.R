@@ -72,7 +72,7 @@ contrastTableApp <- function(id) {
     # MODULE
     # Contrast Module Table
     main_par <- mainParServer("main_par", traitStats)
-    contrast_table <- contrastTableServer("contrast_table", input, main_par,
+    contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     
     # SERVER-SIDE INPUTS

@@ -8,9 +8,9 @@
 #' @param keepDatatraits keep datatraits if not `NULL`
 #'
 #' @return reactive object
-#' @importFrom shiny column fluidRow h3 moduleServer NS observeEvent reactive 
-#'             reactiveVal renderUI req selectInput shinyApp tagList uiOutput
-#'             updateSelectInput
+#' @importFrom shiny column fluidRow h3 isTruthy moduleServer NS observeEvent
+#'             reactive  reactiveVal renderUI req selectInput shinyApp tagList
+#'             uiOutput updateSelectInput
 #' @importFrom DT dataTableOutput renderDataTable
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom foundr summary_strainstats
@@ -33,8 +33,11 @@ traitOrderServer <- function(id, main_par,
       options = list(scrollX = TRUE, pageLength = 5))
     
     stats_table <- shiny::reactive({
-      shiny::req(main_par$order, key_stats())
-      order_trait_stats(main_par$order, key_stats())
+      shiny::req(key_stats())
+      order <- NULL
+      if(shiny::isTruthy(main_par$order))
+        order <- shiny::req(main_par$order)
+      order_trait_stats(order, key_stats())
     })
     key_stats <- shiny::reactive({
       if(is.null(traitStats)) return(NULL)
@@ -82,6 +85,7 @@ traitOrderApp <- function() {
         shiny::sidebarPanel(
           # Key Datasets and Trait.
           mainParInput("main_par"),
+          mainParUI("main_par"),
           # Related Datasets and Traits.
           shiny::uiOutput("reldataset")),
         
@@ -116,7 +120,6 @@ traitOrderApp <- function() {
     })
     output$key_trait <- renderText({
       shiny::req(stats_table())
-      
       foundr::unite_datatraits(stats_table(), key = TRUE)[1]
     })
     

@@ -4,7 +4,7 @@
 #' @param input,output,session standard shiny arguments
 #' @param panel_par,main_par reactive arguments from `foundrServer`
 #' @param trait_names reactive with trait names
-#' @param traitSolosObject reactive objects from `foundrServer`
+#' @param trait_table reactive objects from `foundrServer`
 #'
 #' @return reactive object for `traitSolos`
 #' 
@@ -16,7 +16,8 @@
 #' @importFrom rlang .data
 #' @export
 #'
-traitPairsServer <- function(id, panel_par, main_par, trait_names, traitSolosObject) {
+traitPairsServer <- function(id, panel_par, main_par, trait_names,
+                             trait_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -32,17 +33,17 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names, traitSolosObj
     
     # Output: Plots or Data
     output$shiny_traitPairs <- shiny::renderUI({
-      shiny::req(trait_names(), traitSolosObject())
+      shiny::req(trait_names(), trait_table())
       shiny::plotOutput(ns("pairs_plot"), height = paste0(main_par$height, "in"))
     })
     
     # Plot
     pairs_plot <- shiny::reactive({
-      shiny::req(traitSolosObject(), trait_names())
+      shiny::req(trait_table(), trait_names())
       
       foundr::ggplot_traitPairs(
         foundr::traitPairs(
-          traitSolosObject(),
+          trait_table(),
           trait_names(),
           pair()),
         facet_strain = shiny::isTruthy(panel_par$facet),
@@ -109,22 +110,17 @@ traitPairsApp <- function(id) {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")),
-            shiny::column(9, shiny::uiOutput("traits"))),
-          shiny::uiOutput("reltraits"),
+            shiny::column(6, mainParInput("main_par")),
+            shiny::column(6, shiny::uiOutput("traits"))),
+          shiny::uiOutput("rel_traits"),
           traitTableUI("trait_table"),
           shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
-          shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-          mainParUI("main_par"),
-          shiny::fluidRow(
-            shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
-            shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
-            shiny::column(3, shiny::downloadButton("downloadTable", "Data")))
+          shiny::checkboxInput("facet", "Facet by strain?", FALSE)
         ),
         
         shiny::mainPanel(
-          traitPairsUI("pairs_plot"),
-          traitTableOutput("trait_table")
+          mainParOutput("main_par"),
+          shiny::uiOutput("plottable")
         )))
   }
   
@@ -133,7 +129,7 @@ traitPairsApp <- function(id) {
     # SHINY MODULES
     main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("trait_table", input,
-      keyTrait, relTraits, traitData, traitSignal)
+      key_trait, rel_traits, traitData, traitSignal)
     traitPairsServer("pairs_plot", input, main_par, trait_names, trait_table)
     
     # SERVER-SIDE INPUTS
@@ -150,19 +146,27 @@ traitPairsApp <- function(id) {
       
       shiny::selectInput("trait", "Trait:", traits)
     })
-    output$reltraits <- shiny::renderUI({
+    output$rel_traits <- shiny::renderUI({
       traits <- unique(foundr::unite_datatraits(traitSignal))[6:10]
       
-      shiny::selectInput("reltrait", "Related Trait:", traits)
+      shiny::selectInput("rel_traits", "Related Trait:", traits)
     })
     # Mockup of trait names
-    keyTrait <- shiny::reactive(shiny::req(input$trait), label = "keyTrait")
-    relTraits <- shiny::reactive(shiny::req(input$reltrait), label = "relTraits")
+    key_trait <- shiny::reactive(shiny::req(input$trait), label = "key_trait")
+    rel_traits <- shiny::reactive(shiny::req(input$rel_traits),
+                                  label = "rel_traits")
     trait_names <- shiny::reactive({
-      c(shiny::req(keyTrait()), relTraits())
+      c(shiny::req(key_trait()), rel_traits())
     },
     label = "trait_names")
     
+    output$plottable <- shiny::renderUI({
+      switch(main_par$butshow,
+        Plots = shiny::tagList(
+          shiny::h3("Solos Plot"),
+          traitPairsUI("pairs_plot")),
+        Tables = traitTableOutput("trait_table"))
+    })
     
     # RETURN OBJECTS FROM MODULES
     datasets <- shiny::reactive({

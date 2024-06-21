@@ -94,11 +94,11 @@ contrastGroupApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           mainParInput("main_par"),
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          mainParUI("main_par"),
+          border_line(),
           downloadOutput("download")
         ),
         shiny::mainPanel(
+          mainParOutput("main_par"),
           contrastGroupInput("contrast_group"),
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput("sex")),

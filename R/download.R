@@ -66,7 +66,9 @@ downloadOutput <- function(id) {
 #' @export
 downloadApp <- function(id) {
   ui <- shiny::bootstrapPage(
-    mainParInput("main_par"),
+    shiny::fluidRow(
+      shiny::column(6, mainParInput("main_par")),
+      shiny::column(6, mainParUI("main_par"))),
     downloadOutput("download"),
     mainParOutput("main_par")
   )

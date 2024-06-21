@@ -3,7 +3,7 @@
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param panel_par reactive arguments
-#' @param keyTrait,relTraits reactives with trait names
+#' @param key_trait,rel_traits reactives with trait names
 #' @param traitData,traitSignal static objects 
 #'
 #' @return reactive object for `shinyTrait` routines
@@ -15,7 +15,7 @@
 #' @importFrom utils write.csv
 #' @export
 #'
-traitTableServer <- function(id, panel_par, keyTrait, relTraits,
+traitTableServer <- function(id, panel_par, key_trait, rel_traits,
                             traitData, traitSignal,
                             customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -38,9 +38,9 @@ traitTableServer <- function(id, panel_par, keyTrait, relTraits,
     
     # Filter static traitData based on selected trait_names.
     keyData <- shiny::reactive({
-      shiny::req(keyTrait())
+      shiny::req(key_trait())
       
-      foundr::subset_trait_names(traitData, keyTrait())
+      foundr::subset_trait_names(traitData, key_trait())
     })
 
     # trait_table Data Frame
@@ -54,7 +54,7 @@ traitTableServer <- function(id, panel_par, keyTrait, relTraits,
     }, label = "trait_table")
     
     trait_names <- shiny::reactive({
-      c(shiny::req(keyTrait()), relTraits())
+      c(shiny::req(key_trait()), rel_traits())
     }, label = "trait_names")
     
     # Data Table
@@ -132,10 +132,10 @@ traitTableApp <- function() {
     # MODULES
     main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("shinyTest", input,
-      keyTrait, relTraits, traitData, traitSignal)
+      key_trait, rel_traits, traitData, traitSignal)
     # Mockup of trait names
-    keyTrait <- shiny::reactive(shiny::req(input$trait), label = "keyTrait")
-    relTraits <- shiny::reactive(NULL, label = "relTraits")
+    key_trait <- shiny::reactive(shiny::req(input$trait), label = "key_trait")
+    rel_traits <- shiny::reactive(NULL, label = "rel_traits")
     
     # SERVER-SIDE INPUTS
     output$strains <- shiny::renderUI({

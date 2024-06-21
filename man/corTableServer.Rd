@@ -8,9 +8,9 @@
 \usage{
 corTableServer(
   id,
+  panel_par,
   main_par,
-  traits_par,
-  keyTrait,
+  key_trait,
   traitSignal,
   customSettings = NULL
 )
@@ -22,9 +22,9 @@ corTableApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{main_par, traits_par}{reactive inputs from calling modules}
+\item{panel_par, main_par}{reactive inputs from calling modules}
 
-\item{keyTrait}{reactive character string}
+\item{key_trait}{reactive character string}
 
 \item{traitSignal}{static data frame}
 

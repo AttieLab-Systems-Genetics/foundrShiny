@@ -117,7 +117,7 @@ plotParUI <- function(id) {
 #' @export
 plotParApp <- function() {
   ui <- shiny::bootstrapPage(
-    shiny::column(4, mainParInput("main_par")),
+    mainParInput("main_par"),
     shiny::hr(style="border-width:5px;color:black;background-color:black"),
     plotParInput("plot_par"), 
     plotParUI("plot_par")

@@ -10,8 +10,8 @@
 traitTableServer(
   id,
   panel_par,
-  keyTrait,
-  relTraits,
+  key_trait,
+  rel_traits,
   traitData,
   traitSignal,
   customSettings = NULL
@@ -28,7 +28,7 @@ traitTableApp()
 
 \item{panel_par}{reactive arguments}
 
-\item{keyTrait, relTraits}{reactives with trait names}
+\item{key_trait, rel_traits}{reactives with trait names}
 
 \item{traitData, traitSignal}{static objects}
 

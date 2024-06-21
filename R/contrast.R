@@ -158,7 +158,7 @@ contrastServer <- function(id, main_par,
         switch(contr_selection(),
                Time = {
                  shiny::tagList(
-                   timePlotUI(ns("shinyTimePlot")),
+                   timePlotInput(ns("shinyTimePlot")),
                    timePlotOutput(ns("shinyTimePlot")))
                },
                Sex   = contrastSexOutput(ns("contrast_sex")),
@@ -255,10 +255,10 @@ contrastApp <- function() {
             shiny::column(6, contrastInput("shinyPanel"))),
           contrastUI("shinyPanel"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          mainParUI("main_par"),
           downloadOutput("download")
         ),
         shiny::mainPanel(
+          mainParOutput("main_par"),
           contrastOutput("shinyPanel")
         )
       )

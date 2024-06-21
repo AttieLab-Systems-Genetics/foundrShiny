@@ -1,8 +1,3 @@
-#' Turn `conditionContrasts` object into a `traitSignal` object.
-#'
-#' @param contrasts data frame
-#'
-#' @return data frame
 #'
 #' @importFrom dplyr across arrange as_tibble bind_rows everything filter
 #'             mutate rename select
@@ -11,6 +6,16 @@
 #' @importFrom tidyr separate_wider_delim unite
 #' @importFrom foundr bestcor eigen_contrast eigen_traits
 #' @importFrom utils combn
+#' @importFrom shiny hr
+
+#' @return HTML
+#' @rdname founder_helpers
+border_line <- function() {
+  shiny::hr(style="border-width:5px;color:black;background-color:black")
+}
+#' Turn `conditionContrasts` object into a `traitSignal` object.
+#' @param contrasts data frame
+#' @return data frame
 #' @rdname founder_helpers
 contrast_signal <- function(contrasts) {
   if(is.null(contrasts))
@@ -255,8 +260,8 @@ order_choices <- function(traitStats) {
 #' @importFrom rlang .data
 #' @rdname founder_helpers
 order_trait_stats <- function(orders, traitStats) {
-  if(is.null(traitStats))
-    return(NULL)
+  if(is.null(traitStats)) return(NULL)
+  if(is.null(orders)) return(traitStats)
   
   out <- traitStats
   if(orders == "alphabetical") {
@@ -274,6 +279,21 @@ order_trait_stats <- function(orders, traitStats) {
     }
   }
   out
+}
+#' @param msg text string
+#' @param size number
+#' @param angle number
+#' @return data frame
+#' @rdname founder_helpers
+plot_null <- function (msg = "no data", size = 10, angle = 0) 
+{
+  ggplot2::ggplot(data.frame(x = 1, y = 1)) +
+    ggplot2::aes(
+      .data$x, 
+      .data$y,
+      label = msg) +
+    ggplot2::geom_text(size = size, angle = angle) + 
+    ggplot2::theme_void()
 }
 #' Select data including Key Trait and Related Datasets
 #'

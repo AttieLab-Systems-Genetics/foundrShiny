@@ -92,12 +92,12 @@ timeApp <- function() {
             shiny::column(6, mainParInput("main_par")),
             shiny::column(6, timeInput("time"))),
           timeUI("time"),
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          mainParUI("main_par"),
+          border_line(),
           downloadOutput("download")
         ),
         
         shiny::mainPanel(
+          mainParOutput("main_par"),
           timeOutput("time")
         )))
   }

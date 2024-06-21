@@ -36,7 +36,7 @@ traitServer <- function(id, main_par,
     # Key Trait.
     keyTrait    <- traitNamesServer("keyTrait", main_par, stats_table)
     # Key Trait and Correlation Table.
-    cors_table  <- corTableServer("shinyCorTable", main_par, input,
+    cors_table  <- corTableServer("shinyCorTable", input, main_par,
                                   keyTrait, traitSignal, customSettings)
     # Related Traits.
     relTraits   <- traitNamesServer("relTraits", main_par, cors_table, TRUE)
@@ -210,11 +210,12 @@ traitApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(6, mainParInput("main_par")),
+          shiny::column(3, mainParInput("main_par")),
+          shiny::column(3, mainParUI("main_par")),
           shiny::column(6, traitInput("trait_panel"))),
         traitUI("trait_panel"),
         shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        mainParUI("main_par"),
+        mainParOutput("main_par"),
         downloadOutput("download")
       ),
       shiny::mainPanel(

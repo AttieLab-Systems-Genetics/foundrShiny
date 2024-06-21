@@ -12,42 +12,27 @@
 #' @importFrom foundr ggplot_bestcor
 #' @export
 #'
-corPlotServer <- function(id, panel_par, main_par, CorTable,
+corPlotServer <- function(id, panel_par, main_par, cors_table,
                          customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    # calling module inputs
-    #   input$mincor:     Minimum Correlation
-    #   main_par$height:    Plot height
-    # shinyCorPlot inputs
-    #   input$abscor:         Absolute Correlation
-    #
-    # RETURNS
-    # cors_plot()
-    
     output$shiny_output <- shiny::renderUI({
       shiny::req(main_par$height, cors_plot())
-      
-      shiny::plotOutput(ns("cors_plot"),
-                        height = paste0(main_par$height, "in"))
+      shiny::plotOutput(ns("cors_plot"), height = paste0(main_par$height, "in"))
     })
     
     cors_plot <- shiny::reactive({
-      shiny::req(input$mincor, CorTable())
+      shiny::req(input$mincor, cors_table())
       foundr::ggplot_bestcor(
-        mutate_datasets(CorTable(), customSettings$dataset, undo = TRUE), 
+        mutate_datasets(cors_table(), customSettings$dataset, undo = TRUE), 
         input$mincor, shiny::isTruthy(input$abscor))
     })
     output$cors_plot <- shiny::renderPlot({
       shiny::req(cors_plot())
-      
       print(cors_plot())
     })
-    
     ##############################################################
-    # Return
     cors_plot
   })
 }
@@ -77,20 +62,21 @@ corPlotApp <- function() {
       shiny::sidebarPanel(
         # Key Datasets and Trait.
         shiny::fluidRow(
-          shiny::column(3, shiny::uiOutput("dataset")),
-          shiny::column(3, traitOrderInput("shinyOrder")),
-          shiny::column(6, traitNamesUI("shinyKeyTrait"))),
+          shiny::column(3, mainParInput("main_par")),
+          shiny::column(3, mainParUI("main_par")),
+          shiny::column(6, traitNamesUI("key_trait"))),
         # Related Datasets and Traits.
         shiny::fluidRow(
           shiny::column(6, shiny::uiOutput("reldataset")),
-          shiny::column(6, traitNamesUI("shinyNames"))),
+          shiny::column(6, traitNamesUI("rel_traits"))),
         shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)
       ),
       shiny::mainPanel(
+        mainParOutput("main_par"),
         shiny::textOutput("key_trait"),
-        corTableOutput("shinyCorTable"),
+        corTableOutput("cors_table"),
         shiny::textOutput("rel_traits"),
-        corPlotOutput("shinyCorPlot")
+        corPlotOutput("cors_plot")
       )
     )
   )
@@ -98,37 +84,29 @@ corPlotApp <- function() {
     # MODULES
     # Order Traits by Stats.
     main_par <- mainParServer("main_par", traitStats)
-    stats_table <- traitOrderServer("shinyOrder", input, traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par, traitStats)
     # Key Trait.
-    keyTrait    <- traitNamesServer("shinyKeyTrait", input, stats_table)
+    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     # Correlation Table.
-    cors_table  <- corTableServer("shinyCorTable", input, input,
-                                  keyTrait, traitSignal)
+    cors_table  <- corTableServer("cors_table", input, main_par,
+                                  key_trait, traitSignal)
     # Related Traits.
-    relTraits   <- traitNamesServer("shinyNames", input, cors_table, TRUE)
+    rel_traits   <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
     # Correlation Plot
-    cors_plot   <- corPlotServer("shinyCorPlot", input, input, cors_table)
+    cors_plot   <- corPlotServer("cors_plot", input, main_par, cors_table)
     
     # I/O FROM MODULE
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
     output$key_trait <- renderText({
-      shiny::req(stats_table(), cors_table())
-      foundr::unite_datatraits(cors_table(), key = TRUE)[1]
+      shiny::req(stats_table())
+      foundr::unite_datatraits(stats_table(), key = TRUE)[1]
     })
-    output$rel_traits <- renderText(shiny::req(relTraits()))
+    output$rel_traits <- renderText(shiny::req(rel_traits()))
     
     # Related Datasets.
-    datasets <- shiny::reactive(unique(traitStats$dataset))
+    datasets <- unique(traitStats$dataset)
     output$reldataset <- renderUI({
-      shiny::req(datasets())
       shiny::selectInput("reldataset", "Related Datasets:",
-                         datasets(), datasets()[1], multiple = TRUE)
+                         datasets, datasets[1], multiple = TRUE)
     })
   }
   shiny::shinyApp(ui = ui, server = server)

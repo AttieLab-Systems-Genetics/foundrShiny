@@ -6,7 +6,7 @@
 \alias{traitPairsApp}
 \title{Shiny Module Server for trait solos Plots}
 \usage{
-traitPairsServer(id, panel_par, main_par, trait_names, traitSolosObject)
+traitPairsServer(id, panel_par, main_par, trait_names, trait_table)
 
 traitPairsUI(id)
 
@@ -19,7 +19,7 @@ traitPairsApp(id)
 
 \item{trait_names}{reactive with trait names}
 
-\item{traitSolosObject}{reactive objects from `foundrServer`}
+\item{trait_table}{reactive objects from `foundrServer`}
 
 \item{input, output, session}{standard shiny arguments}
 }

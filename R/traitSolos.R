@@ -30,30 +30,21 @@ traitSolosServer <- function(id, panel_par, main_par, trait_table) {
     
     #############################################################
     # Output: Plots or Data
-    output$shiny_solosPlot <- shiny::renderUI({
-      shiny::req(main_par$height)
-      
-      shiny::plotOutput(ns("solos_plot"), height = paste0(main_par$height, "in"))
+    output$solos_plot <- shiny::renderPlot({
+      shiny::req(solos_plot(), main_par$height)
+      shiny::plotOutput(print(solos_plot()), height = paste0(main_par$height, "in"))
     })
     
     # Plot
     solos_plot <- shiny::reactive({
       shiny::req(trait_table())
-      
       foundr::ggplot_traitSolos(
         trait_table(),
         facet_strain = panel_par$facet,
         boxplot = TRUE)
     },
     label = "solos_plot")
-    output$solos_plot <- shiny::renderPlot({
-      shiny::req(solos_plot())
-      
-      print(solos_plot())
-    })
-    
     #############################################################
-    
     solos_plot
   })
 }
@@ -63,7 +54,7 @@ traitSolosServer <- function(id, panel_par, main_par, trait_table) {
 #' @export
 traitSolosUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shiny_solosPlot"))
+  shiny::plotOutput(ns("solos_plot"))
 }
 #' Shiny Module AI for traitSolos
 #' @return nothing returned
@@ -81,18 +72,12 @@ traitSolosApp <- function() {
           shiny::column(9, shiny::uiOutput("traits"))),
         traitTableUI("trait_table"),
         shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
-        shiny::checkboxInput("facet", "Facet by strain?", FALSE),
-        mainParUI("main_par"),
-        shiny::fluidRow(
-          shiny::column(6, shiny::uiOutput("filename")), # See MODULE INPUT below
-          shiny::column(3, shiny::downloadButton("downloadPlot", "Plots")),
-          shiny::column(3, shiny::downloadButton("downloadTable", "Data"))
-        )
+        shiny::checkboxInput("facet", "Facet by strain?", FALSE)
       ),
       
       shiny::mainPanel(
-        traitSolosUI("solos_plot"),
-        traitTableOutput("trait_table")
+        mainParOutput("main_par"),
+        shiny::uiOutput("plottable")
       )
     )
   )
@@ -101,7 +86,7 @@ traitSolosApp <- function() {
     # MODULES
     main_par <- mainParServer("main_par", traitSignal)
     trait_table <- traitTableServer("trait_table", input,
-      keyTrait, relTraits, traitData, traitSignal)
+      key_trait, rel_traits, traitData, traitSignal)
     traitSolosServer("solos_plot", input, main_par, trait_table)
     
     # SERVER-SIDE INPUTS
@@ -119,11 +104,19 @@ traitSolosApp <- function() {
       shiny::selectInput("traits", "Trait:", traits)
     })
     
+    output$plottable <- shiny::renderUI({
+      switch(main_par$butshow,
+        Plots = shiny::tagList(
+          shiny::h3("Solos Plot"),
+          traitSolosUI("solos_plot")),
+        Tables = traitTableOutput("trait_table"))
+    })
+    
     # REACTIVES
-    keyTrait <- shiny::reactive({
+    key_trait <- shiny::reactive({
       shiny::req(input$traits)[1]
-      })
-    relTraits <- shiny::reactive(NULL)
+    })
+    rel_traits <- shiny::reactive(NULL)
   }
   
   shiny::shinyApp(ui = ui, server = server)

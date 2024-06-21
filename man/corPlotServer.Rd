@@ -6,7 +6,7 @@
 \alias{corPlotApp}
 \title{Shiny Module Server for Trait Stats}
 \usage{
-corPlotServer(id, panel_par, main_par, CorTable, customSettings = NULL)
+corPlotServer(id, panel_par, main_par, cors_table, customSettings = NULL)
 
 corPlotOutput(id)
 
@@ -17,11 +17,11 @@ corPlotApp()
 
 \item{panel_par, main_par}{reactive inputs from calling modules}
 
-\item{CorTable}{reactive data frames}
-
 \item{customSettings}{static list of settings}
 
 \item{input, output, session}{standard shiny arguments}
+
+\item{CorTable}{reactive data frames}
 }
 \value{
 reactive object

@@ -37,7 +37,7 @@ mainParServer <- function(id, traitStats = NULL) {
     order_selection <- shiny::reactiveVal(NULL, label = "order_selection")
     shiny::observeEvent(input$order, order_selection(input$order))
     
-    output$butshow <- shiny::renderUI({
+    output$height <- shiny::renderUI({
       if(input$butshow == "Plots") {
         shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
       }
@@ -50,18 +50,22 @@ mainParServer <- function(id, traitStats = NULL) {
 #' @rdname mainParServer
 mainParInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::fluidRow(
-    shiny::column(6, shiny::uiOutput(ns("dataset"))),
-    shiny::column(6, shiny::uiOutput(ns("order"))))
+  shiny::uiOutput(ns("dataset"))
 }
 #' @export
 #' @rdname mainParServer
 mainParUI <- function(id) {
   ns <- shiny::NS(id)
+  shiny::uiOutput(ns("order"))
+}
+#' @export
+#' @rdname mainParServer
+mainParOutput <- function(id) {
+  ns <- shiny::NS(id)
   shiny::fluidRow(
     shiny::column(6, shiny::radioButtons(ns("butshow"), "", c("Plots","Tables"), "Plots",
                                          inline = TRUE)),
-    shiny::column(6, shiny::uiOutput(ns("butshow")))
+    shiny::column(6, shiny::uiOutput(ns("height")))
   )
 }
 #' @param title title of app
@@ -69,10 +73,13 @@ mainParUI <- function(id) {
 #' @rdname mainParServer
 mainParApp <- function(title = "") {
   ui <- shiny::bootstrapPage(
-    shiny::h4("main_par$dataset"),
+    shiny::h3("main_par parameters"),
+    shiny::h4("mainParInput: dataset"),
     mainParInput("main_par"), 
-    shiny::h4("main_par$height"),
-    mainParUI("main_par")
+    shiny::h4("mainParUI: order"),
+    mainParUI("main_par"), 
+    shiny::h4("mainParOutput: butshow, height"),
+    mainParOutput("main_par")
   )
   server <- function(input, output, session) {
     mainParServer("main_par", traitStats)

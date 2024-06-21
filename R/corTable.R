@@ -1,8 +1,8 @@
 #' Shiny Module Server for Correlation Table
 #'
 #' @param id identifier for shiny reactive
-#' @param main_par,traits_par reactive inputs from calling modules
-#' @param keyTrait reactive character string
+#' @param panel_par,main_par reactive inputs from calling modules
+#' @param key_trait reactive character string
 #' @param traitSignal static data frame
 #' @param customSettings list of custom settings
 #'
@@ -16,39 +16,25 @@
 #' @importFrom foundr bestcor summary_bestcor
 #' @export
 #'
-corTableServer <- function(id, main_par, traits_par,
-                          keyTrait, traitSignal,
+corTableServer <- function(id, panel_par, main_par,
+                          key_trait, traitSignal,
                           customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    # calling module inputs
-    #   traits_par$reldataset: Related Datasets
-    #
-    # RETURNS
-    # cors_table()
-    
+
     output$cors_table <- DT::renderDataTable(
       {
-        shiny::req(keyTrait(), cors_table())
-        
+        shiny::req(key_trait(), cors_table())
         foundr::summary_bestcor(
-          mutate_datasets(
-            cors_table(),
-            customSettings$dataset),
+          mutate_datasets(cors_table(), customSettings$dataset),
           0.0)
       },
-      escape = FALSE,
-      options = list(scrollX = TRUE, pageLength = 5))
+      escape = FALSE, options = list(scrollX = TRUE, pageLength = 5))
     
     cors_table <- shiny::reactive({
-      if(!shiny::isTruthy(keyTrait()))
-        return(NULL)
-      
-      cor_table(keyTrait(), traitSignal,
-               "cellmean", 0.0,
-               traits_par$reldataset)
+      if(!shiny::isTruthy(key_trait())) return(NULL)
+      cor_table(key_trait(), traitSignal, "cellmean", 0.0,
+                panel_par$reldataset)
     })
     
     ##############################################################
@@ -79,18 +65,18 @@ corTableApp <- function() {
       shiny::sidebarPanel(
         # Key Datasets and Trait.
         shiny::fluidRow(
-          shiny::column(3, shiny::uiOutput("dataset")),
-          shiny::column(3, traitOrderInput("shinyOrder")),
-          shiny::column(6, traitNamesUI("shinyKeyTrait"))),
+          shiny::column(3, mainParInput("main_par")),
+          shiny::column(3, mainParUI("main_par")),
+          shiny::column(6, traitNamesUI("key_trait"))),
         # Related Datasets and Traits.
         shiny::uiOutput("reldataset")),
       
       shiny::mainPanel(
         shiny::textOutput("orderTable"),
-        shiny::textOutput("keyTrait"),
+        shiny::textOutput("key_trait"),
         shiny::textOutput("cors_table"),
-        traitOrderUI ("shinyOrder"),
-        corTableOutput("shinyCorTable")
+        traitOrderUI ("stats_table"),
+        corTableOutput("cors_table")
       )
     )
   )
@@ -106,22 +92,16 @@ corTableApp <- function() {
     #   cors_table()
     
     # MODULES
+    main_par <- mainParServer("main_par", traitStats)
     # Order Traits by Stats.
-    stats_table <- traitOrderServer("shinyOrder", input, input, traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par, traitStats)
     # Key Trait.
-    keyTrait    <- traitNamesServer("shinyKeyTrait", input, stats_table)
+    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     # Correlation Table.
-    cors_table  <- corTableServer("shinyCorTable", input, input, keyTrait, traitSignal)
+    cors_table  <- corTableServer("cors_table", input, main_par, key_trait, traitSignal)
     
     # I/O FROM MODULE
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
-    output$keyTrait <- shiny::renderText(paste("keyTrait", shiny::req(keyTrait())))
+    output$key_trait <- shiny::renderText(paste("key_trait", shiny::req(key_trait())))
     output$orderTable <- renderText({
       shiny::req(stats_table())
       paste("stats_table", foundr::unite_datatraits(stats_table())[1])

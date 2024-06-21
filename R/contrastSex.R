@@ -57,8 +57,9 @@ contrastSexApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           mainParInput("main_par"),
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),
+          border_line(),
+          mainParOutput("main_par"),
           downloadOutput("download")
         ),
         shiny::mainPanel(
