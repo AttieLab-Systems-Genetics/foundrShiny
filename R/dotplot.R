@@ -1,4 +1,4 @@
-#' Shiny Module Server for Volcano Plots
+#' Shiny Module Server for DotPlots
 #'
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
@@ -13,7 +13,7 @@
 #'             summary_strainstats
 #' @export
 #'
-volcanoServer <- function(id, panel_par, plot_par, contrast_table) {
+dotplotServer <- function(id, panel_par, plot_par, contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -32,7 +32,7 @@ volcanoServer <- function(id, panel_par, plot_par, contrast_table) {
       dplyr::filter(contrast_table(), .data[[info()$row]] %in% plot_par$rownames)
     })
     
-    # Threshold for Volcano plots
+    # Threshold for DotPlot plots
     threshold <- shiny::reactive({
       shiny::req(plot_par$volvert, plot_par$volsd, plot_par$ordername)
       
@@ -45,50 +45,51 @@ volcanoServer <- function(id, panel_par, plot_par, contrast_table) {
       out
     })
     
-    contrastVolcano <- shiny::reactive({
+    contrastDotPlot <- shiny::reactive({
       shiny::req(filter_rownames())
       # Generic plot function for `traits` and `eigens`.``
       foundr::ggplot_conditionContrasts(
         filter_rownames(), bysex = panel_par$sex,
+        ntrait = input$ntrait,
         ordername = plot_par$ordername,
-        plottype = "volcano", threshold = threshold(),
-        strain = panel_par$strain,
+        plottype = "dotplot", threshold = threshold(),
         interact = shiny::isTruthy(plot_par$interact))
-    }, label = "contrastVolcano")
+    }, label = "contrastDotPlot")
     
     output$plot <- shiny::renderUI({
       shiny::tagList(
-        shiny::h4("Volcano Plot"),
+        shiny::h4("DotPlot Plot"),
         shiny::uiOutput(ns("rownames")),
+        shiny::numericInput(ns("ntrait"), "Traits:", 20, 5, 100, 5),
         if(shiny::isTruthy(plot_par$interact)) {
-          plotly::renderPlotly(shiny::req(contrastVolcano()))
+          plotly::renderPlotly(shiny::req(contrastDotPlot()))
         } else {
-          shiny::renderPlot(print(shiny::req(contrastVolcano())))
+          shiny::renderPlot(print(shiny::req(contrastDotPlot())))
         }
       )
     })
 
     ###############################################################
-    contrastVolcano
+    contrastDotPlot
   })
 }
-#' Shiny Module Output for Volcano Plots
+#' Shiny Module Output for Contrast Plots
 #' @return nothing returned
-#' @rdname volcanoServer
+#' @rdname dotplotServer
 #' @export
-volcanoOutput <- function(id) {
+dotplotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("title")),
     shiny::uiOutput(ns("plot"))
   )
 }
-#' Shiny App for Volcano Plots
+#' Shiny App for DotPlot Plots
 #' @return nothing returned
-#' @rdname volcanoServer
+#' @rdname dotplotServer
 #' @export
-volcanoApp <- function() {
-  title <- "Shiny Volcano"
+dotplotApp <- function() {
+  title <- "Shiny DotPlot"
   ui <- function() {
     shiny::fluidPage(
       shiny::titlePanel(title),
@@ -101,8 +102,7 @@ volcanoApp <- function() {
           mainParOutput("main_par"),
           plotParUI("plot_par"),
           shiny::uiOutput("sex"),
-          shiny::uiOutput("strain"),
-          volcanoOutput("volcano")
+          dotplotOutput("dotplot")
         )
       )
     )
@@ -112,15 +112,9 @@ volcanoApp <- function() {
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     plot_par <- plotParServer("plot_par", contrast_table)
-    volcanoServer("volcano", input, plot_par, contrast_table)
+    dotplotServer("dotplot", input, plot_par, contrast_table)
     
     # SERVER-SIDE INPUTS
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(
-        "strains", "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     output$sex <- shiny::renderUI({
       shiny::selectInput("sex", "", as.vector(sexes))

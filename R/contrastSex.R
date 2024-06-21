@@ -51,13 +51,11 @@ contrastSexApp <- function() {
   title <- "Test contrastSex Module"
   
   ui <- function() {
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           mainParInput("main_par"),
-          mainParUI("main_par"),
           border_line(),
           mainParOutput("main_par"),
           downloadOutput("download")
@@ -73,16 +71,9 @@ contrastSexApp <- function() {
   }
   
   server <- function(input, output, session) {
-    
-    # *** need persistent module choice (reactiveVal)
-    # *** table from traits()
-    # *** sliders from Volcano
-    # *** simplify using traitModule as below
-    # *** move module choice to side panel
-    
-    # MODULE
-    # Contrast Trait Table
+    # Main parameters
     main_par <- mainParServer("main_par", traitStats)
+    # Contrast Trait Table
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     # Contrast List
@@ -101,12 +92,6 @@ contrastSexApp <- function() {
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     output$sex <- shiny::renderUI({
       shiny::selectInput("sex", "", as.vector(sexes))
-    })
-    
-    output$intro <- renderUI({
-      shiny::renderText("intro", {
-        paste("Guideline is to have power of 6 and size of 4 for unsigned modules.")
-      })
     })
   }
   

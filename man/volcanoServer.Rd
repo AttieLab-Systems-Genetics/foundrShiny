@@ -2,21 +2,11 @@
 % Please edit documentation in R/volcano.R
 \name{volcanoServer}
 \alias{volcanoServer}
-\alias{volcanoInput}
 \alias{volcanoOutput}
 \alias{volcanoApp}
-\title{Shiny Module Server for Contrast Plots}
+\title{Shiny Module Server for Volcano Plots}
 \usage{
-volcanoServer(
-  id,
-  panel_par,
-  main_par,
-  contrastTable,
-  customSettings = NULL,
-  modTitle = shiny::reactive("Eigentrait Contrasts")
-)
-
-volcanoInput(id)
+volcanoServer(id, panel_par, plot_par, contrast_table)
 
 volcanoOutput(id)
 
@@ -25,13 +15,9 @@ volcanoApp()
 \arguments{
 \item{id}{identifier}
 
-\item{panel_par, main_par}{input parameters}
+\item{panel_par, plot_par}{input parameters}
 
-\item{contrastTable}{reactive data frame}
-
-\item{customSettings}{list of custom settings}
-
-\item{modTitle}{character string title for section}
+\item{contrast_table}{reactive data frame}
 }
 \value{
 reactive object
@@ -39,15 +25,11 @@ reactive object
 nothing returned
 
 nothing returned
-
-nothing returned
 }
 \description{
-Shiny Module Server for Contrast Plots
+Shiny Module Server for Volcano Plots
 
-Shiny Module Input for Volcano Plots
-
-Shiny Module Output for Contrast Plots
+Shiny Module Output for Volcano Plots
 
 Shiny App for Volcano Plots
 }

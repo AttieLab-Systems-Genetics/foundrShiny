@@ -20,31 +20,25 @@ contrastServer <- function(id, main_par,
     groupname <- stringr::str_to_title(customSettings$group)
     if(!length(groupname)) groupname <- "Group"
     
-    # Identify all Time Traits.
-    timetrait_all <- timetraitsall(traitSignal)
-    # Subset Stats to time traits.
-    traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
-    
     # MODULES
     # Contrast Trait Table. Note reuse of `id` for `contrastTableServer`.
     trait_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
-    # Contrast of Traits within Group Table
-    group_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings, keepDatatraits)
-    # Contrast Trait Plots by Sex
-    sex_list <- contrastSexServer("contrast_sex", input, main_par,
+    trait_list <- contrastSexServer("contrast_sex", input, main_par,
       trait_table, customSettings)
-    # Contrast Time Trait Table
-    times_table <- contrastTableServer("times_table", main_par,
-      traitSignal, traitStatsTime, customSettings)
     # Contrast Time Traits
+    stats_time_table <- time_trait_subset(traitStats,
+                                          timetraitsall(traitSignal))
+    time_table <- contrastTableServer("time_table", main_par,
+      traitSignal, stats_time_table, customSettings)
     contrast_time <- contrastTimeServer("contrast_time", input, main_par,
-      traitSignal, traitStatsTime, times_table, customSettings)
+      traitSignal, stats_time_table, time_table, customSettings)
     # Contrast Time Plots and Tables
     time_list <- timePlotServer("shinyTimePlot", input, main_par,
       traitSignal, contrast_time)
-    # Contrast Groups.
+    # Contrast by Groups.
+    group_table <- contrastTableServer("contrast_table", main_par,
+      traitSignal, traitStats, customSettings, keepDatatraits)
     group_list <- contrastGroupServer("contrast_group", input, main_par,
       traitModule, trait_table, group_table, customSettings)
     
@@ -52,7 +46,7 @@ contrastServer <- function(id, main_par,
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput(ns("strains"), "Strains",
-                                choices = choices, selected = choices, inline = TRUE)
+        choices = choices, selected = choices, inline = TRUE)
     })
     output$butby <- shiny::renderUI({
       if(length(timetraits_dataset())) {
@@ -194,19 +188,19 @@ contrastServer <- function(id, main_par,
     shiny::reactiveValues(
       postfix     = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = sex_list$postfix(),
+               Sex   = trait_list$postfix(),
                Group = group_list$postfix(),
                Time  = time_list$postfix())
       }),
       plotObject  = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = sex_list$plotObject(),
+               Sex   = trait_list$plotObject(),
                Group = group_list$plotObject(),
                Time  = time_list$plotObject())
       }),
       tableObject = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = sex_list$tableObject(),
+               Sex   = trait_list$tableObject(),
                Group = group_list$tableObject(),
                Time  = time_list$tableObject())
       })
@@ -252,21 +246,21 @@ contrastApp <- function() {
         shiny::sidebarPanel(
           shiny::fluidRow(
             shiny::column(6, mainParInput("main_par")),
-            shiny::column(6, contrastInput("shinyPanel"))),
-          contrastUI("shinyPanel"),
+            shiny::column(6, contrastInput("contrast_list"))),
+          contrastUI("contrast_list"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           downloadOutput("download")
         ),
         shiny::mainPanel(
           mainParOutput("main_par"),
-          contrastOutput("shinyPanel")
+          contrastOutput("contrast_list")
         )
       )
     )
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    contrast_list <- contrastServer("shinyPanel", main_par,
+    contrast_list <- contrastServer("contrast_list", main_par,
       traitSignal, traitStats, traitModule, customSettings)
     downloadServer("download", "Contrast", main_par, contrast_list)
   }
