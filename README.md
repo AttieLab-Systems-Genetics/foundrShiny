@@ -42,10 +42,54 @@ Nearly all files in the `R` function directory have built-in apps following
 - add pct eigenvalue from module
 - larger points on several plots
 - MixMod as only dataset does not display for Contrasts tab. Seems to be related to not showing order.
-- Need to add group element to customSettings
+- Need to add group element to customSettings (done)
 - redesign `R/contrastPlot.R`
-  + split out volcano,biplot,dotplot as separate modules
+  + split out volcano,biplot,dotplot as separate modules (done)
   + need to rethink foundr::ggplot_conditionContrasts, which is now bloated
+- new panelPar.R is nonstandard, but can simplify panel parameters
+  + experiment and add in
+- make apps for remaining files (timePlot, timeTable)
+
+## Module Parameters
+
+Parameters are organized into groups
+
+- `main_par` global parameters
+- `panel_par` panel-specific parameters
+- `plot_par` plot-specific parameters
+
+Shiny server sequence
+
+
+```
+main_par <- mainParServer("main_par", traitSignal)
+panel_par <- panelParServer("panel_par", main_par, traitSignal)
+plot_par <- 
+```
+
+### Global Parameters (`main_par`)
+
+```
+mainParInput("main_par"), # Dataset
+mainParOutput("main_par"), # Plots/Tables Height
+```
+
+### Plot-specific Parameters (`plot_par`)
+
+```
+plotParInput("plot_par") # RankOrder Interact
+plotParUI("plot_par"), # SD,Vert sliders
+plotParOutput("plot_par"), # Row Names (strains/terms)
+```
+
+### Panel-specific Parameters (`panel_par`)
+
+```
+  panelParUI("panel_par"), # Traits
+  panelParInput("panel_par"), # Strains
+  panelParOutput("panel_par") # Sexes (B/F/M/C)
+```  
+
 
 ```
 foundrSetup(data_subset = "Physio",
