@@ -48,7 +48,7 @@ contrastSexOutput <- function(id) {
 #' @rdname contrastSexServer
 #' @export
 contrastSexApp <- function() {
-  title <- "Test Shiny Module"
+  title <- "Test contrastSex Module"
   
   ui <- function() {
     
@@ -56,9 +56,7 @@ contrastSexApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::fluidRow(
-            shiny::column(4, mainParInput("main_par")),
-            shiny::column(8, contrastTableUI("contrast_table"))),
+          mainParInput("main_par"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           mainParUI("main_par"),
           downloadOutput("download")
@@ -84,22 +82,13 @@ contrastSexApp <- function() {
     # MODULE
     # Contrast Trait Table
     main_par <- mainParServer("main_par", traitStats)
-    contrastOutput <- contrastTableServer("contrast_table", input, main_par,
+    contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     # Contrast List
     contrast_list <- contrastSexServer("sex_plot", input, main_par,
-      traitContrPval, traitModule)
+      contrast_table, traitModule)
     # Download 
     downloadServer("download", "Contrast", main_par, contrast_list)
-    
-    traitContrPval <- reactive({
-      shiny::req(contrastOutput())
-      
-      pvalue <- attr(traitModule, "p.value") # set by construction of `traitModule`
-      if(is.null(pvalue)) pvalue <- 1.0
-      
-      dplyr::filter(shiny::req(contrastOutput()), .data$p.value <= pvalue)
-    })
     
     # SERVER-SIDE INPUTS
     output$strains <- shiny::renderUI({

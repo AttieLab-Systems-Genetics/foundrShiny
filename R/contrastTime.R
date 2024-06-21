@@ -95,7 +95,7 @@ contrastTimeApp <- function() {
     # MODULES
     main_par <- mainParServer("main_par", traitStatsTime)
     # Contrast Time Trait Table
-    times_table <- contrastTableServer("times_table", input, main_par,
+    times_table <- contrastTableServer("times_table", main_par,
       traitSignal, traitStatsTime, customSettings)
     # Contrast Time Traits
     contrast_time <- contrastTimeServer("contrast_time", input, main_par,

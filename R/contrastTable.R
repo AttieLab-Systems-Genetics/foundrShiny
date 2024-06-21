@@ -1,7 +1,7 @@
 #' Shiny Module Server for Contrast Panel
 #'
 #' @param id identifier for shiny reactive
-#' @param panel_par,main_par parameters from calling modules
+#' @param main_par parameters from calling modules
 #' @param traitSignal,traitStats static data frames
 #' @param customSettings list of custom settings
 #' @param keepDatatraits keep datatraits if not `NULL`
@@ -14,7 +14,7 @@
 #' @importFrom foundr conditionContrasts
 #' @export
 #'
-contrastTableServer <- function(id, panel_par, main_par,
+contrastTableServer <- function(id, main_par,
                                traitSignal, traitStats,
                                customSettings = NULL,
                                keepDatatraits = shiny::reactive(NULL)) {
@@ -72,7 +72,7 @@ contrastTableApp <- function(id) {
     # MODULE
     # Contrast Module Table
     main_par <- mainParServer("main_par", traitStats)
-    tableContrast <- contrastTableServer("contrast_table", input, main_par,
+    contrast_table <- contrastTableServer("contrast_table", input, main_par,
       traitSignal, traitStats, customSettings)
     
     # SERVER-SIDE INPUTS
@@ -83,8 +83,8 @@ contrastTableApp <- function(id) {
 
     # Output Table
     output$table <- shiny::renderUI({
-      shiny::req(tableContrast(), main_par$dataset, input$sex)
-      tbl <- dplyr::filter(tableContrast(), sex %in% input$sex)
+      shiny::req(contrast_table(), main_par$dataset, input$sex)
+      tbl <- dplyr::filter(contrast_table(), sex %in% input$sex)
       DT::renderDataTable(foundr::summary_conditionContrasts(tbl, ntrait = 0))
     })
   }

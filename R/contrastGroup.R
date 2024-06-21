@@ -112,10 +112,10 @@ contrastGroupApp <- function() {
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
     # Contrast Trait Table
-    trait_table <- contrastTableServer("contrast_table", input, main_par,
+    trait_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     # Contrast Traits within Group Table
-    group_table <- contrastTableServer("contrast_table", input, main_par,
+    group_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Groups.
     contrast_list <- contrastGroupServer("contrast_group", input, main_par,

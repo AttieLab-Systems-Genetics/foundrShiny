@@ -7,7 +7,7 @@ devtools::install_github("byandell/foundrShiny")
 options(shiny.sanitize.errors = FALSE)
 
 foundrShiny::foundrSetup(data_instance = "Liver",
-                         #data_subset = c("Physio","MixMod"),
+                         data_subset = c("Physio","MixMod"),
                          custom_settings = TRUE,
                          dirpath = "~/Documents/Research/attie_alan/FounderDietStudy/deployLiver/")
 

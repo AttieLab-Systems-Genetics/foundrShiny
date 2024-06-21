@@ -8,7 +8,6 @@
 \usage{
 contrastTableServer(
   id,
-  panel_par,
   main_par,
   traitSignal,
   traitStats,
@@ -23,7 +22,7 @@ contrastTableApp(id)
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{panel_par, main_par}{parameters from calling modules}
+\item{main_par}{parameters from calling modules}
 
 \item{traitSignal, traitStats}{static data frames}
 

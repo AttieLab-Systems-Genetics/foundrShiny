@@ -27,16 +27,16 @@ contrastServer <- function(id, main_par,
     
     # MODULES
     # Contrast Trait Table. Note reuse of `id` for `contrastTableServer`.
-    trait_table <- contrastTableServer("contrast_table", input, main_par,
+    trait_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     # Contrast of Traits within Group Table
-    group_table <- contrastTableServer("contrast_table", input, main_par,
+    group_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Trait Plots by Sex
     sex_list <- contrastSexServer("contrast_sex", input, main_par,
       trait_table, customSettings)
     # Contrast Time Trait Table
-    times_table <- contrastTableServer("times_table", input, main_par,
+    times_table <- contrastTableServer("times_table", main_par,
       traitSignal, traitStatsTime, customSettings)
     # Contrast Time Traits
     contrast_time <- contrastTimeServer("contrast_time", input, main_par,

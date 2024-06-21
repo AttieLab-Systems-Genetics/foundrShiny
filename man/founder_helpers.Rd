@@ -30,7 +30,7 @@ eigen_traits_dataset(
   sexname = NULL,
   modulename = NULL,
   contr_object = NULL,
-  eigen_object = eigen_contrast(object, contr_object)
+  eigen_object = foundr::eigen_contrast(object, contr_object)
 )
 
 is_sex_module(object)

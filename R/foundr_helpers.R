@@ -9,6 +9,7 @@
 #' @importFrom rlang .data
 #' @importFrom stringr str_remove
 #' @importFrom tidyr separate_wider_delim unite
+#' @importFrom foundr bestcor eigen_contrast eigen_traits
 #' @importFrom utils combn
 #' @rdname founder_helpers
 contrast_signal <- function(contrasts) {
@@ -74,7 +75,7 @@ eigen_contrast_dataset_sex <- function(object, contr_object) {
   # For each `dataset`, construct contrast of eigens.
   # The `contr_object` is only used for module information.
   out <- purrr::map(datasets, function(x) {
-    eigen_contrast(object[[x]], contr_object[[x]])
+    foundr::eigen_contrast(object[[x]], contr_object[[x]])
   })
   class(out) <- c("conditionContrasts", class(out))
   c(out)
@@ -122,11 +123,9 @@ eigen_contrast_dataset_value <- function(object, contr_object) {
 #' @param eigen_object 
 #' @return data frame
 #' @rdname founder_helpers
-eigen_traits_dataset <- function(object = NULL,
-                                 sexname = NULL,
-                                 modulename = NULL,
-                                 contr_object = NULL,
-                                 eigen_object = eigen_contrast(object, contr_object)) {
+eigen_traits_dataset <- function(object = NULL, sexname = NULL,
+  modulename = NULL, contr_object = NULL,
+  eigen_object = foundr::eigen_contrast(object, contr_object)) {
   if(is.null(object) | is.null(contr_object))
     return(NULL)
   
@@ -135,11 +134,9 @@ eigen_traits_dataset <- function(object = NULL,
   
   eigen_traits_dataset_sex(object, sexname, modulename, contr_object, eigen_object)
 }
-eigen_traits_dataset_sex <- function(object = NULL,
-                                     sexname = NULL,
-                                     modulename = NULL,
-                                     contr_object = NULL,
-                                     eigen_object = eigen_contrast(object, contr_object)) {
+eigen_traits_dataset_sex <- function(object = NULL, sexname = NULL,
+  modulename = NULL, contr_object = NULL,
+  eigen_object = foundr::eigen_contrast(object, contr_object)) {
   if(is.null(object) || is.null(contr_object) || is.null(eigen_object) ||
      is.null(modulename))
     return(NULL)
@@ -153,17 +150,13 @@ eigen_traits_dataset_sex <- function(object = NULL,
   if(sexes != stringr::str_remove(modulename, "_.*"))
     return(NULL)
   
-  eigen_traits(object[[datasetname]],
-               sexname,
-               modulename,
-               dplyr::filter(contr_object, .data$dataset == datasetname),
-               dplyr::filter(eigen_object, .data$dataset == datasetname))
+  foundr::eigen_traits(object[[datasetname]], sexname, modulename,
+    dplyr::filter(contr_object, .data$dataset == datasetname),
+    dplyr::filter(eigen_object, .data$dataset == datasetname))
 }
-eigen_traits_dataset_value <- function(object = NULL,
-                                       sexname = NULL,
-                                       modulename = NULL,
-                                       contr_object = NULL,
-                                       eigen_object = eigen_contrast(object, contr_object)) {
+eigen_traits_dataset_value <- function(object = NULL, sexname = NULL,
+  modulename = NULL, contr_object = NULL,
+  eigen_object = foundr::eigen_contrast(object, contr_object)) {
   if(is.null(object) | is.null(contr_object) | is.null(eigen_object))
     return(NULL)
   
