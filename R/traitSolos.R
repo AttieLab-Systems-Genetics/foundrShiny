@@ -68,7 +68,7 @@ traitSolosApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, mainParInput("main_par")),
+          shiny::column(3, mainParInput("main_par")), # dataset
           shiny::column(9, shiny::uiOutput("traits"))),
         traitTableUI("trait_table"),
         shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
@@ -76,7 +76,7 @@ traitSolosApp <- function() {
       ),
       
       shiny::mainPanel(
-        mainParOutput("main_par"),
+        mainParOutput("main_par"), # plot_table, height
         shiny::uiOutput("plottable")
       )
     )
@@ -84,7 +84,7 @@ traitSolosApp <- function() {
   
   server <- function(input, output, session) {
     # MODULES
-    main_par <- mainParServer("main_par", traitSignal)
+    main_par <- mainParServer("main_par", traitStats)
     trait_table <- traitTableServer("trait_table", input,
       key_trait, rel_traits, traitData, traitSignal)
     traitSolosServer("solos_plot", input, main_par, trait_table)
@@ -105,7 +105,7 @@ traitSolosApp <- function() {
     })
     
     output$plottable <- shiny::renderUI({
-      switch(main_par$butshow,
+      switch(main_par$plot_table,
         Plots = shiny::tagList(
           shiny::h3("Solos Plot"),
           traitSolosUI("solos_plot")),

@@ -1,7 +1,7 @@
 #' Shiny Module Server for Plot Parameters
 #'
 #' @param id identifier
-#' @param contrastTable reactive data frame
+#' @param contrast_table reactive data frame
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
@@ -12,7 +12,7 @@
 #'             summary_strainstats
 #' @export
 #'
-plotParServer <- function(id, contrastTable) {
+plotParServer <- function(id, contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -25,17 +25,15 @@ plotParServer <- function(id, contrastTable) {
 
     # Input ordername
     output$ordername <- shiny::renderUI({
-      shiny::req(contrastTable())
+      shiny::req(contrast_table())
       orders <- c("p.value","kME","size","module")
-      orders <- orders[!is.na(match(orders, names(contrastTable())))]
+      orders <- orders[!is.na(match(orders, names(contrast_table())))]
       
       shiny::selectInput(ns("ordername"), "Order by:", orders)
     })
-    ord_selection <- shiny::reactiveVal(NULL, label = "ord_selection")
-    shiny::observeEvent(input$ordername, ord_selection(input$ordername))
-    
+
     # Input volvert
-    vol <- shiny::reactive({ vol_default(shiny::req(ord_selection())) },
+    vol <- shiny::reactive({ vol_default(shiny::req(input$ordername)) },
                            label = "vol")
     output$volvert <- shiny::renderUI({
       shiny::req(vol())
@@ -45,16 +43,14 @@ plotParServer <- function(id, contrastTable) {
                          min = vol()$min, max = vol()$max,
                          value = vol()$value, step = vol()$step)
     })
-    vert_selection <- shiny::reactiveVal(NULL, label = "vert_selection")
-    shiny::observeEvent(input$volvert, vert_selection(input$volvert))
     shiny::observeEvent(
-      shiny::req(contrastTable(), ord_selection(), vol(), info()),
+      shiny::req(contrast_table(), input$ordername, vol(), info()),
       {
-        maxsd <- min(signif(max(abs(contrastTable()[[info()$col]]), na.rm = TRUE), 2), 5)
+        maxsd <- min(signif(max(abs(contrast_table()[[info()$col]]), na.rm = TRUE), 2), 5)
         shiny::updateSliderInput(session, "volsd", max = maxsd)
         
-        if(ord_selection() == "p.value") {
-          maxvert <- min(10, round(-log10(min(contrastTable()$p.value, na.rm = TRUE)), 1))
+        if(input$ordername == "p.value") {
+          maxvert <- min(10, round(-log10(min(contrast_table()$p.value, na.rm = TRUE)), 1))
         } else {
           maxvert <- vol()$max
         }
@@ -64,7 +60,7 @@ plotParServer <- function(id, contrastTable) {
     # Input rownames
     info <- shiny::reactive({
       # Set up particulars for contrast or stat
-      if(inherits(shiny::req(contrastTable()), "conditionContrasts"))
+      if(inherits(shiny::req(contrast_table()), "conditionContrasts"))
         list(row = "strain", col = "value", title = "Strains")
       else
         list(row = "term", col = "SD", title = "Terms")
@@ -74,15 +70,11 @@ plotParServer <- function(id, contrastTable) {
       if(title == "Strains") {
         choices <- names(foundr::CCcolors)
       } else {
-        choices <- term_stats(contrastTable(), signal = FALSE, drop_noise = TRUE)
+        choices <- term_stats(contrast_table(), signal = FALSE, drop_noise = TRUE)
       }
       shiny::checkboxGroupInput(ns("rownames"), "",
         choices = choices, selected = choices, inline = TRUE)
     })
-    row_selection <- shiny::reactiveVal(NULL, label = "row_selection")
-    shiny::observeEvent(input$rownames, row_selection(input$rownames))
-
-
     ###############################################################
     input
   })
@@ -103,13 +95,19 @@ plotParInput <- function(id) {
 #' @export
 plotParUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    # Sliders from Volcano plot display.
-    shiny::fluidRow(
-      shiny::column(6, shiny::sliderInput(ns("volsd"),
-        "SD line:", min = 0, max = 2, value = 1, step = 0.1)),
-      shiny::column(6, shiny::uiOutput(ns("volvert")))),
-    shiny::uiOutput(ns("rownames")))
+  # Sliders from Volcano plot display.
+  shiny::fluidRow(
+    shiny::column(6, shiny::sliderInput(ns("volsd"),
+      "SD line:", min = 0, max = 2, value = 1, step = 0.1)),
+    shiny::column(6, shiny::uiOutput(ns("volvert"))))
+}
+#' Shiny Module Output for Plot Parameters
+#' @return nothing returned
+#' @rdname plotParServer
+#' @export
+plotParOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::uiOutput(ns("rownames"))
 }
 #' Shiny Module App for Plot Parameters
 #' @return nothing returned
@@ -117,16 +115,20 @@ plotParUI <- function(id) {
 #' @export
 plotParApp <- function() {
   ui <- shiny::bootstrapPage(
-    mainParInput("main_par"),
-    shiny::hr(style="border-width:5px;color:black;background-color:black"),
-    plotParInput("plot_par"), 
-    plotParUI("plot_par")
+    mainParInput("main_par"), # dataset
+    shiny::h3("plot_par parameters"),
+    shiny::h4("plotParInput: ordername, interact"),
+    plotParInput("plot_par"), # ordername, interact
+    shiny::h4("plotParUI: volsd, volvert"),
+    plotParUI("plot_par"), # volsd, volvert (sliders)
+    shiny::h4("plotParOutput: rownames"),
+    plotParOutput("plot_par") # rownames (strains/terms)
   )
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
-    plotParServer("plot_par", contrast_table)
+    plot_par <- plotParServer("plot_par", contrast_table)
   }
   shiny::shinyApp(ui, server)
 }

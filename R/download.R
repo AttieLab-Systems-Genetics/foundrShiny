@@ -18,10 +18,10 @@ downloadServer <- function(id, prefix, main_par, download_list) {
     
     # DOWNLOADS
     output$downloads <- shiny::renderUI({
-      shiny::req(main_par$butshow)
+      shiny::req(main_par$plot_table)
       
-      shiny::downloadButton(ns(paste0("download", main_par$butshow)),
-                            main_par$butshow)
+      shiny::downloadButton(ns(paste0("download", main_par$plot_table)),
+                            main_par$plot_table)
     })
     # Download File Prefix
     output$filename <- renderUI({
@@ -67,10 +67,10 @@ downloadOutput <- function(id) {
 downloadApp <- function(id) {
   ui <- shiny::bootstrapPage(
     shiny::fluidRow(
-      shiny::column(6, mainParInput("main_par")),
-      shiny::column(6, mainParUI("main_par"))),
+      shiny::column(6, mainParInput("main_par")), # dataset
+      shiny::column(6, mainParUI("main_par"))), # order
     downloadOutput("download"),
-    mainParOutput("main_par")
+    mainParOutput("main_par") # plot_table, height
   )
   server <- function(input, output, session) { 
     # Test sets

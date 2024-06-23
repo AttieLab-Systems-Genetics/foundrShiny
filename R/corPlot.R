@@ -3,7 +3,7 @@
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param CorTable reactive data frames
-#' @param panel_par,main_par reactive inputs from calling modules
+#' @param main_par reactive inputs from calling modules
 #' @param customSettings static list of settings
 #'
 #' @return reactive object
@@ -12,7 +12,7 @@
 #' @importFrom foundr ggplot_bestcor
 #' @export
 #'
-corPlotServer <- function(id, panel_par, main_par, cors_table,
+corPlotServer <- function(id, main_par, cors_table,
                          customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -62,17 +62,17 @@ corPlotApp <- function() {
       shiny::sidebarPanel(
         # Key Datasets and Trait.
         shiny::fluidRow(
-          shiny::column(3, mainParInput("main_par")),
-          shiny::column(3, mainParUI("main_par")),
-          shiny::column(6, traitNamesUI("key_trait"))),
+          shiny::column(3, mainParInput("main_par")), # dataset
+          shiny::column(3, mainParUI("main_par")), # order
+          shiny::column(6, traitNamesUI("key_trait"))), # key_trait
         # Related Datasets and Traits.
         shiny::fluidRow(
-          shiny::column(6, shiny::uiOutput("reldataset")),
-          shiny::column(6, traitNamesUI("rel_traits"))),
+          shiny::column(6, shiny::uiOutput("reldataset")), # rel_dataset
+          shiny::column(6, traitNamesUI("rel_traits"))), # rel_traits
         shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)
       ),
       shiny::mainPanel(
-        mainParOutput("main_par"),
+        mainParOutput("main_par"), # plot_table, height
         shiny::textOutput("key_trait"),
         corTableOutput("cors_table"),
         shiny::textOutput("rel_traits"),
@@ -81,19 +81,13 @@ corPlotApp <- function() {
     )
   )
   server <- function(input, output, session) {
-    # MODULES
-    # Order Traits by Stats.
     main_par <- mainParServer("main_par", traitStats)
     stats_table <- traitOrderServer("stats_table", main_par, traitStats)
-    # Key Trait.
     key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
-    # Correlation Table.
     cors_table  <- corTableServer("cors_table", input, main_par,
                                   key_trait, traitSignal)
-    # Related Traits.
     rel_traits   <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
-    # Correlation Plot
-    cors_plot   <- corPlotServer("cors_plot", input, main_par, cors_table)
+    cors_plot   <- corPlotServer("cors_plot", main_par, cors_table)
     
     # I/O FROM MODULE
     output$key_trait <- renderText({

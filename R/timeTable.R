@@ -85,7 +85,7 @@ timeTableApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")),
+            shiny::column(3, mainParInput("main_par")), # dataset
             shiny::column(9, timeTableInput("time_table"))),
           timeTableUI("time_table"),
           

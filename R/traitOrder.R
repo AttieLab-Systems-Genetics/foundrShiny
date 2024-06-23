@@ -84,8 +84,8 @@ traitOrderApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           # Key Datasets and Trait.
-          mainParInput("main_par"),
-          mainParUI("main_par"),
+          mainParInput("main_par"), # dataset
+          mainParUI("main_par"), # order
           # Related Datasets and Traits.
           shiny::uiOutput("reldataset")),
         
@@ -97,15 +97,6 @@ traitOrderApp <- function() {
   }
   
   server <- function(input, output, session) {
-    
-    # INPUTS
-    # OUTPUTS
-    #   output$key_trait: Key Trait
-    # OUTPUTS
-    #   stats_table()
-    
-    # MODULES
-    # Order Traits by Stats.
     main_par <- mainParServer("main_par", traitStats)
     stats_table <- traitOrderServer("shinyOrder", main_par, traitStats)
     

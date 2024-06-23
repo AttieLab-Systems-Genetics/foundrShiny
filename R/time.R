@@ -89,7 +89,7 @@ timeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(6, mainParInput("main_par")),
+            shiny::column(6, mainParInput("main_par")), # dataset
             shiny::column(6, timeInput("time"))),
           timeUI("time"),
           border_line(),
@@ -97,7 +97,7 @@ timeApp <- function() {
         ),
         
         shiny::mainPanel(
-          mainParOutput("main_par"),
+          mainParOutput("main_par"), # plot_table, height
           timeOutput("time")
         )))
   }

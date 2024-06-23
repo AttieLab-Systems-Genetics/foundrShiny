@@ -9,7 +9,7 @@
 #'             reactiveVal reactiveValues renderUI req selectInput shinyApp
 #'             sliderInput uiOutput
 #'
-panelParServer <- function(id, main_par, traitSignal = NULL) {
+panelParServer <- function(id, main_par, traitStats = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -21,7 +21,7 @@ panelParServer <- function(id, main_par, traitSignal = NULL) {
     output$traits <- shiny::renderUI({
       traits <- foundr::unite_datatraits(
         dplyr::distinct(
-          dplyr::filter(traitSignal, .data$dataset %in% main_par$dataset),
+          dplyr::filter(traitStats, .data$dataset %in% main_par$dataset),
           .data$dataset, .data$trait))
       shiny::selectInput("trait","Traits:", traits)
     })
@@ -35,19 +35,22 @@ panelParServer <- function(id, main_par, traitSignal = NULL) {
 }
 #' @export
 #' @rdname panelParServer
-panelParStrains <- function(id) {
+panelParInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("strains"))
+  shiny::fluidRow(
+    shiny::column(9, shiny::uiOutput(ns("strains"))),
+    shiny::column(3, shiny::checkboxInput(ns("facet"),
+                                          "Facet by strain?", TRUE)))
 }
 #' @export
 #' @rdname panelParServer
-panelParTraits <- function(id) {
+panelParUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("traits"))
 }
 #' @export
 #' @rdname panelParServer
-panelParSex <- function(id) {
+panelParOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("sex"))
 }
@@ -56,18 +59,18 @@ panelParSex <- function(id) {
 #' @rdname panelParServer
 panelParApp <- function(title = "") {
   ui <- shiny::bootstrapPage(
-    mainParInput("main_par"),
+    mainParInput("main_par"), # dataset
     shiny::h3("panel_par parameters"),
-    shiny::h4("panelParStrains: strains"),
-    panelParStrains("panel_par"), 
-    shiny::h4("panelParTraits: traits"),
-    panelParTraits("panel_par"), 
-    shiny::h4("panelParSex: sex"),
-    panelParSex("panel_par")
+    shiny::h4("panelParInput: strains, facet"),
+    panelParInput("panel_par"), # strains, facet
+    shiny::h4("panelParUI: traits"),
+    panelParUI("panel_par"), # Traits
+    shiny::h4("panelParOutput: sex"),
+    panelParOutput("panel_par") # Sexes (B/F/M/C)
   )
   server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitSignal)
-    panelParServer("panel_par", main_par, traitSignal)
+    main_par <- mainParServer("main_par", traitStats)
+    panelParServer("panel_par", main_par, traitStats)
   }
   shiny::shinyApp(ui, server)
 }

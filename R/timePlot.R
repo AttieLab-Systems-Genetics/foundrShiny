@@ -32,13 +32,13 @@ timePlotServer <- function(id, panel_par, main_par,
     relTraits <- shiny::reactiveVal(NULL)
     
     output$plotfront <- shiny::renderUI({
-      if(shiny::req(main_par$butshow) == "Tables") {
+      if(shiny::req(main_par$plot_table) == "Tables") {
         shiny::radioButtons(ns("buttable"), "Download:",
                             c("Cell Means","Stats"), "Cell Means", inline = TRUE)
       }
     })
     output$plotstables <- shiny::renderUI({
-      switch(shiny::req(main_par$butshow),
+      switch(shiny::req(main_par$plot_table),
              Plots  = shiny::uiOutput(ns("plots")),
              Tables = shiny::uiOutput(ns("tables")))
     })
@@ -94,7 +94,7 @@ timePlotServer <- function(id, panel_par, main_par,
     shiny::reactiveValues(
       postfix = shiny::reactive({
         filename <- paste(names(traitTimesData()$traits), collapse = ",")
-        if(shiny::req(main_par$butshow) == "Tables")
+        if(shiny::req(main_par$plot_table) == "Tables")
           filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
                              filename)
         stringr::str_replace_all(filename, ": ", "_")
@@ -128,3 +128,39 @@ timePlotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("plotstables")) # Plots and Tables
 }
+#' Shiny Module App for Times Plot
+#' @return nothing returned
+#' @rdname timeServer
+#' @export
+timePlotApp <- function() {
+  title <- "Test shinyTime Module"
+  
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(6, mainParInput("main_par")), # dataset
+            shiny::column(6, timeInput("time"))),
+          timeUI("time")
+        ),
+        
+        shiny::mainPanel(
+          mainParOutput("main_par"), # plot_table, height
+          timeOutput("time")
+        )))
+  }
+  
+  server <- function(input, output, session) {
+    # MODULES
+    main_par <- mainParServer("main_par", traitStats)
+    time_table <- timeTableServer("shinyTimeTable", input, main_par, 
+                                  traitData, traitSignal, traitStats)
+    time_list <- timePlotServer("shinyTimePlot", input, main_par,
+                                traitSignal, time_table)
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
+}
+

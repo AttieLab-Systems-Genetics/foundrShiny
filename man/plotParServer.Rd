@@ -4,24 +4,29 @@
 \alias{plotParServer}
 \alias{plotParInput}
 \alias{plotParUI}
+\alias{plotParOutput}
 \alias{plotParApp}
 \title{Shiny Module Server for Plot Parameters}
 \usage{
-plotParServer(id, contrastTable)
+plotParServer(id, contrast_table)
 
 plotParInput(id)
 
 plotParUI(id)
+
+plotParOutput(id)
 
 plotParApp()
 }
 \arguments{
 \item{id}{identifier}
 
-\item{contrastTable}{reactive data frame}
+\item{contrast_table}{reactive data frame}
 }
 \value{
 reactive object
+
+nothing returned
 
 nothing returned
 
@@ -35,6 +40,8 @@ Shiny Module Server for Plot Parameters
 Shiny Module Input for Plot Parameters
 
 Shiny Module UI for Plot Parameters
+
+Shiny Module Output for Plot Parameters
 
 Shiny Module App for Plot Parameters
 }

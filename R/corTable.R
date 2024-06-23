@@ -65,9 +65,9 @@ corTableApp <- function() {
       shiny::sidebarPanel(
         # Key Datasets and Trait.
         shiny::fluidRow(
-          shiny::column(3, mainParInput("main_par")),
-          shiny::column(3, mainParUI("main_par")),
-          shiny::column(6, traitNamesUI("key_trait"))),
+          shiny::column(3, mainParInput("main_par")), # dataset
+          shiny::column(3, mainParUI("main_par")), # order
+          shiny::column(6, traitNamesUI("key_trait"))), # key_trait
         # Related Datasets and Traits.
         shiny::uiOutput("reldataset")),
       
@@ -81,23 +81,9 @@ corTableApp <- function() {
     )
   )
   server <- function(input, output, session) {
-    # INPUTS (see shinyTraitStats)
-    # OUTPUTS (see shinyTraitStats)
-    #   output$key_trait: Key Trait
-    #   output$key_stats: Key Dataset Stats
-    #   output$rel_traits: Related Traits
-    #   output$corstable: Table of Datasets Correlations
-    #   output$corsplot: Plot of Datasets Correlations
-    # OUTPUTS (see shinyTraitStats)
-    #   cors_table()
-    
-    # MODULES
     main_par <- mainParServer("main_par", traitStats)
-    # Order Traits by Stats.
     stats_table <- traitOrderServer("stats_table", main_par, traitStats)
-    # Key Trait.
     key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
-    # Correlation Table.
     cors_table  <- corTableServer("cors_table", input, main_par, key_trait, traitSignal)
     
     # I/O FROM MODULE

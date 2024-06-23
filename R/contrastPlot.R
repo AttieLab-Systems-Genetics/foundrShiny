@@ -29,7 +29,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
     output$traitOutput <- shiny::renderUI({
       shiny::tagList(
         shiny::h3(modTitle()),
-        switch(shiny::req(main_par$butshow),
+        switch(shiny::req(main_par$plot_table),
           Plots  = shiny::tagList(
             shiny::uiOutput(ns("plots")),
             shiny::uiOutput(ns("plot"))), 
@@ -87,7 +87,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
 #' @export
 contrastPlotUI <- function(id) {
   ns <- shiny::NS(id)
-  plotParInput(ns("plot_par"))
+  plotParInput(ns("plot_par")) # ordername, interact
 }
 #' Shiny Module Output for Contrast Plots
 #' @return nothing returned
@@ -96,7 +96,8 @@ contrastPlotUI <- function(id) {
 contrastPlotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    plotParUI(ns("plot_par")),
+    plotParUI(ns("plot_par")), # volsd, volvert (sliders)
+    plotParOutput(ns("plot_par")), # rownames (strains/terms)
     shiny::uiOutput(ns("traitOutput")))
 }
 #' Shiny Sex App for Contrast Plots
@@ -112,12 +113,12 @@ contrastPlotApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"),
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
-          mainParUI("main_par")
+          mainParInput("main_par"), # dataset
+          border_line(),
+          mainParUI("main_par") # order
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"),
+          mainParOutput("main_par"), # plot_table, height
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput("sex")),
             shiny::column(8, contrastPlotUI("contrast_plot"))),

@@ -21,16 +21,6 @@ traitTableServer <- function(id, panel_par, key_trait, rel_traits,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    # Main inputs:
-    #   panel_par$strains
-    #   panel_par$reldataset
-    # traitObject inputs: (see traitObjectUI)
-    #   input$butresp
-    
-    # RETURNS
-    # trait_table()
-    
     # Wrap input$butresp
     resp_selection <- shiny::reactiveVal(NULL, label = "resp_selection")
     shiny::observeEvent(input$butresp,
@@ -101,52 +91,39 @@ traitTableApp <- function() {
   title <- "Test Shiny Trait Table"
   
   ui <- function() {
-    # INPUTS
-    #   input$facet: Facet by strain?
-    #   input$strains: Strains to select
-    #   input$height: Plot Height
-    #   input$
-    #
-    # OUTPUTS (see shinyTraitTable)
-    #   trait_table()
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"),
-          shiny::uiOutput("traits"),
-          shiny::uiOutput("strains"), # See SERVER-SIDE INPUTS below
-          traitTableUI("shinyTest")
+          shiny::fluidRow(
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(3, mainParUI("main_par")), # order
+            shiny::column(6, traitNamesUI("key_trait"))), # key_trait
+          traitTableUI("trait_table")
         ),
-        
         shiny::mainPanel(
-          traitTableOutput("shinyTest")
-        )))
+          #shiny::uiOutput("strains"),
+          panelParInput("panel_par"),
+          traitTableOutput("trait_table")
+        )
+      )
+    )
   }
-  
   server <- function(input, output, session) {
-    
-    # MODULES
-    main_par <- mainParServer("main_par", traitSignal)
-    trait_table <- traitTableServer("shinyTest", input,
-      key_trait, rel_traits, traitData, traitSignal)
-    # Mockup of trait names
-    key_trait <- shiny::reactive(shiny::req(input$trait), label = "key_trait")
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par,
+      traitStats, customSettings)
+    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     rel_traits <- shiny::reactive(NULL, label = "rel_traits")
-    
+    trait_table <- traitTableServer("trait_table", input,
+      key_trait, rel_traits, traitData, traitSignal)
+
     # SERVER-SIDE INPUTS
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
       shiny::checkboxGroupInput("strains", "Strains",
         choices = choices, selected = choices, inline = TRUE)
-    })
-    output$traits <- shiny::renderUI({
-      traits <- foundr::unite_datatraits(
-        dplyr::distinct(
-          dplyr::filter(traitSignal, .data$dataset %in% main_par$dataset),
-          .data$dataset, .data$trait))
-      shiny::selectInput("trait","Traits:", traits)
     })
   }
   

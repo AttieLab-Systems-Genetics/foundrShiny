@@ -99,12 +99,13 @@ biplotApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"),
-          plotParInput("plot_par")
+          mainParInput("main_par"), # dataset
+          plotParInput("plot_par") # ordername, interact
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"),
-          plotParUI("plot_par"),
+          mainParOutput("main_par"), # plot_table, height
+          plotParUI("plot_par"), # volsd, volvert (sliders)
+          plotParOutput("plot_par"), # rownames (strains/terms)
           shiny::uiOutput("sex"),
           biplotOutput("biplot")
         )

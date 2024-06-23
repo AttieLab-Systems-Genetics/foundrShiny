@@ -17,10 +17,6 @@ contrastTimeServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    # RETURNS
-    #   contrastOutput
-    
     # MODULES
     # Identify Time Traits.
     times_list <- timeTraitsServer("times_list", panel_par, main_par,
@@ -69,8 +65,8 @@ contrastTimeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")),
-            shiny::column(3, mainParUI("main_par")), # Order
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(3, mainParUI("main_par")), # order
             shiny::column(6, contrastTimeInput("contrast_time"))), # Traits
           contrastTimeUI("contrast_time"),
           shiny::uiOutput("strains")
@@ -84,19 +80,14 @@ contrastTimeApp <- function() {
   }
   
   server <- function(input, output, session) {
-    # Identify all Time Traits.
-    timetrait_all <- timetraitsall(traitSignal)
-    # Subset Stats to time traits.
-    traitStatsTime <- time_trait_subset(traitStats, timetrait_all)
-    
-    # MODULES
     main_par <- mainParServer("main_par", traitStatsTime)
     # Contrast Time Trait Table
+    stats_time_table <- time_trait_subset(traitStats,
+                                          timetraitsall(traitSignal))
     times_table <- contrastTableServer("times_table", main_par,
-      traitSignal, traitStatsTime, customSettings)
-    # Contrast Time Traits
+      traitSignal, stats_time_table, customSettings)
     contrast_time <- contrastTimeServer("contrast_time", input, main_par,
-      traitSignal, traitStatsTime, times_table)
+      traitSignal, stats_time_table, times_table)
     
     # SERVER-SIDE Inputs
     output$strains <- shiny::renderUI({

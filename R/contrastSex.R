@@ -55,9 +55,9 @@ contrastSexApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"),
+          mainParInput("main_par"), # dataset
           border_line(),
-          mainParOutput("main_par")
+          mainParOutput("main_par") # plot_table, height
         ),
         shiny::mainPanel(
           shiny::fluidRow(

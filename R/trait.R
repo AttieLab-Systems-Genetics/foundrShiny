@@ -34,18 +34,18 @@ traitServer <- function(id, main_par,
     stats_table <- traitOrderServer("stats_table", main_par,
                                     traitStats, customSettings)
     # Key Trait.
-    keyTrait    <- traitNamesServer("keyTrait", main_par, stats_table)
+    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     # Key Trait and Correlation Table.
     cors_table  <- corTableServer("shinyCorTable", input, main_par,
-                                  keyTrait, traitSignal, customSettings)
+                                  key_trait, traitSignal, customSettings)
     # Related Traits.
-    relTraits   <- traitNamesServer("relTraits", main_par, cors_table, TRUE)
+    rel_traits   <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
     # Correlation Plot
-    cors_plot   <- corPlotServer("cors_plot", input, main_par,
+    cors_plot   <- corPlotServer("cors_plot", main_par,
                                   cors_table, customSettings)
     # Trait Table.
     trait_table <- traitTableServer("trait_table", input,
-      keyTrait, relTraits, traitData, traitSignal, customSettings)
+      key_trait, rel_traits, traitData, traitSignal, customSettings)
     # Solo and Pairs Plots.
     solos_plot  <- traitSolosServer("shinySolos", input, main_par, trait_table)
     pairs_plot  <- traitPairsServer("shinyPairs", input, main_par, trait_names,
@@ -60,7 +60,7 @@ traitServer <- function(id, main_par,
 
     # Trait Names.
     trait_names <- shiny::reactive({
-      c(shiny::req(keyTrait()), relTraits())
+      c(shiny::req(key_trait()), rel_traits())
     },
     label = "trait_names")
     
@@ -97,14 +97,14 @@ traitServer <- function(id, main_par,
         }))
     })
     output$downtable <- shiny::renderUI({
-      if(shiny::req(main_par$butshow) == "Tables") {
+      if(shiny::req(main_par$plot_table) == "Tables") {
         shiny::radioButtons(ns("buttable"), "Download:",
                             c("Cell Means","Correlations","Stats"), "Cell Means", inline = TRUE)
       }
     })
     output$traitOutput <- shiny::renderUI({
       shiny::tagList(
-        switch(shiny::req(main_par$butshow),
+        switch(shiny::req(main_par$plot_table),
                Plots = {
                  shiny::tagList(
                    shiny::h3("Trait Plots"),
@@ -123,7 +123,7 @@ traitServer <- function(id, main_par,
                }),
         
         # Correlation Plots or Tables
-        switch(shiny::req(main_par$butshow),
+        switch(shiny::req(main_par$plot_table),
                Plots = {
                  if(foundr::is_bestcor(cors_table()))
                    corPlotOutput(ns("cors_plot"))
@@ -135,7 +135,7 @@ traitServer <- function(id, main_par,
     shiny::reactiveValues(
       postfix = shiny::reactive({
         filename <- stringr::str_replace(trait_names()[1], ": ", "_")
-        if(shiny::req(main_par$butshow) == "Tables")
+        if(shiny::req(main_par$plot_table) == "Tables")
           filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
                              filename)
         filename
@@ -167,7 +167,7 @@ traitServer <- function(id, main_par,
 #' @export
 traitInput <- function(id) { # 4:Order, 8:Traits
   ns <- shiny::NS(id)
-  traitNamesUI(ns("keyTrait"))
+  traitNamesUI(ns("key_trait"))
 }
 #' Shiny Module UI for Trait Panel
 #' @return nothing returned
@@ -179,7 +179,7 @@ traitUI <- function(id) { # Related Datasets and Traits
     # Related Datasets and Traits.
     shiny::fluidRow(
       shiny::column(6, shiny::uiOutput(ns("reldataset"))),
-      shiny::column(6, traitNamesUI(ns("relTraits"))))
+      shiny::column(6, traitNamesUI(ns("rel_traits"))))
   )
 }
 #' Shiny Module Output for Trait Panel
@@ -210,23 +210,23 @@ traitApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::fluidRow(
-          shiny::column(3, mainParInput("main_par")),
-          shiny::column(3, mainParUI("main_par")),
-          shiny::column(6, traitInput("trait_panel"))),
-        traitUI("trait_panel"),
-        shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        mainParOutput("main_par"),
+          shiny::column(3, mainParInput("main_par")), # dataset
+          shiny::column(3, mainParUI("main_par")), # order
+          shiny::column(6, traitInput("trait_list"))), # key_trait
+        traitUI("trait_list"),
+        border_line(),
+        mainParOutput("main_par"), # plot_table, height
         downloadOutput("download")
       ),
       shiny::mainPanel(
-        traitOutput("trait_panel")
+        traitOutput("trait_list")
       )
     )
   )
   server <- function(input, output, session) {
     # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
-    trait_list <- traitServer("trait_panel", main_par,
+    trait_list <- traitServer("trait_list", main_par,
       traitData, traitSignal, traitStats, customSettings)
     downloadServer("download", "Trait", main_par, trait_list)
   }

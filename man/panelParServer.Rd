@@ -2,28 +2,28 @@
 % Please edit documentation in R/panelPar.R
 \name{panelParServer}
 \alias{panelParServer}
-\alias{panelParStrains}
-\alias{panelParTraits}
-\alias{panelParSex}
+\alias{panelParInput}
+\alias{panelParUI}
+\alias{panelParOutput}
 \alias{panelParApp}
 \title{Shiny Server for panelPar Server}
 \usage{
-panelParServer(id, main_par, traitSignal = NULL)
+panelParServer(id, main_par, traitStats = NULL)
 
-panelParStrains(id)
+panelParInput(id)
 
-panelParTraits(id)
+panelParUI(id)
 
-panelParSex(id)
+panelParOutput(id)
 
 panelParApp(title = "")
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{title}{title of app}
-
 \item{traitStats}{static object}
+
+\item{title}{title of app}
 }
 \value{
 reactive input

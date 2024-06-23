@@ -78,9 +78,9 @@ statsApp <- function() {
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        mainParInput("main_par"),
-        shiny::hr(style="border-width:5px;color:black;background-color:black"),
-        mainParUI("main_par")),
+        mainParInput("main_par"), # dataset
+        border_line(),
+        mainParUI("main_par")), # order
       
       shiny::mainPanel(
         statsOutput("StatsPanel")

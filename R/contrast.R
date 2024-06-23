@@ -245,14 +245,14 @@ contrastApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(6, mainParInput("main_par")),
+            shiny::column(6, mainParInput("main_par")), # Dataset
             shiny::column(6, contrastInput("contrast_list"))),
           contrastUI("contrast_list"),
           shiny::hr(style="border-width:5px;color:black;background-color:black"),
           downloadOutput("download")
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"),
+          mainParOutput("main_par"), # plot_table, height
           contrastOutput("contrast_list")
         )
       )

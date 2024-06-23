@@ -93,10 +93,10 @@ contrastGroupApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par")
+          mainParInput("main_par") # dataset
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"),
+          mainParOutput("main_par"), # plot_table, height
           contrastGroupInput("contrast_group"),
           shiny::fluidRow(
             shiny::column(4, shiny::uiOutput("sex")),
