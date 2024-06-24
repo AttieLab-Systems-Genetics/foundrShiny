@@ -15,7 +15,7 @@ panelParServer <- function(id, main_par, traitStats = NULL) {
     
     output$strains <- shiny::renderUI({
       choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput("strains", "Strains",
+      shiny::checkboxGroupInput(ns("strains"), "Strains",
                                 choices = choices, selected = choices, inline = TRUE)
     })
     output$traits <- shiny::renderUI({
@@ -23,7 +23,7 @@ panelParServer <- function(id, main_par, traitStats = NULL) {
         dplyr::distinct(
           dplyr::filter(traitStats, .data$dataset %in% main_par$dataset),
           .data$dataset, .data$trait))
-      shiny::selectInput("trait","Traits:", traits)
+      shiny::selectInput(ns("trait"),"Traits:", traits)
     })
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     output$sex <- shiny::renderUI({

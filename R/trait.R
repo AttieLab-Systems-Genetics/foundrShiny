@@ -107,8 +107,6 @@ traitServer <- function(id, main_par,
         switch(shiny::req(main_par$plot_table),
                Plots = {
                  shiny::tagList(
-                   shiny::h3("Trait Plots"),
-                   # Trait Solos Plot
                    traitSolosUI(ns("shinySolos")),
                    # Trait Pairs Plot
                    if(length(shiny::req(trait_names())) > 1)

@@ -76,9 +76,7 @@ traitOrderUI <- function(id) {
 #' @export
 traitOrderApp <- function() {
   title <- "Test Shiny Trait Order Table"
-  
   ui <- function() {
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
@@ -87,33 +85,23 @@ traitOrderApp <- function() {
           mainParInput("main_par"), # dataset
           mainParUI("main_par"), # order
           # Related Datasets and Traits.
-          shiny::uiOutput("reldataset")),
-        
+          shiny::uiOutput("reldataset")
+        ),
         shiny::mainPanel(
-          shiny::tagList(
-            shiny::textOutput("key_trait"),
-            traitOrderUI("shinyOrder"))
-        )))
+          shiny::textOutput("key_trait"),
+          traitOrderUI("shinyOrder")
+        )
+      )
+    )
   }
-  
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
     stats_table <- traitOrderServer("shinyOrder", main_par, traitStats)
     
-    # I/O FROM MODULE
-    output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      
-      # Get datasets.
-      shiny::selectInput("dataset", "Datasets:",
-                         datasets, datasets[1], multiple = TRUE)
-    })
     output$key_trait <- renderText({
       shiny::req(stats_table())
       foundr::unite_datatraits(stats_table(), key = TRUE)[1]
     })
-    
   }
   
   shiny::shinyApp(ui = ui, server = server)

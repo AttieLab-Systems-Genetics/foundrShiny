@@ -24,11 +24,6 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    #   main_par$tabpanel
-    # shinyTraitNames inputs: (see output$shiny_modcomp below)
-    #   input$trait Trait Names
-    
     # Select traits
     output$shiny_names <- shiny::renderUI({
       inputId <- ifelse(multiples, "Related Traits:", "Key Trait:")
@@ -85,52 +80,34 @@ traitNamesApp <- function() {
   title <- "Test Shiny Trait Names"
   
   ui <- function() {
-    # INPUTS
-    #   see shinyTraitNames 
-    #
-    # OUTPUTS (see shinyTraitNames)
-    #   output$name: Traits
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          shiny::uiOutput("name")),
-        
+          mainParInput("main_par"), # dataset
+          traitNamesUI("trait_names"),
+          traitNamesUI("trait_names2")
+        ),
         shiny::mainPanel(
-          shiny::tagList(
-            shiny::uiOutput("inputs"),
-            
-            traitNamesUI("shinyTest")))
-      ))
+          shiny::uiOutput("name"),
+          shiny::uiOutput("name2")
+        )
+      )
+    )
   }
-  
   server <- function(input, output, session) {
-    
-    # INPUTS (see shinyTraitNames)
-    #   input$dataset: Dataset
-    # OUTPUTS (see shinyTraitNames)
-    #   output$name: Traits
-    
-    # MODULES
-    trait_names <- traitNamesServer("shinyTest", input, traitStatsInput)
-    
-    datasets <- shiny::reactive({
-      unique(traitStats$dataset)
-    },
-    label = "datasets")
-    
-    # INPUTS  
-    output$inputs <- renderUI({
-      shiny::selectInput("dataset", "Dataset:", datasets(), multiple = TRUE)
-    })
+    main_par <- mainParServer("main_par", traitStats)
+    trait_names <- traitNamesServer("trait_names", main_par,
+      traitStatsInput)
+    trait_names2 <- traitNamesServer("trait_names2", main_par,
+                                    traitStatsInput, TRUE)
     
     # DATA OBJECTS 
     traitStatsInput <- shiny::reactive({
-      if(shiny::isTruthy(input$dataset)) {
+      if(shiny::isTruthy(main_par$dataset)) {
         dplyr::filter(
           traitStats,
-          .data$dataset %in% input$dataset)
+          .data$dataset %in% main_par$dataset)
       } else {
         NULL
       }
@@ -141,7 +118,12 @@ traitNamesApp <- function() {
     output$name <- renderUI({
       shiny::req(trait_names())
       name <- paste(trait_names(), collapse = ", ")
-      shiny::textAreaInput("name", "Traits", name)
+      shiny::textAreaInput("name", "Trait:", name)
+    })
+    output$name2 <- renderUI({
+      shiny::req(trait_names())
+      name <- paste(trait_names2(), collapse = ", ")
+      shiny::textAreaInput("name2", "Multiple Traits:", name)
     })
   }
   

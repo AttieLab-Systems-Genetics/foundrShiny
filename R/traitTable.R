@@ -32,7 +32,7 @@ traitTableServer <- function(id, panel_par, key_trait, rel_traits,
       
       foundr::subset_trait_names(traitData, key_trait())
     })
-
+    
     # trait_table Data Frame
     trait_table <- shiny::reactive({
       foundr::traitSolos(
@@ -54,7 +54,7 @@ traitTableServer <- function(id, panel_par, key_trait, rel_traits,
       summary(trait_table(), customSettings)
     })
     
-    output$shiny_traitObject <- DT::renderDataTable(
+    output$trait_table <- DT::renderDataTable(
       shiny::req(datameans()),
       escape = FALSE,
       options = list(scrollX = TRUE, pageLength = 10))
@@ -81,7 +81,7 @@ traitTableOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h3("Cell Means"),
-    DT::dataTableOutput(ns("shiny_traitObject")))
+    DT::dataTableOutput(ns("trait_table")))
 }
 #' Shiny Module App for Trait Table
 #' @return nothing returned
@@ -89,7 +89,6 @@ traitTableOutput <- function(id) {
 #' @export
 traitTableApp <- function() {
   title <- "Test Shiny Trait Table"
-  
   ui <- function() {
     shiny::fluidPage(
       shiny::titlePanel(title),
@@ -102,8 +101,7 @@ traitTableApp <- function() {
           traitTableUI("trait_table")
         ),
         shiny::mainPanel(
-          #shiny::uiOutput("strains"),
-          panelParInput("panel_par"),
+          panelParInput("panel_par"), # strains, facet
           traitTableOutput("trait_table")
         )
       )
@@ -111,20 +109,13 @@ traitTableApp <- function() {
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     stats_table <- traitOrderServer("stats_table", main_par,
       traitStats, customSettings)
     key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     rel_traits <- shiny::reactive(NULL, label = "rel_traits")
-    trait_table <- traitTableServer("trait_table", input,
+    trait_table <- traitTableServer("trait_table", panel_par,
       key_trait, rel_traits, traitData, traitSignal)
-
-    # SERVER-SIDE INPUTS
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput("strains", "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
   }
   
   shiny::shinyApp(ui = ui, server = server)

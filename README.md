@@ -165,6 +165,13 @@ the `traitTable` module returns a
   + contrastTime: contrast, strains
   + timePlot: strains, facet
   + contrastGroup: sex, group
+  + contrastPlot: sex, strain (via volcano?)
+  
+Careful that contrastPlot and its sub-modules
+(volcano,biplot,dotplot)
+us rownames from plotPar, which is substitute for strain.
+Volcano may have wrong call for strain.
+
 
 ## Panel sub-modules
 
