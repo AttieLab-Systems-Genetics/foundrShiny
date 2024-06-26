@@ -46,12 +46,6 @@ panelParInput <- function(id) {
 #' @rdname panelParServer
 panelParUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("traits"))
-}
-#' @export
-#' @rdname panelParServer
-panelParOutput <- function(id) {
-  ns <- shiny::NS(id)
   shiny::uiOutput(ns("sex"))
 }
 #' @param title title of app
@@ -63,10 +57,8 @@ panelParApp <- function(title = "") {
     shiny::h3("panel_par parameters"),
     shiny::h4("panelParInput: strains, facet"),
     panelParInput("panel_par"), # strains, facet
-    shiny::h4("panelParUI: traits"),
-    panelParUI("panel_par"), # Traits
-    shiny::h4("panelParOutput: sex"),
-    panelParOutput("panel_par") # Sexes (B/F/M/C)
+    shiny::h4("panelParUI: sex"),
+    panelParUI("panel_par") # sex (B/F/M/C)
   )
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)

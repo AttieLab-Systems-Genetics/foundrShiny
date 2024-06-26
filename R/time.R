@@ -102,7 +102,6 @@ timeApp <- function() {
           mainParOutput("main_par"), # plot_table, height
           downloadOutput("download")
         ),
-        
         shiny::mainPanel(
           timeOutput("time")
         )))

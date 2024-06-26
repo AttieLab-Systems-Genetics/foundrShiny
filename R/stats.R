@@ -19,27 +19,9 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
                              facet = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # *** allow to flip from SD to p.value
-    # *** fix all the kludgey stuff--may need to refactor
-    # *** contrastPlot: add scatterplot
-    # *** rename as contrast now has generic contrast/stat
-    # *** refactor data so Charles can use
-    
-    # INPUTS
-    # Main inputs:
-    #   main_par$height
-    #   main_par$dataset
-    # Stats inputs: (see output$tab_volcano below)
-    #   input$term
-    #   input$traitnames
-    #   input$interact
-    #   input$volsd
-    #   input$volpval
-    
-    # MODULES
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     # Contrast Trait Plots
-    contrast_list <- contrastPlotServer("contrast_plot", input, main_par,
+    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
       traitStatsSelected, customSettings, shiny::reactive("Stats Contrasts"))
     
     # Dataset selection.
@@ -64,6 +46,7 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
 statsOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
+    panelParUI(ns("panel_par")), # sex (B/F/M/C)
     contrastPlotUI(ns("contrast_plot")),
     contrastPlotOutput(ns("contrast_plot")))
 }
@@ -79,9 +62,11 @@ statsApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         mainParInput("main_par"), # dataset
+        mainParUI("main_par"), # order
         border_line(),
-        mainParUI("main_par")), # order
-      
+        mainParOutput("main_par"), # plot_table, height
+        downloadOutput("download")
+      ),
       shiny::mainPanel(
         statsOutput("StatsPanel")
       )

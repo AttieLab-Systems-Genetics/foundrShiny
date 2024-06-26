@@ -4,7 +4,6 @@
 \alias{panelParServer}
 \alias{panelParInput}
 \alias{panelParUI}
-\alias{panelParOutput}
 \alias{panelParApp}
 \title{Shiny Server for panelPar Server}
 \usage{
@@ -13,8 +12,6 @@ panelParServer(id, main_par, traitStats = NULL)
 panelParInput(id)
 
 panelParUI(id)
-
-panelParOutput(id)
 
 panelParApp(title = "")
 }
