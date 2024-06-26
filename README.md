@@ -149,11 +149,9 @@ It made sense to allow these to let the user set these separately within each pa
 Some parameters are passed as lists from one module to another. For instance,
 the `traitTable` module returns a 
 - trait
-  + traitNames: (trait)
-  + corTable: reldataset
-  + traitTable: strains (trait)
-  + traitSolos: facet (traits)
-  + traitPairs: facet (trait)
+  + traitTable: strains
+  + traitSolos: facet
+  + traitPairs: facet
 - stats
   + contrastPlot: sex
 - time

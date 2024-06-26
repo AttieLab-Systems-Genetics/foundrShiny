@@ -13,45 +13,56 @@ timeServer <- function(id, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # *** Want Times panel to look more like Traits panel.
-    # Move Response (from shinyTimeTraitsOutput) to main from side.
-    # Put Order and Traits (from shinyTraitOrderInput and shinyTimeTraitsInput) up with datasets.
-    # Keep Time unit (from shinyTimeTraitsUI) on side panel.
-    # Key Datasets and Trait.
-    # shinyTimePanel
-    # Mostly works but lost shinyTimeTraitsUI and time unit.
-    
-    
-    # INPUTS
-    # passed inputs:
-    #   main_par$dataset
-    #   main_par$height
-    #   input$strains
-    #   input$facet
-    
-    # MODULES
-    time_table <- timeTableServer("shinyTimeTable", input, main_par, 
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    time_table <- timeTableServer("time_table", panel_par, main_par, 
       traitData, traitSignal, traitStats)
-    time_list <- timePlotServer("shinyTimePlot", input, main_par,
+    time_plot <- timePlotServer("time_plot", panel_par, main_par,
       traitSignal, time_table)
     
-    # SERVER-SIDE Inputs
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(ns("strains"), "Strains",
-        choices = choices, selected = choices, inline = TRUE)
+    output$plot_table <- shiny::renderUI({
+      shiny::tagList(
+        panelParInput(ns("panel_par")), # strains, facet
+        if(shiny::req(main_par$plot_table) == "Tables") {
+          shiny::radioButtons(ns("plot_table"), "Download:",
+            c("Cell Means","Stats"), "Cell Means", inline = TRUE)
+        },
+        switch(shiny::req(main_par$plot_table),
+               Plots  = timePlotOutput(ns("time_plot")),
+               Tables = timeTableOutput(ns("time_table")))
+      )
     })
+    
     ###############################################################
-    time_list
+    shiny::reactiveValues(
+      postfix = shiny::reactive({
+        shiny::req(time_table())
+        filename <- paste(names(time_table()$traits), collapse = ",")
+        if(shiny::req(main_par$plot_table) == "Tables")
+          filename <- paste0(stringr::str_remove(input$buttable, " "), "_",
+                             filename)
+        stringr::str_replace_all(filename, ": ", "_")
+      }),
+      plotObject = shiny::reactive({
+        shiny::req(time_plot())
+        print(time_plot()$Traits)
+        print(time_plot()$Stats)
+      }),
+      tableObject = shiny::reactive({
+        shiny::req(time_table())
+        switch(shiny::req(input$buttable),
+               "Cell Means" = summary_traitTime(time_table()),
+               Stats        = stats_time_table(time_table()$stats))
+      })
+    )
   })
 }
 #' Shiny Module Input for Time Panel
 #' @return nothing returned
 #' @rdname timeServer
 #' @export
-timeInput <- function(id) { # 4:Order, 8:Traits
+timeInput <- function(id) { # Traits
   ns <- shiny::NS(id)
-  timeTableInput(ns("shinyTimeTable"))
+  timeTableInput(ns("time_table")) # traits
 }
 #' Shiny Module UI for Time Panel
 #' @return nothing returned
@@ -59,7 +70,7 @@ timeInput <- function(id) { # 4:Order, 8:Traits
 #' @export
 timeUI <- function(id) { # Time Unit
   ns <- shiny::NS(id)
-  timeTableUI(ns("shinyTimeTable"))
+  timeTableUI(ns("time_table")) # time_units, response
 }
 #' Shiny Module Output for Times Plot
 #' @return nothing returned
@@ -68,13 +79,7 @@ timeUI <- function(id) { # Time Unit
 timeOutput <- function(id) { # Response; Plots or Tables
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::fluidRow(
-      shiny::column(6, timeTableOutput(ns("shinyTimeTable"))), # Response
-      shiny::column(6, timePlotInput(ns("shinyTimePlot")))),
-    shiny::fluidRow(
-      shiny::column(9, shiny::uiOutput(ns("strains"))),
-      shiny::column(3, shiny::checkboxInput(ns("facet"), "Facet by strain?", TRUE))),
-    timePlotOutput(ns("shinyTimePlot"))) # Plots or Tables
+    shiny::uiOutput(ns("plot_table")))
 }
 #' Shiny Module App for Times Plot
 #' @return nothing returned
@@ -89,15 +94,16 @@ timeApp <- function() {
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           shiny::fluidRow(
-            shiny::column(6, mainParInput("main_par")), # dataset
-            shiny::column(6, timeInput("time"))),
-          timeUI("time"),
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(3, mainParUI("main_par")), # order
+            shiny::column(6, timeInput("time"))), # traits
+          timeUI("time"), # time_units, response
           border_line(),
+          mainParOutput("main_par"), # plot_table, height
           downloadOutput("download")
         ),
         
         shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
           timeOutput("time")
         )))
   }
@@ -105,7 +111,8 @@ timeApp <- function() {
   server <- function(input, output, session) {
     # MODULES
     main_par <- mainParServer("main_par", traitStats)
-    time_list <- timeServer("time", main_par, traitData, traitSignal, traitStats)
+    time_list <- timeServer("time", main_par,
+      traitData, traitSignal, traitStats)
     downloadServer("download", "Trait", main_par, time_list)
   }
   

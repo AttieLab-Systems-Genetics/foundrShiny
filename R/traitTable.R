@@ -58,7 +58,6 @@ traitTableServer <- function(id, panel_par, key_trait, rel_traits,
       shiny::req(datameans()),
       escape = FALSE,
       options = list(scrollX = TRUE, pageLength = 10))
-    
     #############################################################
     trait_table
   })

@@ -2,18 +2,14 @@
 % Please edit documentation in R/corTable.R
 \name{corTableServer}
 \alias{corTableServer}
+\alias{corTableInput}
 \alias{corTableOutput}
 \alias{corTableApp}
 \title{Shiny Module Server for Correlation Table}
 \usage{
-corTableServer(
-  id,
-  panel_par,
-  main_par,
-  key_trait,
-  traitSignal,
-  customSettings = NULL
-)
+corTableServer(id, main_par, key_trait, traitSignal, customSettings = NULL)
+
+corTableInput(id)
 
 corTableOutput(id)
 
@@ -22,7 +18,7 @@ corTableApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{panel_par, main_par}{reactive inputs from calling modules}
+\item{main_par}{reactive inputs from calling modules}
 
 \item{key_trait}{reactive character string}
 
@@ -36,11 +32,15 @@ reactive object
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Module Server for Correlation Table
 
 Shiny Module UI for Trait Correlations
+
+Shiny Module Output for Trait Correlations
 
 Shiny Module App for Trait Correlations
 }

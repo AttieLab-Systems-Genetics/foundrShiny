@@ -17,18 +17,7 @@ traitServer <- function(id, main_par,
                             customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # INPUTS
-    # trait inputs
-    #   main_par$height: Plot Height
-    #   input$mincor: minimum correlation
-    #   input$reldataset: relative datasets
-    #   input$facet: Facet by strain?
-    #   input$strains: Strains to select
-    #
-    # RETURNS
-    #   trait_names()
-    
+
     # MODULES
     # Order Traits by Stats.
     stats_table <- traitOrderServer("stats_table", main_par,
@@ -36,7 +25,7 @@ traitServer <- function(id, main_par,
     # Key Trait.
     key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
     # Key Trait and Correlation Table.
-    cors_table  <- corTableServer("shinyCorTable", input, main_par,
+    cors_table  <- corTableServer("cors_table", input, main_par,
                                   key_trait, traitSignal, customSettings)
     # Related Traits.
     rel_traits   <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
@@ -63,17 +52,6 @@ traitServer <- function(id, main_par,
       c(shiny::req(key_trait()), rel_traits())
     },
     label = "trait_names")
-    
-    # Related Datasets.
-    output$reldataset <- renderUI({
-      datasets <- unique(traitStats$dataset)
-      selected <- data_selection()
-      shiny::selectInput(ns("reldataset"), "Related Datasets:",
-                         datasets, selected, multiple = TRUE)
-    })
-    data_selection <- shiny::reactiveVal(unique(traitStats$dataset)[1], label = "data_selection")
-    shiny::observeEvent(input$reldataset, data_selection(input$reldataset))
-    
     
     # Output
     output$text <- shiny::renderUI({
@@ -126,7 +104,7 @@ traitServer <- function(id, main_par,
                  if(foundr::is_bestcor(cors_table()))
                    corPlotOutput(ns("cors_plot"))
                },
-               Table = corTableOutput(ns("shinyCorTable")))
+               Table = corTableOutput(ns("cors_table")))
         )
     })
     ###############################################################
@@ -176,7 +154,7 @@ traitUI <- function(id) { # Related Datasets and Traits
   shiny::tagList(
     # Related Datasets and Traits.
     shiny::fluidRow(
-      shiny::column(6, shiny::uiOutput(ns("reldataset"))),
+      shiny::column(6, corTableInput(ns("cors_table"))),
       shiny::column(6, traitNamesUI(ns("rel_traits"))))
   )
 }

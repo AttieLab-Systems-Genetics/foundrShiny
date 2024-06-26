@@ -50,7 +50,7 @@ contrastTimeInput <- function(id) {
 #' @export
 contrastTimeUI <- function(id) {
   ns <- shiny::NS(id)
-  timeTraitsUI(ns("times_list"))
+  timeTraitsUI(ns("times_list")) # time_units
 }
 #' Shiny App for Contrast Times
 #' @return nothing returned

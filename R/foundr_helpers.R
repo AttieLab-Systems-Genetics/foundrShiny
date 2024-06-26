@@ -373,6 +373,7 @@ stats_time_table <- function(object, logp = FALSE) {
 #' @return data frame
 #' @rdname founder_helpers
 summary_traitTime <- function(object, traitnames = names(object$traits)) {
+  if(is.null(object) || is.null(traitnames)) return(NULL)
   # This is messy as it has to reverse engineer `value` in list.
   object <- 
     dplyr::bind_rows(

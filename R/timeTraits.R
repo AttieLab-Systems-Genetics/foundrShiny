@@ -19,34 +19,27 @@ timeTraitsServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    # local inputs:
-    #   input$time
-    #   input$traits
-    #   input$response
-    # OUTPUTS
-    #   list with inputs
-    
     # Identify all Time Traits.
     timetrait_all <- foundr::timetraitsall(traitSignal)
     
     # Inputs
-    output$shinyUI <- shiny::renderUI({
+    output$time_units <- shiny::renderUI({
       timeunits <- time_units(timetrait_all)
       
-      shiny::selectInput(ns("time"), "Time Unit:", timeunits, selections$time)
+      shiny::selectInput(ns("time_units"), "Time Unit:", timeunits,
+                         selections$time)
     })
-    output$shinyOutput <- shiny::renderUI({
+    output$response <- shiny::renderUI({
       shiny::radioButtons(ns("response"), "Response:",
                           responses, selections$response, inline = TRUE)
     })
     selections <- shiny::reactiveValues(time = NULL, response = "cellmean",
                                         traits = NULL)
-    shiny::observeEvent(input$time, selections$time <- input$time)
+    shiny::observeEvent(input$time_units, selections$time <- input$time_units)
     shiny::observeEvent(input$response, selections$response <- input$response)
     shiny::observeEvent(input$traits, selections$traits <- input$traits)
     
-    # Update `input$time` choices and selected.
+    # Update `input$time_units` choices and selected.
     shiny::observeEvent(
       shiny::req(traitOrder()),
       {
@@ -62,7 +55,7 @@ timeTraitsServer <- function(id, panel_par, main_par,
     # Update Trait choices and selected.
     shiny::observeEvent(
       shiny::tagList(selections$response, selections$time, traitOrder(),
-                     trait_names(), main_par$tabpanel, panel_par$contrast),
+                     trait_names(), main_par$tabpanel),
       {
         # Use current selection of trait_selection().
         # But make sure they are still in the traitOrder() object.
@@ -117,7 +110,7 @@ timeTraitsServer <- function(id, panel_par, main_par,
 #' @export
 timeTraitsInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::selectizeInput(ns("traits"), "Traits:", NULL, multiple = TRUE)
+  shiny::selectizeInput(ns("traits"), "Traits:", NULL, multiple = TRUE) # traits
 }
 #' Shiny Module UI for Time Traits
 #' @return nothing returned
@@ -125,7 +118,7 @@ timeTraitsInput <- function(id) {
 #' @export
 timeTraitsUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shinyUI")) # Time Unit
+  shiny::uiOutput(ns("time_units")) # time_units
 }
 #' Shiny Module Output for Time Traits
 #' @return nothing returned
@@ -133,5 +126,53 @@ timeTraitsUI <- function(id) {
 #' @export
 timeTraitsOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shinyOutput")) # Response
+  shiny::uiOutput(ns("response")) # response
+}
+#' Shiny Module App for Times Plot
+#' @return nothing returned
+#' @rdname timeTraitsServer
+#' @export
+timeTraitsApp <- function() {
+  title <- "Test shiny Time Traits"
+  
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(9, timeTraitsInput("time_trait_names"))), # traits
+          timeTraitsUI("time_trait_names"),
+          timeTraitsOutput("time_trait_names") # response
+        ),
+        shiny::mainPanel(
+          panelParInput("panel_par"), # strains, facet
+          shiny::h4("Time Traits:"),
+          shiny::textOutput("selections")
+        )
+      )
+    )
+  }
+  
+  server <- function(input, output, session) {
+    # MODULES
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    stats_table <- traitOrderServer("shinyOrder", main_par,
+                                    time_trait_table, customSettings)
+    # Subset Stats to time traits.
+    time_trait_table <- time_trait_subset(traitStats,
+                                          foundr::timetraitsall(traitSignal))
+    # Identify Time Traits.
+    time_trait_names <- timeTraitsServer("time_trait_names",
+                                         panel_par, main_par, traitSignal, stats_table)
+    
+    output$selections <- shiny::renderText({
+      shiny::req(time_trait_names$traits)
+      paste(time_trait_names$traits, collapse = ", ")
+    })
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
 }

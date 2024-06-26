@@ -2,13 +2,10 @@
 % Please edit documentation in R/timePlot.R
 \name{timePlotServer}
 \alias{timePlotServer}
-\alias{timePlotInput}
 \alias{timePlotOutput}
 \title{Shiny Module Server for Time Plots}
 \usage{
 timePlotServer(id, panel_par, main_par, traitSignal, traitTimesData)
-
-timePlotInput(id)
 
 timePlotOutput(id)
 }
@@ -27,13 +24,9 @@ timePlotOutput(id)
 nothing returned
 
 nothing returned
-
-nothing returned
 }
 \description{
 Shiny Module Server for Time Plots
-
-Shiny Module UI for Time Plots
 
 Shiny Module Output for Time Plots
 }
