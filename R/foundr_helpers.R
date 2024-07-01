@@ -1,6 +1,6 @@
 #'
 #' @importFrom dplyr across arrange as_tibble bind_rows everything filter
-#'             mutate rename select
+#'             left_join mutate rename select
 #' @importFrom rlang .data
 #' @importFrom stringr str_remove
 #' @importFrom tidyr separate_wider_delim unite
@@ -8,15 +8,11 @@
 #' @importFrom utils combn
 #' @importFrom shiny hr
 
-#' @return HTML
-#' @rdname founder_helpers
+# Border Line
 border_line <- function() {
   shiny::hr(style="border-width:5px;color:black;background-color:black")
 }
-#' Turn `conditionContrasts` object into a `traitSignal` object.
-#' @param contrasts data frame
-#' @return data frame
-#' @rdname founder_helpers
+# Turn `conditionContrasts` object into a `traitSignal` object.
 contrast_signal <- function(contrasts) {
   if(is.null(contrasts))
   return(NULL)
@@ -29,15 +25,7 @@ contrast_signal <- function(contrasts) {
       -p.value),
     signal = .data$cellmean)
 }
-#' Correlation Table
-#' 
-#' @param key_trait 
-#' @param traitSignal 
-#' @param corterm 
-#' @param mincor 
-#' @param reldataset 
-#' @return data frame
-#' @rdname founder_helpers
+# Correlation Table
 cor_table <- function(key_trait, traitSignal, corterm, mincor = 0,
                       reldataset = NULL) {
   
@@ -56,12 +44,20 @@ cor_table <- function(key_trait, traitSignal, corterm, mincor = 0,
     foundr::bestcor(object, key_trait, corterm),
     .data$absmax >= mincor)
 }
-#' Eigen Contrasts from Dataset
-#' 
-#' @param object 
-#' @param contr_object 
-#' @return data frame
-#' @rdname founder_helpers
+# Data Traits
+data_traits <- function(traitModule, dataset, sex) {
+  if(is.null(traitModule)) return(NULL)
+  dataset <- dataset[1]
+  datagroup <- traitModule[dataset]
+  if(is_sex_module(datagroup)) {
+    out <- unique(datagroup[[dataset]][[sex]]$modules$module)
+    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
+    paste0(dataset, ": ", names(sexes)[match(sex, sexes)], "_", out)
+  } else {
+    paste0(dataset, ": ", unique(datagroup[[dataset]]$value$modules$module))
+  }
+}
+# Eigen Contrasts from Dataset
 eigen_contrast_dataset <- function(object, contr_object) {
   if(is.null(object) | is.null(contr_object))
     return(NULL)
@@ -119,15 +115,7 @@ eigen_contrast_dataset_value <- function(object, contr_object) {
     trait = factor(.data$module, unique(.data$module)),
     module = match(.data$trait, levels(.data$trait)))
 }
-#' Eigen Traits from Dataset
-#' 
-#' @param object 
-#' @param sexname 
-#' @param modulename 
-#' @param contr_object 
-#' @param eigen_object 
-#' @return data frame
-#' @rdname founder_helpers
+# Eigen Traits from Dataset
 eigen_traits_dataset <- function(object = NULL, sexname = NULL,
   modulename = NULL, contr_object = NULL,
   eigen_object = foundr::eigen_contrast(object, contr_object)) {
@@ -194,21 +182,11 @@ eigen_traits_dataset_value <- function(object = NULL, sexname = NULL,
       contr_object),
     -module)
 }
-#' Is this a sex module?
-#' Apply eigen_contrast over list of `traitModule`s and `contr_object`.
-#' @param object 
-#' @return `TRUE` or `FALSE`
-#' @rdname founder_helpers
+# Is this a sex module?
 is_sex_module <- function(object) {
   !("value" %in% names(object[[1]]))
 }
-#' Mutate Datasets
-#' 
-#' @param object 
-#' @param datasets 
-#' @param undo 
-#' @return data frame with `dataset` and possibly `probandset` columns
-#' @rdname founder_helpers
+# Mutate Datasets
 mutate_datasets <- function(object, datasets = NULL, undo = FALSE) {
   if(is.null(object))
     return(NULL)
@@ -236,11 +214,7 @@ mutate_datasets <- function(object, datasets = NULL, undo = FALSE) {
   }
   object
 }
-#' Order Choices
-#' 
-#' @param traitStats data frame
-#' @return vector of stats terms
-#' @rdname founder_helpers
+# Order Choices
 order_choices <- function(traitStats) {
   p_types <- paste0("p_", unique(traitStats$term))
   p_types <- p_types[!(p_types %in% c("p_cellmean", "p_signal", "p_rest", "p_noise", "p_rawSD"))]
@@ -249,16 +223,7 @@ order_choices <- function(traitStats) {
     p_types <- unique(c("strain:diet", p_types))
   c(p_types, "alphabetical", "original")
 }
-#' Order Trait Statistics
-#'
-#' @param orders name of order criterion 
-#' @param traitStats data frame with statistics
-#'
-#' @return data frame
-#' @importFrom dplyr arrange filter left_join select
-#' @importFrom stringr str_remove
-#' @importFrom rlang .data
-#' @rdname founder_helpers
+# Order Trait Statistics
 order_trait_stats <- function(orders, traitStats) {
   if(is.null(traitStats)) return(NULL)
   if(is.null(orders)) return(traitStats)
@@ -280,11 +245,7 @@ order_trait_stats <- function(orders, traitStats) {
   }
   out
 }
-#' @param msg text string
-#' @param size number
-#' @param angle number
-#' @return data frame
-#' @rdname founder_helpers
+# Null Plot
 plot_null <- function (msg = "no data", size = 10, angle = 0) 
 {
   ggplot2::ggplot(data.frame(x = 1, y = 1)) +
@@ -295,17 +256,7 @@ plot_null <- function (msg = "no data", size = 10, angle = 0)
     ggplot2::geom_text(size = size, angle = angle) + 
     ggplot2::theme_void()
 }
-#' Select data including Key Trait and Related Datasets
-#'
-#' @param object data frame
-#' @param key_trait name of key trait
-#' @param rel_dataset name of related datasets
-#'
-#' @importFrom dplyr filter select
-#' @importFrom tidyr unite
-#' @importFrom rlang .data
-#' @return data frame
-#' @rdname founder_helpers
+# Select data including Key Trait and Related Datasets
 select_data_pairs <- function(object, key_trait, rel_dataset = NULL) {
   if(is.null(object))
     return(NULL)
@@ -321,12 +272,7 @@ select_data_pairs <- function(object, key_trait, rel_dataset = NULL) {
         (.data$dataset %in% rel_dataset)),
     -datatraits)
 }
-#' Stats Time Table
-#'
-#' @param object list of data frames 
-#' @param logp raise values to power 10 if not `TRUE`
-#' @return data frame
-#' @rdname founder_helpers
+# Stats Time Table
 stats_time_table <- function(object, logp = FALSE) {
   if(is.null(object))
     return(NULL)
@@ -366,12 +312,7 @@ stats_time_table <- function(object, logp = FALSE) {
       names_from = "term", values_from = p.value),
     .data$dataset, .data$trait, .data[[timecol]])
 }
-#' Summary fo traitTime Object
-#'
-#' @param object data frame
-#' @param traitnames character list
-#' @return data frame
-#' @rdname founder_helpers
+# Summary fo traitTime Object
 summary_traitTime <- function(object, traitnames = names(object$traits)) {
   if(is.null(object) || is.null(traitnames)) return(NULL)
   # This is messy as it has to reverse engineer `value` in list.
@@ -397,17 +338,7 @@ summary_traitTime <- function(object, traitnames = names(object$traits)) {
   tidyr::pivot_wider(object, names_from = "strain", values_from = "value",
                      names_sort = TRUE)
 }
-#' Stat Terms
-#'
-#' @param object 
-#' @param signal 
-#' @param condition_name 
-#' @param drop_noise 
-#' @param cellmean 
-#' @param ... 
-#'
-#' @return vector of terms
-#' @rdname founder_helpers
+# Stat Terms
 term_stats <- function(object, signal = TRUE, condition_name = NULL,
                       drop_noise = TRUE, cellmean = signal, ...) {
   terms <- unique(object$term)
@@ -433,12 +364,7 @@ term_stats <- function(object, signal = TRUE, condition_name = NULL,
   }
   terms
 }
-#' Time Trait Subset
-#'
-#' @param object 
-#' @param timetrait_all 
-#' @return data frame
-#' @rdname founder_helpers
+# Time Trait Subset
 time_trait_subset <- function(object, timetrait_all) {
   if(is.null(object) || is.null(timetrait_all))
     return(NULL)
@@ -457,11 +383,7 @@ time_trait_subset <- function(object, timetrait_all) {
       .data$datatraits %in% timetrait_all$datatraits),
     -datatraits)
 }
-#' Time Units
-#'
-#' @param timetrait_all data frame
-#' @return data frame
-#' @rdname founder_helpers
+# Time Units
 time_units <- function(timetrait_all) {
   # Find time units in datasets
   timeunits <- NULL
@@ -471,13 +393,7 @@ time_units <- function(timetrait_all) {
     timeunits <- c(timeunits, "week","week_summary")
   timeunits
 }
-#' Trait Pairs
-#'
-#' @param traitnames 
-#' @param sep 
-#' @param key 
-#' @return vector or `trait1 ON trait2`
-#' @rdname founder_helpers
+# Trait Pairs
 trait_pairs <- function(traitnames, sep = " ON ", key = TRUE) {
   if(length(traitnames) < 2)
     return(NULL)
@@ -499,11 +415,7 @@ trait_pairs <- function(traitnames, sep = " ON ", key = TRUE) {
             }))))
   }
 }
-#' Volcano Defaults
-#'
-#' @param ordername name of order column
-#' @return list of volcano parameters
-#' @rdname founder_helpers
+# Volcano Defaults
 vol_default <- function(ordername) {
   vol <- list(min = 0, max = 10, step = 1, value = 2)
   switch(

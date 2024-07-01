@@ -4,21 +4,28 @@
 \alias{panelParServer}
 \alias{panelParInput}
 \alias{panelParUI}
+\alias{panelParOutput}
 \alias{panelParApp}
 \title{Shiny Server for panelPar Server}
 \usage{
-panelParServer(id, main_par, traitStats = NULL)
+panelParServer(id, main_par, traitStats = NULL, panel_name = NULL)
 
 panelParInput(id)
 
 panelParUI(id)
+
+panelParOutput(id)
 
 panelParApp(title = "")
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
 
+\item{main_par}{main parameters}
+
 \item{traitStats}{static object}
+
+\item{panel_name}{name of panel}
 
 \item{title}{title of app}
 }

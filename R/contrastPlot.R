@@ -26,27 +26,27 @@ contrastPlotServer <- function(id, panel_par, main_par,
     biplot  <- biplotServer("biplot", input, plot_par, contrast_table)
     dotplot <- dotplotServer("dotplot", input, plot_par, contrast_table)
     
-    output$traitOutput <- shiny::renderUI({
+    output$plot_table <- shiny::renderUI({
       shiny::tagList(
         shiny::h3(modTitle()),
         switch(shiny::req(main_par$plot_table),
           Plots  = shiny::tagList(
-            shiny::uiOutput(ns("plots")),
+            shiny::uiOutput(ns("plot_choice")),
             shiny::uiOutput(ns("plot"))), 
           Tables = DT::renderDataTable(tableObject(), escape = FALSE,
             options = list(scrollX = TRUE, pageLength = 10))))
     })
-    output$plots <- shiny::renderUI({
+    output$plot_choice <- shiny::renderUI({
       choices <- c("Volcano","BiPlot","DotPlot")
-      shiny::checkboxGroupInput(ns("plots"), "",
+      shiny::checkboxGroupInput(ns("plot_choice"), "",
                                 choices = choices, selected = choices, inline = TRUE)
     })
     output$plot <- shiny::renderUI({
-      shiny::req(input$plots)
+      shiny::req(input$plot_choice)
       shiny::tagList(
-        if("Volcano" %in% input$plots) volcanoOutput(ns("volcano")),
-        if("BiPlot" %in% input$plots)  biplotOutput(ns("biplot")),
-        if("DotPlot" %in% input$plots) dotplotOutput(ns("dotplot")))
+        if("Volcano" %in% input$plot_choice) volcanoOutput(ns("volcano")),
+        if("BiPlot" %in% input$plot_choice)  biplotOutput(ns("biplot")),
+        if("DotPlot" %in% input$plot_choice) dotplotOutput(ns("dotplot")))
     })
 
     tableObject <- shiny::reactive({
@@ -98,7 +98,7 @@ contrastPlotOutput <- function(id) {
   shiny::tagList(
     plotParUI(ns("plot_par")), # volsd, volvert (sliders)
     plotParOutput(ns("plot_par")), # rownames (strains/terms)
-    shiny::uiOutput(ns("traitOutput")))
+    shiny::uiOutput(ns("plot_table")))
 }
 #' Shiny Sex App for Contrast Plots
 #'

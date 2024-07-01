@@ -16,35 +16,26 @@ downloadServer <- function(id, prefix, main_par, download_list) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # DOWNLOADS
     output$downloads <- shiny::renderUI({
-      shiny::req(main_par$plot_table)
-      
-      shiny::downloadButton(ns(paste0("download", main_par$plot_table)),
-                            main_par$plot_table)
+      plot_table <- shiny::req(main_par$plot_table)
+      shiny::downloadButton(ns(plot_table), plot_table)
     })
-    # Download File Prefix
     output$filename <- renderUI({
       filename <- paste0(prefix, "_", shiny::req(download_list$postfix()))
-      
       shiny::textAreaInput(ns("filename"), "File Prefix:", filename)
     })
-    
-    # Download Plot
-    output$downloadPlots <- shiny::downloadHandler(
+    output$Plots <- shiny::downloadHandler(
       filename = function() paste0(shiny::req(input$filename), ".pdf"),
       content = function(file) {
         grDevices::pdf(file, width = 9, height = main_par$height)
         shiny::req(download_list$plotObject())
         grDevices::dev.off()
       })
-    
-    # Download DataTable
-    output$downloadTables <- shiny::downloadHandler(
+    output$Tables <- shiny::downloadHandler(
       filename = function() paste0(shiny::req(input$filename), ".csv"),
       content = function(file) {
-        utils::write.csv(shiny::req(download_list$tableObject()),
-                         file, row.names = FALSE)
+        table <- shiny::req(download_list$tableObject())
+        utils::write.csv(table, file, row.names = FALSE)
       })
   })
 }

@@ -17,44 +17,34 @@ timeTableServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Order Traits by Stats.
-    stats_table <- traitOrderServer("shinyOrder", main_par,
-      time_trait_table, customSettings)
     # Subset Stats to time traits.
     time_trait_table <- time_trait_subset(traitStats,
       foundr::timetraitsall(traitSignal))
+    # Order Traits by Stats.
+    stats_table <- traitOrderServer("stats_table", main_par,
+      time_trait_table, customSettings)
     # Identify Time Traits.
-    time_trait_names <- timeTraitsServer("time_trait_names",
+    time_traits <- timeTraitsServer("time_traits",
       panel_par, main_par, traitSignal, stats_table)
     
+    # Create time table.
     time_table <- shiny::reactive({
-      shiny::req(time_trait_names$traits, time_trait_names$time,
-                 time_trait_names$response, stats_table())
-      
+      shiny::req(time_traits$traits, time_traits$time, time_traits$response)
       foundr::traitTimes(traitData, traitSignal, traitStats,
-                 time_trait_names$traits, time_trait_names$time,
-                 time_trait_names$response,
-                 strains = panel_par$strains)
+        time_traits$traits, time_traits$time, time_traits$response,
+        strains = panel_par$strains)
     }, label = "time_table")
     
-    statstable <- shiny::reactive({
-      shiny::req(time_table())
-      stats_time_table(time_table()$stats)
-    }, label = "statstable")
-    traitstable <- shiny::reactive({
-      shiny::req(time_table())
-      summary_traitTime(time_table())
-    }, label = "statstable")
+    # Render time table.
     output$time_table <- shiny::renderUI({
-      shiny::req(statstable(), traitstable())
+      shiny::req(time_table())
       shiny::tagList(
         shiny::h3("Cell Means"),
-        DT::renderDataTable(traitstable(), escape = FALSE,
-                            options = list(scrollX = TRUE, pageLength = 10)),
-        
+        DT::renderDataTable(summary_traitTime(time_table()),
+          escape = FALSE, options = list(scrollX = TRUE, pageLength = 10)),
         shiny::h3("Stats: p.value"),
-        DT::renderDataTable(statstable(), escape = FALSE,
-                            options = list(scrollX = TRUE, pageLength = 10)))
+        DT::renderDataTable(stats_time_table(time_table()$stats),
+          escape = FALSE, options = list(scrollX = TRUE, pageLength = 10)))
     })
     
     ###############################################################
@@ -67,7 +57,7 @@ timeTableServer <- function(id, panel_par, main_par,
 #' @export
 timeTableInput <- function(id) {
   ns <- shiny::NS(id)
-  timeTraitsInput(ns("time_trait_names")) # traits
+  timeTraitsInput(ns("time_traits")) # traits
 }
 #' Shiny UI for Times Table
 #' @return nothing returned
@@ -76,8 +66,8 @@ timeTableInput <- function(id) {
 timeTableUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    timeTraitsUI(ns("time_trait_names")), # time_units
-    timeTraitsOutput(ns("time_trait_names")) # response
+    timeTraitsUI(ns("time_traits")), # time_units
+    timeTraitsOutput(ns("time_traits")) # response
   )
 }
 #' Shiny Output for Times Table

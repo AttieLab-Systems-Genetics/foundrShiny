@@ -34,6 +34,7 @@ foundrServer <- function(id,
     downloadServer("download", "Contrast", main_par, download_list)
 
     download_list <- shiny::reactiveValues(
+      panel       = shiny::reactive(shiny::req(input$tabpanel)),
       postfix     = shiny::reactive({
         switch(shiny::req(input$tabpanel),
                Traits    = shiny::req(trait_list$postfix()),

@@ -2,13 +2,13 @@
 % Please edit documentation in R/traitSolos.R
 \name{traitSolosServer}
 \alias{traitSolosServer}
-\alias{traitSolosUI}
+\alias{traitSolosOutput}
 \alias{traitSolosApp}
 \title{Shiny Module Server for trait solos Plots}
 \usage{
 traitSolosServer(id, panel_par, main_par, trait_table)
 
-traitSolosUI(id)
+traitSolosOutput(id)
 
 traitSolosApp()
 }
@@ -31,7 +31,7 @@ nothing returned
 \description{
 Shiny Module Server for trait solos Plots
 
-Shiny Module UI for traitSolos
+Shiny Module Output for traitSolos
 
 Shiny Module AI for traitSolos
 }

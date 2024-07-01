@@ -3,7 +3,7 @@
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par reactive arguments 
 #' @param traitSignal static object
-#' @param traitTimesData reactive object
+#' @param time_table reactive object
 #' @param responses possible types of responses
 #'
 #' @return nothing returned
@@ -17,40 +17,55 @@
 #' @export
 #'
 timePlotServer <- function(id, panel_par, main_par,
-                          traitSignal, traitTimesData) {
+                          traitSignal, time_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    timeplots <- shiny::reactive({
+      shiny::req(time_table(), panel_par$strains)
+      foundr::ggplot_traitTimes(time_table()$traits,
+                                facet_strain = panel_par$facet)
+    }, label = "timeplots")
+    output$timeplots <- shiny::renderPlot(print(timeplots()))
+    timestats <- shiny::reactive({
+      shiny::req(time_table())
+      foundr::ggplot_traitTimes(time_table()$stats)
+    }, label = "timestats")
+    output$timestats <- shiny::renderPlot(print(timestats()))
+    
     output$plots <- shiny::renderUI({
-      shiny::req(timeplots(), timestats())
-      
+      shiny::req(timeplots(), timestats(), panel_par$height)
       shiny::tagList(
         shiny::h3("Plot over Time"),
         shiny::plotOutput(ns("timeplots"),
-                          height = paste0(main_par$height, "in")),
+                          height = paste0(panel_par$height, "in")),
         shiny::h3("Plot of Time Summaries"),
         shiny::plotOutput(ns("timestats"),
-                          height = paste0(main_par$height, "in")))
+                          height = paste0(panel_par$height, "in")))
     })
-    output$timeplots <- shiny::renderPlot(print(timeplots()))
-    output$timestats <- shiny::renderPlot(print(timestats()))
-    
-    timeplots <- shiny::reactive({
-      shiny::req(traitTimesData(), panel_par$strains)
-      
-      foundr::ggplot_traitTimes(traitTimesData()$traits, facet_strain = panel_par$facet)
-    }, label = "timeplots")
-    timestats <- shiny::reactive({
-      shiny::req(traitTimesData())
-      
-      foundr::ggplot_traitTimes(traitTimesData()$stats)
-    }, label = "timestats")
-    
     ###############################################################
-    shiny::reactive({
-      list(Traits = shiny::req(timeplots()),
-           Stats = shiny::req(timestats()))
-    })
+    # time_list
+    shiny::reactiveValues(
+      panel       = shiny::reactive("Times"),
+      postfix     = shiny::reactive({
+        shiny::req(time_table())
+        filename <- paste(names(time_table()$traits), collapse = ",")
+        if(shiny::req(main_par$plot_table) == "Tables")
+          filename <- paste0(stringr::str_remove(panel_par$table, " "), "_",
+                             filename)
+        stringr::str_replace_all(filename, ": ", "_")
+      }),
+      plotObject  = shiny::reactive({
+        print(shiny::req(timeplots()))
+        print(shiny::req(timestats()))
+      }),
+      tableObject = shiny::reactive({
+        shiny::req(time_table())
+        switch(shiny::req(panel_par$table),
+               "Cell Means" = summary_traitTime(time_table()),
+               Stats        = stats_time_table(time_table()$stats))
+      })
+    )
   })
 }
 #' Shiny Module Output for Time Plots

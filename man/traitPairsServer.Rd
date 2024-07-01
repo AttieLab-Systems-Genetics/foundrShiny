@@ -2,13 +2,13 @@
 % Please edit documentation in R/traitPairs.R
 \name{traitPairsServer}
 \alias{traitPairsServer}
-\alias{traitPairsUI}
+\alias{traitPairsOutput}
 \alias{traitPairsApp}
 \title{Shiny Module Server for trait solos Plots}
 \usage{
 traitPairsServer(id, panel_par, main_par, trait_names, trait_table)
 
-traitPairsUI(id)
+traitPairsOutput(id)
 
 traitPairsApp(id)
 }
@@ -33,7 +33,7 @@ nothing returned
 \description{
 Shiny Module Server for trait solos Plots
 
-Shiny Module UI for TraitPairs
+Shiny Module Output for TraitPairs
 
 Shiny Module App for TraitPairs
 }

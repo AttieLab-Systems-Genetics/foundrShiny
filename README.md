@@ -22,19 +22,13 @@ for an overview of package(s) use and components.
 
 ## Improvements Planned
 
-- fix contrast tab module list
 - order module list on contrast by p-values
 - SD and logp calc and guideline defaults
 - add pct eigenvalue from module
 - larger points on several plots
-- MixMod as only dataset does not display for Contrasts tab. Seems to be related to not showing order.
 - Need to add group element to customSettings (done)
-- redesign `R/contrastPlot.R`
-  + split out volcano,biplot,dotplot as separate modules (done)
-  + need to rethink foundr::ggplot_conditionContrasts, which is now bloated
-- new panelPar.R is nonstandard, but can simplify panel parameters
-  + experiment and add in
-- make apps for remaining files (timePlot, timeTable)
+- need to rethink foundr::ggplot_conditionContrasts, which is now bloated
+- update foundrApp with new panelPar, mainPar (note download section)
 
 ## foundrShiny Modular Organization
 

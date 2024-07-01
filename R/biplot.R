@@ -106,7 +106,7 @@ biplotApp <- function() {
           mainParOutput("main_par"), # plot_table, height
           plotParUI("plot_par"), # volsd, volvert (sliders)
           plotParOutput("plot_par"), # rownames (strains/terms)
-          shiny::uiOutput("sex"),
+          panelParUI("panel_par"), # sex
           biplotOutput("biplot")
         )
       )
@@ -114,16 +114,11 @@ biplotApp <- function() {
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     plot_par <- plotParServer("plot_par", contrast_table)
     biplotServer("biplot", input, plot_par, contrast_table)
-    
-    # SERVER-SIDE INPUTS
-    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
-    output$sex <- shiny::renderUI({
-      shiny::selectInput("sex", "", as.vector(sexes))
-    })
   }
   shiny::shinyApp(ui, server)
 }

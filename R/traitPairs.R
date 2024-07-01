@@ -24,7 +24,7 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
     # Output: Plots or Data
     output$pairs_plot <- shiny::renderPlot({
       shiny::req(trait_names(), trait_table())
-      print(pairs_plot(), height = paste0(main_par$height, "in"))
+      print(pairs_plot(), height = paste0(panel_par$height, "in"))
     })
     
     # Plot
@@ -48,7 +48,7 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
     label = "pair")
     # Obsolete
     output$pair <- shiny::renderUI({
-      # Somehow when main_par$height is changed this is reset.
+      # Somehow when panel_par$height is changed this is reset.
       shiny::req(trait_names())
       if(length(trait_names()) < 2)
         return(NULL)
@@ -65,11 +65,11 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
     pairs_plot
   })
 }
-#' Shiny Module UI for TraitPairs
+#' Shiny Module Output for TraitPairs
 #' @return nothing returned
 #' @rdname traitPairsServer
 #' @export
-traitPairsUI <- function(id) {
+traitPairsOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::plotOutput(ns("pairs_plot"))
 }
@@ -97,7 +97,7 @@ traitPairsApp <- function(id) {
         
         shiny::mainPanel(
           panelParInput("panel_par"), # strains, facet
-          traitPairsUI("pairs_plot"),
+          traitPairsOutput("pairs_plot"),
           traitTableOutput("trait_table")
         )))
   }

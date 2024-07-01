@@ -29,18 +29,10 @@ mainParServer <- function(id, traitStats = NULL) {
     })
     data_selection <- shiny::reactiveVal("", label = "data_selection")
     shiny::observeEvent(input$dataset, data_selection(input$dataset))
+    # Order Criteria for Trait Names
     output$order <- shiny::renderUI({
-      # Order Criteria for Trait Names
       choices <- order_choices(traitStats)
       shiny::selectInput(ns("order"), "Order traits by", choices)
-    })
-    order_selection <- shiny::reactiveVal(NULL, label = "order_selection")
-    shiny::observeEvent(input$order, order_selection(input$order))
-    
-    output$height <- shiny::renderUI({
-      if(input$plot_table == "Plots") {
-        shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
-      }
     })
     ######################################################################
     input
@@ -63,10 +55,17 @@ mainParUI <- function(id) {
 mainParOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::fluidRow(
-    shiny::column(6, shiny::radioButtons(ns("plot_table"), "", c("Plots","Tables"), "Plots",
-                                         inline = TRUE)),
-    shiny::column(6, shiny::uiOutput(ns("height")))
-  )
+    shiny::column(6, mainParOutput1(id)), # plot_table
+    shiny::column(6, mainParOutput2(id))) # height
+}
+mainParOutput1 <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::radioButtons(ns("plot_table"), "", c("Plots","Tables"), "Plots",
+                                         inline = TRUE)
+}
+mainParOutput2 <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
 }
 #' @param title title of app
 #' @export

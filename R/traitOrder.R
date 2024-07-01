@@ -89,14 +89,14 @@ traitOrderApp <- function() {
         ),
         shiny::mainPanel(
           shiny::textOutput("key_trait"),
-          traitOrderUI("shinyOrder")
+          traitOrderUI("stats_table")
         )
       )
     )
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    stats_table <- traitOrderServer("shinyOrder", main_par, traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par, traitStats)
     
     output$key_trait <- renderText({
       shiny::req(stats_table())

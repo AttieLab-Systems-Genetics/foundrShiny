@@ -20,39 +20,34 @@ contrastServer <- function(id, main_par,
     groupname <- stringr::str_to_title(customSettings$group)
     if(!length(groupname)) groupname <- "Group"
     
-    # MODULES
-    # Contrast Trait Table. Note reuse of `id` for `contrastTableServer`.
-    trait_table <- contrastTableServer("contrast_table", main_par,
+    panel_par <- panelParServer("panel_par", main_par, traitStats, "contrast")
+    # Contrast Tables.
+    trait_table <- contrastTableServer("trait_table", main_par,
       traitSignal, traitStats, customSettings)
-    trait_list <- contrastSexServer("contrast_sex", input, main_par,
-      trait_table, customSettings)
-    # Contrast Time Traits
+    group_table <- contrastTableServer("trait_table", main_par,
+      traitSignal, traitStats, customSettings, keepDatatraits)
     stats_time_table <- time_trait_subset(traitStats,
-                                          timetraitsall(traitSignal))
+      timetraitsall(traitSignal))
     time_table <- contrastTableServer("time_table", main_par,
       traitSignal, stats_time_table, customSettings)
-    contrast_time <- contrastTimeServer("contrast_time", input, main_par,
-      traitSignal, stats_time_table, time_table, customSettings)
-    # Contrast Time Plots and Tables
-    time_list <- timePlotServer("shinyTimePlot", input, main_par,
-      traitSignal, contrast_time)
-    # Contrast by Groups.
-    group_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings, keepDatatraits)
-    group_list <- contrastGroupServer("contrast_group", input, main_par,
+    # Contrast over Sex by Trait.
+    trait_list <- contrastTraitServer("trait_list", panel_par, main_par,
+      trait_table, customSettings)
+    # Contrast over Sex by Group.
+    group_list <- contrastGroupServer("group_list", panel_par, main_par,
       traitModule, trait_table, group_table, customSettings)
+    # Contrast over Sex by Trait over Time.
+    contrast_time <- contrastTimeServer("contrast_time", panel_par, main_par,
+      traitSignal, stats_time_table, time_table, customSettings)
+    time_list <- timePlotServer("time_list", panel_par, main_par,
+      traitSignal, contrast_time)
     
     # SERVER-SIDE Inputs
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(ns("strains"), "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
-    output$butby <- shiny::renderUI({
+    output$contrast_type <- shiny::renderUI({
       if(length(timetraits_dataset())) {
-        buttons <- c("Sex", groupname, "Time")
+        buttons <- c(groupname, "Trait", "Time")
       } else {
-        buttons <- c("Sex", groupname)
+        buttons <- c(groupname, "Trait")
       }
       shiny::radioButtons(ns("contrast"), "Contrast by ...",
                           buttons, inline = TRUE)
@@ -63,23 +58,17 @@ contrastServer <- function(id, main_par,
       ifelse(input$contrast == groupname, "Group", input$contrast)))
     
     timetraits_dataset <- shiny::reactive({
-      shiny::req(main_par$dataset)
-      
-      foundr::timetraitsall(dplyr::filter(traitSignal,
-                                          dataset %in% main_par$dataset))
-    })
-    sexes <- c(B="Both Sexes", F="Female", M="Male", C="Sex Contrast")
-    output$sex <- shiny::renderUI({
-      shiny::selectInput(ns("sex"), "", as.vector(sexes))
+      datasets <- shiny::req(main_par$dataset)
+      foundr::timetraitsall(dplyr::filter(traitSignal, dataset %in% datasets))
     })
     output$group <- shiny::renderUI({
       shiny::selectizeInput(ns("group"), paste0(groupname, ":"), NULL)
     })
     shiny::observeEvent(
-      shiny::req(datatraits(), main_par$dataset, input$sex, contr_selection()),
+      shiny::req(datatraits(), main_par$dataset, panel_par$sex, contr_selection()),
       {
         # *** input$group choices not set for initial contr_selection() == "Group"
-        # *** need to toggle between "Sex" and "Group" to populate. Why?
+        # *** need to toggle between "Trait" and "Group" to populate. Why?
         if(!is.null(input$group)) {
           # First zero out input$group selected value.
           shiny::updateSelectizeInput(session, "group", choices = datatraits(),
@@ -90,81 +79,54 @@ contrastServer <- function(id, main_par,
                                     selected = "", server = TRUE)
       })
     
-    datagroup <- shiny::reactive({
-      traitModule[shiny::req(main_par$dataset[1])]
-    })
     datatraits <- shiny::reactive({
-      shiny::req(input$sex, main_par$dataset, datagroup())
-      
-      if(is_sex_module(datagroup())) {
-        out <- unique(
-          datagroup()[[main_par$dataset[1]]][[input$sex]]$modules$module)
-        paste0(main_par$dataset[1], ": ",
-          names(sexes)[match(input$sex, sexes)], "_", out)
-      } else {
-        paste0(main_par$dataset[1], ": ",
-          unique(datagroup()[[main_par$dataset]]$value$modules$module))
-      }
+      shiny::req(main_par$dataset, panel_par$sex)
+      data_traits(traitModule, main_par$dataset, panel_par$sex)
     }, label = "datatraits")
     
     keepDatatraits <- reactive({
       group <- NULL
-      if(shiny::isTruthy(input$group))
-        group <- input$group
-      
-      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1],
-                              group)
+      if(shiny::isTruthy(input$group)) group <- input$group
+      dataset <- shiny::req(main_par$dataset)[1]
+      foundr:::keptDatatraits(traitModule, dataset, group)
     })
     
-    # Input
-    output$shinyInput <- shiny::renderUI({
-      shiny::req(contr_selection())
-      if(contr_selection() == "Time")
-        contrastTimeInput(ns("contrast_time")) # Traits
-    })
-    output$shinyUI <- shiny::renderUI({
+    # UI Components
+    output$contrast_input <- shiny::renderUI({
       shiny::req(contr_selection())
       if(contr_selection() == "Time") {
-        contrastTimeUI(ns("contrast_time")) # Time Unit
+        shiny::tagList(
+          contrastTimeInput(ns("contrast_time")), # traits
+          contrastTimeUI(ns("contrast_time")) # time_unit
+        )
       }
     })
-    
-    # Output
-    output$shinyOutput <- shiny::renderUI({
+    output$contrast_output <- shiny::renderUI({
       shiny::req(contr_selection())
       shiny::tagList(
         shiny::uiOutput(ns("text")),
         if(contr_selection() == "Group") {
-          contrastGroupInput(ns("contrast_group"))
+          contrastGroupInput(ns("group_list"))
         },
         if(contr_selection() == "Time") {
+          panelParInput(ns("panel_par")) # strains, facet
+        } else { # Trait, Group
           shiny::fluidRow(
-            shiny::column(9, shiny::uiOutput(ns("strains"))),
-            shiny::column(3, shiny::checkboxInput(ns("facet"),
-              "Facet by strain?", TRUE)))
-        } else { # Sex, Group
-          shiny::fluidRow(
-            shiny::column(4, shiny::uiOutput(ns("sex"))),
+            shiny::column(4, panelParUI(ns("panel_par"))), # sex
             shiny::column(8, switch(contr_selection(),
-              Sex   = contrastSexUI(ns("contrast_sex")),
+              Trait = contrastTraitUI(ns("trait_list")),
               Group = shiny::uiOutput(ns("group")))))
         },
         switch(contr_selection(),
-               Time = {
-                 shiny::tagList(
-                   timePlotInput(ns("shinyTimePlot")),
-                   timePlotOutput(ns("shinyTimePlot")))
-               },
-               Sex   = contrastSexOutput(ns("contrast_sex")),
-               Group = contrastGroupOutput(ns("contrast_group"))))
+               Time  = timePlotOutput(ns("time_list")),
+               Trait = contrastTraitOutput(ns("trait_list")),
+               Group = contrastGroupOutput(ns("group_list"))))
     })
     
     output$text <- shiny::renderUI({
       condition <- customSettings$condition
-      if(shiny::isTruthy(condition))
-        condition <- stringr::str_to_title(condition)
-      else
-        condition <- "Condition"
+      condition <- ifelse(shiny::isTruthy(condition),
+        stringr::str_to_title(condition), "Condition")
       
       shiny::tagList(
         shiny::h3(paste(condition, "Contrasts")),
@@ -186,21 +148,22 @@ contrastServer <- function(id, main_par,
     })
     ###############################################################
     shiny::reactiveValues(
+      panel       = shiny::reactive("Contrasts"),
       postfix     = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = trait_list$postfix(),
+               Trait = trait_list$postfix(),
                Group = group_list$postfix(),
                Time  = time_list$postfix())
       }),
       plotObject  = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = trait_list$plotObject(),
+               Trait = trait_list$plotObject(),
                Group = group_list$plotObject(),
                Time  = time_list$plotObject())
       }),
       tableObject = shiny::reactive({
         switch(shiny::req(contr_selection()),
-               Sex   = trait_list$tableObject(),
+               Trait = trait_list$tableObject(),
                Group = group_list$tableObject(),
                Time  = time_list$tableObject())
       })
@@ -213,17 +176,20 @@ contrastServer <- function(id, main_par,
 #' @export
 contrastInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shinyInput")) # Order, Traits (if butby == "Time")
+  shiny::tagList(
+    # If contrast_type == "Time"
+    shiny::uiOutput(ns("contrast_input")), # order, key_trait
+    shiny::uiOutput(ns("contrast_UI")), # time_unit
+    shiny::uiOutput(ns("contrast_type"))
+  )
 }
 #' Shiny Module Input for Contrast Panel
 #' @return nothing returned
 #' @rdname contrastServer
 #' @export
-contrastUI <- function(id) {
+contrastUI <- function(id) { # plot_table, height or table
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::uiOutput(ns("shinyUI")), # Time Unit (if butby == "Time")
-    shiny::uiOutput(ns("butby")))
+  panelParOutput(ns("panel_par")) # plot_table, height or table
 }
 #' Shiny Module Output for Contrast Panel
 #' @return nothing returned
@@ -231,7 +197,7 @@ contrastUI <- function(id) {
 #' @export
 contrastOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shinyOutput"))
+  shiny::uiOutput(ns("contrast_output"))
 }
 #' Shiny Module App for Contrast Panel
 #' @return nothing returned
@@ -244,15 +210,15 @@ contrastApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
+          mainParInput("main_par"),
+          contrastInput("contrast_list"),
+          border_line(),
           shiny::fluidRow(
-            shiny::column(6, mainParInput("main_par")), # Dataset
-            shiny::column(6, contrastInput("contrast_list"))),
-          contrastUI("contrast_list"),
-          shiny::hr(style="border-width:5px;color:black;background-color:black"),
+            shiny::column(6, mainParOutput1("main_par")), # plot_table
+            shiny::column(6, contrastUI("contrast_list"))), # height or table
           downloadOutput("download")
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
           contrastOutput("contrast_list")
         )
       )

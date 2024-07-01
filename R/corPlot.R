@@ -17,20 +17,20 @@ corPlotServer <- function(id, main_par, cors_table,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    output$shiny_output <- shiny::renderUI({
-      shiny::req(main_par$height, cors_plot())
-      shiny::plotOutput(ns("cors_plot"), height = paste0(main_par$height, "in"))
-    })
-    
     cors_plot <- shiny::reactive({
       shiny::req(input$mincor, cors_table())
       foundr::ggplot_bestcor(
         mutate_datasets(cors_table(), customSettings$dataset, undo = TRUE), 
         input$mincor, shiny::isTruthy(input$abscor))
     })
-    output$cors_plot <- shiny::renderPlot({
+    output$plot <- shiny::renderPlot({
+      print(shiny::req(cors_plot()))
+    })
+    output$cors_plot <- shiny::renderUI({
       shiny::req(cors_plot())
-      print(cors_plot())
+      height <- main_par$height
+      if(is.null(height)) height <- 6
+      shiny::plotOutput(ns("plot"), height = paste0(height, "in"))
     })
     ##############################################################
     cors_plot
@@ -46,8 +46,9 @@ corPlotOutput <- function(id) {
     shiny::h3("Correlation"),
     shiny::fluidRow( 
       shiny::column(6, shiny::sliderInput(ns("mincor"), "Minimum:", 0, 1, 0.7)),
-      shiny::column(6, shiny::checkboxInput(ns("abscor"), "Absolute Correlation?", TRUE))),
-    shiny::uiOutput(ns("shiny_output")))
+      shiny::column(6, shiny::checkboxInput(ns("abscor"),
+        "Absolute Correlation?", TRUE))),
+    shiny::uiOutput(ns("cors_plot")))
 }
 #' Shiny Module App for Trait Correlations
 #' @return nothing returned
@@ -67,12 +68,11 @@ corPlotApp <- function() {
           shiny::column(6, traitNamesUI("key_trait"))), # key_trait
         # Related Datasets and Traits.
         shiny::fluidRow(
-          shiny::column(6, shiny::uiOutput("reldataset")), # rel_dataset
+          shiny::column(6, shiny::uiOutput("rel_dataset")), # rel_dataset
           shiny::column(6, traitNamesUI("rel_traits"))), # rel_traits
-        shiny::sliderInput("height", "Plot height (in):", 3, 10, 6, step = 1)
+        mainParOutput("main_par") # plot_table, height
       ),
       shiny::mainPanel(
-        mainParOutput("main_par"), # plot_table, height
         shiny::textOutput("key_trait"),
         corTableOutput("cors_table"),
         shiny::textOutput("rel_traits"),
@@ -98,8 +98,8 @@ corPlotApp <- function() {
     
     # Related Datasets.
     datasets <- unique(traitStats$dataset)
-    output$reldataset <- renderUI({
-      shiny::selectInput("reldataset", "Related Datasets:",
+    output$rel_dataset <- renderUI({
+      shiny::selectInput("rel_dataset", "Related Datasets:",
                          datasets, datasets[1], multiple = TRUE)
     })
   }

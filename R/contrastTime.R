@@ -22,6 +22,7 @@ contrastTimeServer <- function(id, panel_par, main_par,
     times_list <- timeTraitsServer("times_list", panel_par, main_par,
                                         traitSignal, contrastTable)
     
+    ###############################################################
     # Contrast Time Signal
     shiny::reactive({
       shiny::req(contrastTable(), times_list$traits, panel_par$strains,
@@ -42,7 +43,7 @@ contrastTimeServer <- function(id, panel_par, main_par,
 #' @export
 contrastTimeInput <- function(id) {
   ns <- shiny::NS(id)
-  timeTraitsInput(ns("times_list"))
+  timeTraitsInput(ns("times_list")) # traits
 }
 #' Shiny Module UI for Contrasts over Time
 #' @return nothing returned

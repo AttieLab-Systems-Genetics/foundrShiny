@@ -2,11 +2,14 @@
 % Please edit documentation in R/stats.R
 \name{statsServer}
 \alias{statsServer}
+\alias{statsUI}
 \alias{statsOutput}
 \alias{statsApp}
 \title{Shiny Module Server for Stats Plots}
 \usage{
 statsServer(id, main_par, traitStats, customSettings = NULL, facet = FALSE)
+
+statsUI(id)
 
 statsOutput(id)
 

@@ -19,8 +19,8 @@ traitSolosServer <- function(id, panel_par, main_par, trait_table) {
 
     # Output: Plots or Data
     output$solos_plot <- shiny::renderPlot({
-      shiny::req(solos_plot(), main_par$height)
-      print(solos_plot(), height = paste0(main_par$height, "in"))
+      shiny::req(solos_plot(), panel_par$height)
+      print(solos_plot(), height = paste0(panel_par$height, "in"))
     })
 
     # Plot
@@ -36,11 +36,11 @@ traitSolosServer <- function(id, panel_par, main_par, trait_table) {
     solos_plot
   })
 }
-#' Shiny Module UI for traitSolos
+#' Shiny Module Output for traitSolos
 #' @return nothing returned
 #' @rdname traitSolosServer
 #' @export
-traitSolosUI <- function(id) {
+traitSolosOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h3("Trait Plots"),
@@ -67,7 +67,7 @@ traitSolosApp <- function() {
       ),
       shiny::mainPanel(
         panelParInput("panel_par"), # strains, facet
-        traitSolosUI("solos_plot"),
+        traitSolosOutput("solos_plot"),
         traitTableOutput("trait_table")
       )
     )

@@ -54,7 +54,7 @@ corTableServer <- function(id, main_par,
 #' @export
 corTableInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("rel_dataset"))
+  shiny::uiOutput(ns("rel_dataset")) # rel_dataset
 }
 #' Shiny Module Output for Trait Correlations
 #' @return nothing returned

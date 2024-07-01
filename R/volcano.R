@@ -101,8 +101,7 @@ volcanoApp <- function() {
           mainParOutput("main_par"), # plot_table, height
           plotParUI("plot_par"), # volsd, volvert (sliders)
           plotParOutput("plot_par"), # rownames (strains/terms)
-          shiny::uiOutput("sex"),
-          shiny::uiOutput("strain"),
+          panelParUI("panel_par"), # sex
           volcanoOutput("volcano")
         )
       )
@@ -110,22 +109,11 @@ volcanoApp <- function() {
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
     plot_par <- plotParServer("plot_par", contrast_table)
     volcanoServer("volcano", input, plot_par, contrast_table)
-    
-    # SERVER-SIDE INPUTS
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(
-        "strains", "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
-    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
-    output$sex <- shiny::renderUI({
-      shiny::selectInput("sex", "", as.vector(sexes))
-    })
   }
   shiny::shinyApp(ui, server)
 }

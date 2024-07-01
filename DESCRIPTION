@@ -1,6 +1,6 @@
 Package: foundrShiny
-Version: 0.2.16
-Date: 2024-06-26
+Version: 0.2.17
+Date: 2024-07-01
 Title: Multiparent Founder Shiny App Tools
 Description: Tools to build Shiny Apps for foundr package.
 Authors@R: c(person("Brian S Yandell",

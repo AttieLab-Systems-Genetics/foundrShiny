@@ -19,25 +19,23 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
                              facet = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    # Contrast Trait Plots
-    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
-      traitStatsSelected, customSettings, shiny::reactive("Stats Contrasts"))
-    
-    # Dataset selection.
-    data_selection <- shiny::reactiveVal(NULL, label = "data_selection")
-    shiny::observeEvent(main_par$dataset,
-                        data_selection(main_par$dataset))
-    
-    # Stats for selected datasets.
-    traitStatsSelected <- shiny::reactive({
-      shiny::req(data_selection())
-      
-      dplyr::filter(traitStats, .data$dataset %in% data_selection())
+    panel_par <- panelParServer("panel_par", main_par, traitStats, "stats")
+    trait_stats <- shiny::reactive({
+      shiny::req(main_par$dataset)
+      dplyr::filter(traitStats, .data$dataset %in% main_par$dataset)
     })
+    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
+      trait_stats, customSettings, shiny::reactive("Stats Contrasts"))
+    contrast_list$panel <- shiny::reactive("Contrasts")
     ###############################################################
     contrast_list
   })
+}
+#' @rdname statsServer
+#' @export
+statsUI <- function(id) { # plot_table, height or table
+  ns <- shiny::NS(id)
+  panelParOutput(ns("panel_par")) # plot_table, height or table
 }
 #' Shiny Module Output for Stats Plot
 #' @return nothing returned
@@ -46,9 +44,8 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
 statsOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    panelParUI(ns("panel_par")), # sex (B/F/M/C)
-    contrastPlotUI(ns("contrast_plot")),
-    contrastPlotOutput(ns("contrast_plot")))
+    contrastPlotUI(ns("contrast_plot")), # ordername, interact
+    contrastPlotOutput(ns("contrast_plot"))) # volsd, volvert, rownames
 }
 #' Shiny Module App for Stats Plot
 #' @return nothing returned
@@ -62,20 +59,22 @@ statsApp <- function() {
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         mainParInput("main_par"), # dataset
-        mainParUI("main_par"), # order
         border_line(),
-        mainParOutput("main_par"), # plot_table, height
+        shiny::fluidRow(
+          shiny::column(6, mainParOutput1("main_par")), # plot_table
+          shiny::column(6, statsUI("stats_list"))), # height or table
         downloadOutput("download")
       ),
       shiny::mainPanel(
-        statsOutput("StatsPanel")
+        statsOutput("stats_list")
       )
     )
   )
   
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    statsServer("StatsPanel", main_par, traitStats)
+    stats_list <- statsServer("stats_list", main_par, traitStats)
+    downloadServer("download", "Stats", main_par, stats_list)
   }
   
   shiny::shinyApp(ui = ui, server = server)}

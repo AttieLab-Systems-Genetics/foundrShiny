@@ -5,7 +5,7 @@
 \alias{timePlotOutput}
 \title{Shiny Module Server for Time Plots}
 \usage{
-timePlotServer(id, panel_par, main_par, traitSignal, traitTimesData)
+timePlotServer(id, panel_par, main_par, traitSignal, time_table)
 
 timePlotOutput(id)
 }
@@ -16,7 +16,7 @@ timePlotOutput(id)
 
 \item{traitSignal}{static object}
 
-\item{traitTimesData}{reactive object}
+\item{time_table}{reactive object}
 
 \item{responses}{possible types of responses}
 }

@@ -21,14 +21,12 @@ contrastTableServer <- function(id, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    stats_table <- traitOrderServer("shinyOrder", main_par,
+    stats_table <- traitOrderServer("stats_table", main_par,
       traitStats, customSettings, keepDatatraits)
     
     ###############################################################
-    
     shiny::reactive({
       shiny::req(stats_table())
-      
       foundr::conditionContrasts(traitSignal, stats_table(), 
         termname = stats_table()$term[1], rawStats = traitStats)
     }, label = "stats_table")

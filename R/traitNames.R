@@ -25,7 +25,7 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
     ns <- session$ns
     
     # Select traits
-    output$shiny_names <- shiny::renderUI({
+    output$trait_names <- shiny::renderUI({
       inputId <- ifelse(multiples, "Related Traits:", "Key Trait:")
       shiny::selectizeInput(ns("trait"), inputId, choices = NULL,
                             multiple = multiples)
@@ -70,7 +70,7 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
 #' @export
 traitNamesUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("shiny_names"))
+  shiny::uiOutput(ns("trait_names"))
 }
 #' Shiny App for Trait Names
 #' @return nothing returned
