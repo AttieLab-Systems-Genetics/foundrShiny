@@ -22,14 +22,12 @@ traitServer <- function(id, main_par,
     # Order Traits by Stats.
     stats_table <- traitOrderServer("stats_table", main_par,
                                     traitStats, customSettings)
-    # Key Trait.
-    key_trait   <- traitNamesServer("key_trait", main_par, stats_table)
     # Key Trait and Correlation Table.
+    key_trait   <- traitNamesServer("key_trait", main_par, stats_table)
     cors_table  <- corTableServer("cors_table", main_par,
                                   key_trait, traitSignal, customSettings)
     # Related Traits.
     rel_traits  <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
-    # Correlation Plot
     cors_plot   <- corPlotServer("cors_plot", main_par,
                                   cors_table, customSettings)
     # Trait Table.
@@ -144,9 +142,9 @@ traitInput <- function(id) { # 4:Order, 8:Traits
 #' @return nothing returned
 #' @rdname traitServer
 #' @export
-traitUI <- function(id) { # Plot/Table, Height, Table Choice.
+traitUI <- function(id) { # height or table
   ns <- shiny::NS(id)
-  panelParOutput(ns("panel_par")) # plot_table, height or table
+  panelParOutput(ns("panel_par")) # height or table
 }
 #' Shiny Module Output for Trait Panel
 #' @return nothing returned

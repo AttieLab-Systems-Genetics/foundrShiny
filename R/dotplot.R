@@ -46,7 +46,8 @@ dotplotServer <- function(id, panel_par, plot_par, contrast_table) {
     })
     
     contrastDotPlot <- shiny::reactive({
-      shiny::req(filter_rownames())
+      shiny::req(filter_rownames(), plot_par$ordername,
+                 threshold())
       # Generic plot function for `traits` and `eigens`.``
       foundr::ggplot_conditionContrasts(
         filter_rownames(), bysex = panel_par$sex,

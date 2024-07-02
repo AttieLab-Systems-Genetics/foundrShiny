@@ -28,7 +28,9 @@ for an overview of package(s) use and components.
 - larger points on several plots
 - Need to add group element to customSettings (done)
 - need to rethink foundr::ggplot_conditionContrasts, which is now bloated
-- update foundrApp with new panelPar, mainPar (note download section)
+- updated foundr app mostly works now except
+  + shifting between panels seems to wipe out `key_trait` and maybe others
+  + the `bareApp()` is a draft diagnostic tool to investigate
 
 ## foundrShiny Modular Organization
 

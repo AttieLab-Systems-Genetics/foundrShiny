@@ -55,7 +55,7 @@ timeTraitsServer <- function(id, panel_par, main_par,
     # Update Trait choices and selected.
     shiny::observeEvent(
       shiny::tagList(selections$response, selections$time, traitOrder(),
-                     trait_names(), main_par$tabpanel),
+                     trait_names()),
       {
         # Use current selection of trait_selection().
         # But make sure they are still in the traitOrder() object.
@@ -87,10 +87,6 @@ timeTraitsServer <- function(id, panel_par, main_par,
     # Trait names (removing key time information).
     trait_names <- shiny::reactive({
       shiny::req(selections$time)
-      if(shiny::isTruthy(main_par$tabpanel)) {
-        shiny::req(main_par$tabpanel)
-      }
-      
       # Make sure timeunit aligns with trait names.
       object <- shiny::req(timetrait_order())
       timeunit <- selections$time

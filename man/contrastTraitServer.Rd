@@ -2,10 +2,10 @@
 % Please edit documentation in R/contrastTrait.R
 \name{contrastTraitServer}
 \alias{contrastTraitServer}
-\alias{contrastTraitUI}
+\alias{contrastTraitInput}
 \alias{contrastTraitOutput}
 \alias{contrastTraitApp}
-\title{Shiny Sex Server for Contrast Plots}
+\title{Shiny Trait Server for Contrast Plots}
 \usage{
 contrastTraitServer(
   id,
@@ -15,7 +15,7 @@ contrastTraitServer(
   customSettings = NULL
 )
 
-contrastTraitUI(id)
+contrastTraitInput(id)
 
 contrastTraitOutput(id)
 
@@ -40,11 +40,11 @@ nothing returned
 nothing returned
 }
 \description{
-Shiny Sex Server for Contrast Plots
+Shiny Trait Server for Contrast Plots
 
-Shiny Sex UI for Contrast Plots
+Shiny Trait Input for Contrast Plots
 
-Shiny Sex Output for Contrast Plots
+Shiny Trait Output for Contrast Plots
 
-Shiny Sex App for Contrast Plots
+Shiny Trait App for Contrast Plots
 }

@@ -1,4 +1,4 @@
-#' Shiny Sex Server for Contrast Plots
+#' Shiny Trait Server for Contrast Plots
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par input parameters
@@ -21,19 +21,19 @@ contrastTraitServer <- function(id, panel_par, main_par,
     contrastPlotServer("contrast_plot",
                       panel_par, main_par,
                       contrastTable, customSettings, 
-                      shiny::reactive("Sex Contrasts"))
+                      shiny::reactive("Trait Contrasts"))
   })
 }
-#' Shiny Sex UI for Contrast Plots
+#' Shiny Trait Input for Contrast Plots
 #'
 #' @return nothing returned
 #' @rdname contrastTraitServer
 #' @export
-contrastTraitUI <- function(id) {
+contrastTraitInput <- function(id) {
   ns <- shiny::NS(id)
   contrastPlotUI(ns("contrast_plot")) # ordername, interact
 }
-#' Shiny Sex Output for Contrast Plots
+#' Shiny Trait Output for Contrast Plots
 #'
 #' @return nothing returned
 #' @rdname contrastTraitServer
@@ -42,7 +42,7 @@ contrastTraitOutput <- function(id) {
   ns <- shiny::NS(id)
   contrastPlotOutput(ns("contrast_plot")) # volsd, volvert, rownames
 }
-#' Shiny Sex App for Contrast Plots
+#' Shiny Trait App for Contrast Plots
 #'
 #' @return nothing returned
 #' @rdname contrastTraitServer
@@ -62,7 +62,7 @@ contrastTraitApp <- function() {
         shiny::mainPanel(
           shiny::fluidRow(
             shiny::column(4, panelParUI("panel_par")), # sex
-            shiny::column(8, contrastTraitUI("contrast_list"))), # ordername, interact
+            shiny::column(8, contrastTraitInput("contrast_list"))), # ordername, interact
           contrastTraitOutput("contrast_list")
         )
       )

@@ -3,6 +3,7 @@
 \name{contrastGroupServer}
 \alias{contrastGroupServer}
 \alias{contrastGroupInput}
+\alias{contrastGroupUI}
 \alias{contrastGroupOutput}
 \alias{contrastGroupApp}
 \title{Shiny Module Server for Groups of Contrasts}
@@ -18,6 +19,8 @@ contrastGroupServer(
 )
 
 contrastGroupInput(id)
+
+contrastGroupUI(id)
 
 contrastGroupOutput(id)
 
@@ -42,11 +45,15 @@ nothing returned
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Module Server for Groups of Contrasts
 
 Shiny Module Input for Groups of Contrasts
+
+Shiny Module UI for Groups of Contrasts
 
 Shiny Module Output for Groups of Contrasts
 

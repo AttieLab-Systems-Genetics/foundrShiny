@@ -4,6 +4,7 @@
 \alias{contrastPlotServer}
 \alias{contrastPlotUI}
 \alias{contrastPlotOutput}
+\alias{contrastPlotApp}
 \title{Shiny Module Server for Contrast Plots}
 \usage{
 contrastPlotServer(
@@ -18,6 +19,8 @@ contrastPlotServer(
 contrastPlotUI(id)
 
 contrastPlotOutput(id)
+
+contrastPlotApp()
 }
 \arguments{
 \item{id}{identifier}
@@ -36,6 +39,8 @@ reactive object
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Module Server for Contrast Plots
@@ -43,4 +48,6 @@ Shiny Module Server for Contrast Plots
 Shiny Module UI for Contrast Plots
 
 Shiny Module Output for Contrast Plots
+
+Shiny App for Contrast Plots
 }

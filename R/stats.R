@@ -33,9 +33,9 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
 }
 #' @rdname statsServer
 #' @export
-statsUI <- function(id) { # plot_table, height or table
+statsUI <- function(id) { # height or table
   ns <- shiny::NS(id)
-  panelParOutput(ns("panel_par")) # plot_table, height or table
+  panelParOutput(ns("panel_par")) # height or table
 }
 #' Shiny Module Output for Stats Plot
 #' @return nothing returned

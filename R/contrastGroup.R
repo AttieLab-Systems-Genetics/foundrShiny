@@ -18,46 +18,67 @@ contrastGroupServer <- function(id, panel_par, main_par,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
+      contrastTable, customSettings, modTitle)
+    
     groupname <- stringr::str_to_title(customSettings$group)
     if(!length(groupname)) groupname <- "Group"
     
-    # MODULES
-    # Contrast Eigen Plots
-    contrast_list <- contrastPlotServer("contrast_plot",
-                      panel_par, main_par, contrastTable, customSettings,
-                      modTitle)
-    
-    contrastTable <- shiny::reactive({
-      if(shiny::isTruthy(panel_par$group)) traits() else eigens()      
-    })
     modTitle <- shiny::reactive({
-      if(shiny::isTruthy(panel_par$group)) 
-        paste("Eigentrait Contrasts for", groupname, panel_par$group)
+      if(shiny::isTruthy(input$group)) 
+        paste("Eigentrait Contrasts for", groupname, input$group)
       else
         paste0("Eigentrait Contrasts across ", groupname, "s")
     })
     
-    # INPUTS
+    contrastTable <- shiny::reactive({
+      if(shiny::isTruthy(input$group)) traits() else eigens()      
+    })
+    # Contrasts among Eigentraits.
+    eigens <- shiny::reactive({
+      shiny::req(datagroup(), trait_table())
+      eigen_contrast_dataset(datagroup(), trait_table())
+    })
+    # Contrasts among Traits in Group.
+    traits <- shiny::reactive({
+      shiny::req(datagroup(), panel_par$sex, input$group, main_par$dataset,
+                 group_table(), eigens())
+      eigen_traits_dataset(datagroup(), panel_par$sex, input$group,
+                           group_table(), eigens())
+    })
     
     # Restrict `traitModule` to datasets in `trait_table()`
     datagroup <- shiny::reactive({
-      traitModule[shiny::req(main_par$dataset)]
+      traitModule[shiny::req(main_par$dataset[1])]
     })
+    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
+    datatraits <- shiny::reactive({
+      shiny::req(panel_par$sex, main_par$dataset, datagroup())
+      if(is_sex_module(datagroup())) {
+        dataset <- main_par$dataset[1]
+        sex_name <- names(sexes)[match(panel_par$sex, sexes)]
+        out <- unique(datagroup()[[dataset]][[panel_par$sex]]$modules$module)
+        paste0(dataset, ": ", sex_name, "_", out)
+      } else {
+        paste0(dataset, ": ", unique(datagroup()[[dataset]]$value$modules$module))
+      }
+    }, label = "datatraits")
     
-    # Eigen Contrasts.
-    eigens <- shiny::reactive({
-      shiny::req(datagroup(), trait_table())
-      
-      eigen_contrast_dataset(datagroup(), trait_table())
+    # Server-side INPUTS
+    output$group <- shiny::renderUI({
+      shiny::selectizeInput(ns("group"), "Group:", NULL)
     })
-    
-    # Compare Selected Group Eigens to Traits in Group
-    traits <- shiny::reactive({
-      shiny::req(datagroup(), panel_par$sex, panel_par$group, main_par$dataset,
-                 group_table(), eigens())
-      
-      eigen_traits_dataset(datagroup(), panel_par$sex, panel_par$group,
-                           group_table(), eigens())
+    shiny::observeEvent(
+      shiny::req(datatraits(), main_par$dataset, panel_par$sex), {
+      # First zero out input$group.
+      shiny::updateSelectizeInput(session, "group",
+                                  selected = "", server = TRUE)
+      # Then set choices.
+      shiny::updateSelectizeInput(session, "group", choices = datatraits(),
+                                  selected = "", server = TRUE)
+    })
+    shiny::observeEvent(input$group, {
+      contrast_list$group <- input$group
     })
     
     ##############################################################
@@ -70,7 +91,15 @@ contrastGroupServer <- function(id, panel_par, main_par,
 #' @export
 contrastGroupInput <- function(id) {
   ns <- shiny::NS(id)
-  contrastPlotUI(ns("contrast_plot"))
+  contrastPlotUI(ns("contrast_plot")) # ordername, interact
+}
+#' Shiny Module UI for Groups of Contrasts
+#' @return nothing returned
+#' @rdname contrastGroupServer
+#' @export
+contrastGroupUI <- function(id) { # group
+  ns <- shiny::NS(id)
+  shiny::uiOutput(ns("group"))
 }
 #' Shiny Module Output for Groups of Contrasts
 #' @return nothing returned
@@ -97,11 +126,11 @@ contrastGroupApp <- function() {
         ),
         shiny::mainPanel(
           mainParOutput("main_par"), # plot_table, height
-          contrastGroupInput("contrast_group"),
+          contrastGroupInput("contrast_group"), # ordername, interact
           shiny::fluidRow(
-            shiny::column(4, shiny::uiOutput("sex")),
-            shiny::column(8, shiny::uiOutput("group"))),
-          contrastGroupOutput("contrast_group")
+            shiny::column(4, panelParUI("panel_par")), # sex
+            shiny::column(8, contrastGroupUI("contrast_group"))), # group
+          contrastGroupOutput("contrast_group") # volsd, volvert, rownames
         )
       )
     )
@@ -109,6 +138,7 @@ contrastGroupApp <- function() {
   
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     # Contrast Trait Table
     trait_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
@@ -116,40 +146,10 @@ contrastGroupApp <- function() {
     group_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings, keepDatatraits)
     # Contrast Groups.
-    contrast_list <- contrastGroupServer("contrast_group", input, main_par,
+    contrast_list <- contrastGroupServer("contrast_group", panel_par, main_par,
       traitModule, trait_table, group_table)
 
     # SERVER-SIDE INPUTS
-    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
-    output$sex <- shiny::renderUI({
-      shiny::selectInput("sex", "", as.vector(sexes))
-    })
-    output$group <- shiny::renderUI({
-      shiny::selectizeInput("group", "Group:", NULL)
-    })
-    shiny::observeEvent(
-      shiny::req(datatraits(), main_par$dataset, input$sex),
-      {
-        # First zero out input$group.
-        shiny::updateSelectizeInput(session, "group",
-                                    selected = "", server = TRUE)
-        # Then set choices.
-        shiny::updateSelectizeInput(session, "group", choices = datatraits(),
-                                    selected = "", server = TRUE)
-      })
-    
-    datagroup <- shiny::reactive({
-      traitModule[shiny::req(main_par$dataset[1])]
-    })
-    datatraits <- shiny::reactive({
-      shiny::req(input$sex, main_par$dataset, datagroup())
-      if(is_sex_module(datagroup())) {
-        out <- unique(datagroup()[[main_par$dataset[1]]][[input$sex]]$modules$module)
-        paste0(main_par$dataset[1], ": ", names(sexes)[match(input$sex, sexes)], "_", out)
-      } else {
-        paste0(main_par$dataset[1], ": ", unique(datagroup()[[main_par$dataset]]$value$modules$module))
-      }
-    }, label = "datatraits")
     
     keepDatatraits <- reactive({
       group <- NULL

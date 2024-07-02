@@ -46,9 +46,9 @@ timeInput <- function(id) { # key_trait, time_unit, response
 #' @return nothing returned
 #' @rdname timeServer
 #' @export
-timeUI <- function(id) { # plot_table, height or table
+timeUI <- function(id) { # height or table
   ns <- shiny::NS(id)
-  panelParOutput(ns("panel_par")) # plot_table, height or table
+  panelParOutput(ns("panel_par")) # height or table
 }
 #' Shiny Module Output for Times Plot
 #' @return nothing returned

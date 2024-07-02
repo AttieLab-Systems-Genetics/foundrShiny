@@ -42,13 +42,13 @@ mainParServer <- function(id, traitStats = NULL) {
 #' @rdname mainParServer
 mainParInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("dataset"))
+  shiny::uiOutput(ns("dataset")) # dataset
 }
 #' @export
 #' @rdname mainParServer
 mainParUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("order"))
+  shiny::uiOutput(ns("order")) # order
 }
 #' @export
 #' @rdname mainParServer
@@ -58,7 +58,7 @@ mainParOutput <- function(id) {
     shiny::column(6, mainParOutput1(id)), # plot_table
     shiny::column(6, mainParOutput2(id))) # height
 }
-mainParOutput1 <- function(id) {
+mainParOutput1 <- function(id) { # plot_table
   ns <- shiny::NS(id)
   shiny::radioButtons(ns("plot_table"), "", c("Plots","Tables"), "Plots",
                                          inline = TRUE)

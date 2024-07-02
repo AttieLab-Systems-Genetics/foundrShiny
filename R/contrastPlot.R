@@ -22,9 +22,9 @@ contrastPlotServer <- function(id, panel_par, main_par,
     ns <- session$ns
     
     plot_par <- plotParServer("plot_par", contrast_table)
-    volcano <- volcanoServer("volcano", input, plot_par, contrast_table)
-    biplot  <- biplotServer("biplot", input, plot_par, contrast_table)
-    dotplot <- dotplotServer("dotplot", input, plot_par, contrast_table)
+    volcano <- volcanoServer("volcano", panel_par, plot_par, contrast_table)
+    biplot  <- biplotServer("biplot", panel_par, plot_par, contrast_table)
+    dotplot <- dotplotServer("dotplot", panel_par, plot_par, contrast_table)
     
     output$plot_table <- shiny::renderUI({
       shiny::tagList(
@@ -100,54 +100,39 @@ contrastPlotOutput <- function(id) {
     plotParOutput(ns("plot_par")), # rownames (strains/terms)
     shiny::uiOutput(ns("plot_table")))
 }
-#' Shiny Sex App for Contrast Plots
+#' Shiny App for Contrast Plots
 #'
 #' @return nothing returned
-#' @rdname contrastSexServer
+#' @rdname contrastPlotServer
 #' @export
 contrastPlotApp <- function() {
-  title <- "Test contrastSex Module"
-  
+  title <- "Test contrastPlot Module"
   ui <- function() {
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
           mainParInput("main_par"), # dataset
+          mainParUI("main_par"), # order
           border_line(),
-          mainParUI("main_par") # order
+          mainParOutput("main_par") # plot_table, height
         ),
         shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
           shiny::fluidRow(
-            shiny::column(4, shiny::uiOutput("sex")),
-            shiny::column(8, contrastPlotUI("contrast_plot"))),
-          contrastPlotOutput("contrast_plot")
+            shiny::column(4, panelParUI("panel_par")), # sex
+            shiny::column(8, contrastPlotUI("contrast_plot"))), # ordername, interact
+          contrastPlotOutput("contrast_plot") # volsd, volvert, rownames
         )
       )
     )
   }
-  
   server <- function(input, output, session) {
-    # Contrast Trait Table
     main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
-    contrastPlotServer("contrast_plot", input, main_par,
+    contrastPlotServer("contrast_plot", panel_par, main_par,
       contrast_table, customSettings)
-
-    # SERVER-SIDE INPUTS
-    output$strains <- shiny::renderUI({
-      choices <- names(foundr::CCcolors)
-      shiny::checkboxGroupInput(
-        "strains", "Strains",
-        choices = choices, selected = choices, inline = TRUE)
-    })
-    sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
-    output$sex <- shiny::renderUI({
-      shiny::selectInput("sex", "", as.vector(sexes))
-    })
   }
-  
   shiny::shinyApp(ui = ui, server = server)
 }

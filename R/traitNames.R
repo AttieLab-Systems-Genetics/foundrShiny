@@ -27,22 +27,27 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
     # Select traits
     output$trait_names <- shiny::renderUI({
       inputId <- ifelse(multiples, "Related Traits:", "Key Trait:")
-      shiny::selectizeInput(ns("trait"), inputId, choices = NULL,
+      shiny::selectizeInput(ns("trait_names"), inputId, choices = NULL,
                             multiple = multiples)
     })
     shiny::observeEvent(
-      shiny::tagList(traitArranged(), main_par$tabpanel),
-      {
-        choices <- traitNamesArranged()
-        selected <- trait_selection()
-        if(!is.null(selected) && !(all(selected %in% choices)))
-          selected <- NULL
-        shiny::updateSelectizeInput(session, "trait", choices = choices,
-                                    server = TRUE, selected = selected)
-      },
-      ignoreNULL = FALSE, label = "update_trait")
+      shiny::req(main_par$dataset, main_par$order, traitArranged()), {
+      choices <- traitNamesArranged()
+      selected <- input$trait_names # trait_selection()
+      if(!shiny::isTruthy(selected)) {
+        selected <- NULL
+      } else if (!(all(selected %in% choices))) {
+        selected <- NULL
+      }
+      if(!multiples & is.null(selected)) {
+        selected <- choices[1]
+      } 
+      shiny::updateSelectizeInput(session, "trait_names", choices = choices,
+                                  server = TRUE, selected = selected)
+    },
+    ignoreNULL = FALSE, label = "update_trait")
     trait_selection <- shiny::reactiveVal(NULL, label = "trait_selection")
-    shiny::observeEvent(input$trait, trait_selection(input$trait),
+    shiny::observeEvent(input$trait_names, trait_selection(input$trait_names),
                         ignoreNULL = !multiples)
     shiny::observeEvent(traitArranged(), trait_selection(NULL),
                         ignoreNULL = FALSE)
@@ -84,47 +89,31 @@ traitNamesApp <- function() {
       shiny::titlePanel(title),
       shiny::sidebarLayout(
         shiny::sidebarPanel(
-          mainParInput("main_par"), # dataset
-          traitNamesUI("trait_names"),
-          traitNamesUI("trait_names2")
+          shiny::fluidRow(
+            shiny::column(6, mainParInput("main_par")), # dataset
+            shiny::column(6, mainParUI("main_par"))), # order
+          # Key Dataset and Trait.
+          traitNamesUI("key_trait"), # key_trait
+          # Related Datasets and Traits.
+          shiny::fluidRow(
+            shiny::column(6, corTableInput("cors_table")), # rel_dataset
+            shiny::column(6, traitNamesUI("rel_traits"))) # rel_traits
         ),
         shiny::mainPanel(
-          shiny::uiOutput("name"),
-          shiny::uiOutput("name2")
         )
       )
     )
   }
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
-    trait_names <- traitNamesServer("trait_names", main_par,
-      traitStatsInput)
-    trait_names2 <- traitNamesServer("trait_names2", main_par,
-                                    traitStatsInput, TRUE)
-    
-    # DATA OBJECTS 
-    traitStatsInput <- shiny::reactive({
-      if(shiny::isTruthy(main_par$dataset)) {
-        dplyr::filter(
-          traitStats,
-          .data$dataset %in% main_par$dataset)
-      } else {
-        NULL
-      }
-    },
-    label = "traitStatsInput")
-    
-    # I/O FROM MODULE
-    output$name <- renderUI({
-      shiny::req(trait_names())
-      name <- paste(trait_names(), collapse = ", ")
-      shiny::textAreaInput("name", "Trait:", name)
-    })
-    output$name2 <- renderUI({
-      shiny::req(trait_names())
-      name <- paste(trait_names2(), collapse = ", ")
-      shiny::textAreaInput("name2", "Multiple Traits:", name)
-    })
+    stats_table <- traitOrderServer("stats_table", main_par,
+                                    traitStats, customSettings)
+    # Key Trait and Correlation Table.
+    key_trait   <- traitNamesServer("key_trait", main_par, stats_table)
+    cors_table  <- corTableServer("cors_table", main_par,
+                                  key_trait, traitSignal, customSettings)
+    # Related Traits.
+    rel_traits  <- traitNamesServer("rel_traits", main_par, cors_table, TRUE)
   }
   
   shiny::shinyApp(ui = ui, server = server)

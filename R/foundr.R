@@ -31,32 +31,12 @@ foundrServer <- function(id,
     time_list <- timeServer("tabTimes", main_par,
       traitData, traitSignal, traitStats)
     aboutServer("about", customSettings$help)
-    downloadServer("download", "Contrast", main_par, download_list)
-
-    download_list <- shiny::reactiveValues(
-      panel       = shiny::reactive(shiny::req(input$tabpanel)),
-      postfix     = shiny::reactive({
-        switch(shiny::req(input$tabpanel),
-               Traits    = shiny::req(trait_list$postfix()),
-               Contrasts = shiny::req(contrast_list$postfix()),
-               Stats     = shiny::req(stats_list$postfix()),
-               Times     = shiny::req(time_list$postfix()))
-      }),
-      plotObject  = shiny::reactive({
-        switch(shiny::req(input$tabpanel),
-               Traits    = shiny::req(trait_list$plotObject()),
-               Contrasts = shiny::req(contrast_list$plotObject()),
-               Stats     = shiny::req(stats_list$plotObject()),
-               Times     = shiny::req(time_list$plotObject()))
-      }),
-      tableObject = shiny::reactive({
-        switch(shiny::req(input$tabpanel),
-               Traits    = shiny::req(trait_list$tableObject()),
-               Contrasts = shiny::req(contrast_list$tableObject()),
-               Stats     = shiny::req(stats_list$tableObject()),
-               Times     = shiny::req(time_list$tableObject()))
-      })
-    )
+    downloadServer("download", "Contrast", main_par,
+      switch(shiny::req(input$tabpanel),
+        Traits    = trait_list,
+        Contrasts = contrast_list,
+        Stats     = stats_list,
+        Times     = time_list))
 
     # Entry key
     entrykey <- shiny::reactive({
@@ -73,17 +53,16 @@ foundrServer <- function(id,
       {
         if(shiny::isTruthy(entrykey())) {
           shiny::showTab("tabpanel", target = "Traits")
+          shiny::showTab("tabpanel", target = "Stats")
+          shiny::showTab("tabpanel", target = "About")
+          # Times and Contrasts tabs hidden for calcium study for now.
           if(length(timetraits_all())) {
             shiny::showTab("tabpanel", target = "Times")
-            # Hidden for calcium study for now.
             shiny::showTab("tabpanel", target = "Contrasts")
           } else {
             shiny::hideTab("tabpanel", target = "Times")
-            # Hidden for calcium study for now.
             shiny::hideTab("tabpanel", target = "Contrasts")
           }
-          shiny::showTab("tabpanel", target = "Stats")
-          shiny::showTab("tabpanel", target = "About")
         } else {
           shiny::hideTab("tabpanel", target = "Traits")
           shiny::hideTab("tabpanel", target = "Times")
@@ -96,6 +75,12 @@ foundrServer <- function(id,
       foundr::timetraitsall(traitSignal)
     })
     
+    # Don't show Entry Key if there is no need.
+    output$entrykey <- shiny::renderUI({
+      if(shiny::isTruthy(customSettings$entrykey))
+        shiny::textInput(ns("appEntry"), "Entry Key:")
+    })
+    # Side Input
     output$sideInput <- shiny::renderUI({
       shiny::req(input$tabpanel)
       
@@ -105,37 +90,35 @@ foundrServer <- function(id,
         if(input$tabpanel != "About") {
           shiny::tagList(
             shiny::fluidRow(
-              shiny::column(3, mainParInput(ns("main_par"))), # dataset
+              shiny::column(6, mainParInput(ns("main_par"))), # dataset
               if(input$tabpanel %in% c("Traits", "Times"))
-                shiny::column(3, mainParUI(ns("main_par"))), # order
-              if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
-                shiny::column(6, 
-                              switch(input$tabpanel,
-                                     Traits    = traitInput(ns("tabTraits")),
-                                     Contrasts = contrastInput(ns("tabContrasts")),
-                                     Times     = if(length(timetraits_all()))
-                                       timeInput(ns("tabTimes"))))
-              }),
-            
-            switch(input$tabpanel,
-                   Traits    = traitUI(ns("tabTraits")),
-                   Contrasts = if(length(timetraits_all()))
-                     contrastUI(ns("tabContrasts")),
-                   Times     = if(length(timetraits_all())) timeUI(ns("tabTimes"))),
-            
+                shiny::column(6, mainParUI(ns("main_par"))), # order
+            ),
+            if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
+              switch(input$tabpanel, # key_trait and 
+                Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
+                Contrasts = contrastInput(ns("tabContrasts")), # time_unit
+                Times     = if(length(timetraits_all()))
+                  timeInput(ns("tabTimes"))) # time_unit, response
+            },
             border_line(),
-            mainParOutput(ns("main_par")), # plot_table, height
+            shiny::fluidRow(
+              shiny::column(6, mainParOutput1(ns("main_par"))), # plot_table
+              # Within-panel call of panelPar.
+              # panelParOutput(ns("panel_par")) # height or table
+              shiny::column(6, switch(input$tabpanel,
+                Traits    = traitUI(ns("tabTraits")),
+                Contrasts = contrastUI(ns("tabContrasts")),
+                Stats     = statsUI(ns("tabStats")),
+                Times     = if(length(timetraits_all()))
+                  timeUI(ns("tabTimes")))
+              ),
+            ),
             downloadOutput(ns("download"))
           )
         }
       }
     })
-    # Don't show Entry Key if there is no need.
-    output$entrykey <- shiny::renderUI({
-      if(shiny::isTruthy(customSettings$entrykey))
-        shiny::textInput(ns("appEntry"), "Entry Key:")
-    })
-    
     # Main Output
     output$mainOutput <- shiny::renderUI({
       if(shiny::isTruthy(entrykey())) {
