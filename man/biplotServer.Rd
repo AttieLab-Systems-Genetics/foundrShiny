@@ -6,7 +6,15 @@
 \alias{biplotApp}
 \title{Shiny Module Server for BiPlots}
 \usage{
-biplotServer(id, panel_par, plot_par, contrast_table)
+biplotServer(
+  id,
+  panel_par,
+  plot_par,
+  contrast_table,
+  info,
+  filter_rownames,
+  threshold
+)
 
 biplotOutput(id)
 
@@ -18,6 +26,8 @@ biplotApp()
 \item{panel_par, plot_par}{input parameters}
 
 \item{contrast_table}{reactive data frame}
+
+\item{info, filter_rownames, threshold}{reactive items from contrastPlot}
 }
 \value{
 reactive object

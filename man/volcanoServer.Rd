@@ -6,7 +6,15 @@
 \alias{volcanoApp}
 \title{Shiny Module Server for Volcano Plots}
 \usage{
-volcanoServer(id, panel_par, plot_par, contrast_table)
+volcanoServer(
+  id,
+  panel_par,
+  plot_par,
+  contrast_table,
+  info,
+  filter_rownames,
+  threshold
+)
 
 volcanoOutput(id)
 
@@ -18,6 +26,8 @@ volcanoApp()
 \item{panel_par, plot_par}{input parameters}
 
 \item{contrast_table}{reactive data frame}
+
+\item{info, filter_rownames, threshold}{reactive items from contrastPlot}
 }
 \value{
 reactive object

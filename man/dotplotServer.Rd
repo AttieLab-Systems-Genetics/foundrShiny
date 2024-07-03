@@ -6,7 +6,15 @@
 \alias{dotplotApp}
 \title{Shiny Module Server for DotPlots}
 \usage{
-dotplotServer(id, panel_par, plot_par, contrast_table)
+dotplotServer(
+  id,
+  panel_par,
+  plot_par,
+  contrast_table,
+  info,
+  filter_rownames,
+  threshold
+)
 
 dotplotOutput(id)
 
@@ -18,6 +26,8 @@ dotplotApp()
 \item{panel_par, plot_par}{input parameters}
 
 \item{contrast_table}{reactive data frame}
+
+\item{info, filter_rownames, threshold}{reactive items from contrastPlot}
 }
 \value{
 reactive object

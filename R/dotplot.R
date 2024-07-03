@@ -3,6 +3,7 @@
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
 #' @param contrast_table reactive data frame
+#' @param info,filter_rownames,threshold reactive items from contrastPlot
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
@@ -13,37 +14,10 @@
 #'             summary_strainstats
 #' @export
 #'
-dotplotServer <- function(id, panel_par, plot_par, contrast_table) {
+dotplotServer <- function(id, panel_par, plot_par,
+  contrast_table, info, filter_rownames, threshold) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # Plot
-    info <- shiny::reactive({
-      # Set up particulars for contrast or stat
-      if(inherits(shiny::req(contrast_table()), "conditionContrasts"))
-        list(row = "strain", col = "value", title = "Strains")
-      else
-        list(row = "term", col = "SD", title = "Terms")
-    })
-    # Filter to desired rownames (strains or terms).
-    filter_rownames <- shiny::reactive({
-      shiny::req(contrast_table(), plot_par$rownames, info())
-      
-      dplyr::filter(contrast_table(), .data[[info()$row]] %in% plot_par$rownames)
-    })
-    
-    # Threshold for DotPlot plots
-    threshold <- shiny::reactive({
-      shiny::req(plot_par$volvert, plot_par$volsd, plot_par$ordername)
-      
-      out <- c(SD = plot_par$volsd,
-               p.value = 0.01, kME = 0.8, module = 10, size = 15)
-      if(plot_par$ordername == "p.value")
-        out[plot_par$ordername] <- 10 ^ -plot_par$volvert
-      else
-        out[plot_par$ordername] <- plot_par$volvert
-      out
-    })
     
     contrastDotPlot <- shiny::reactive({
       shiny::req(filter_rownames(), plot_par$ordername,
