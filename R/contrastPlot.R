@@ -65,7 +65,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
     })
     
     output$vol_sliders <- shiny::renderUI({
-      #if(shiny::req(main_par$plot_table) == "Plots")
+      if(shiny::req(main_par$plot_table) == "Plots")
         plotParUI(ns("plot_par")) # volsd, volvert (sliders)
     })
     
