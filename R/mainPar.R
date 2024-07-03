@@ -13,26 +13,19 @@ mainParServer <- function(id, traitStats = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # INPUTS
-    #    input$dataset
-    #    input$height
-
-    # SERVER-SIDE INPUTS
+    # Dataset selection.
+    datasets <- unique(traitStats$dataset)
     output$dataset <- shiny::renderUI({
-      # Dataset selection.
-      datasets <- unique(traitStats$dataset)
-      selected <- data_selection()
-      
-      # Get datasets.
+      selected <- input$dataset
       shiny::selectInput(ns("dataset"), "Datasets:", datasets, selected,
                          multiple = TRUE)
     })
-    data_selection <- shiny::reactiveVal("", label = "data_selection")
-    shiny::observeEvent(input$dataset, data_selection(input$dataset))
+
     # Order Criteria for Trait Names
     output$order <- shiny::renderUI({
+      selected <- input$order
       choices <- order_choices(traitStats)
-      shiny::selectInput(ns("order"), "Order traits by", choices)
+      shiny::selectInput(ns("order"), "Order traits by", choices, selected)
     })
     ######################################################################
     input

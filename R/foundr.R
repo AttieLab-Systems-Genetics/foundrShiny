@@ -46,40 +46,39 @@ foundrServer <- function(id,
       }
       out
     })
-    
-    # Hide all tabs unless Entry word provided.
-    shiny::observeEvent(
-      shiny::tagList(input$height, entrykey(), input$tabpanel),
-      {
-        if(shiny::isTruthy(entrykey())) {
-          shiny::showTab("tabpanel", target = "Traits")
-          shiny::showTab("tabpanel", target = "Stats")
-          shiny::showTab("tabpanel", target = "About")
-          # Times and Contrasts tabs hidden for calcium study for now.
-          if(length(timetraits_all())) {
-            shiny::showTab("tabpanel", target = "Times")
-            shiny::showTab("tabpanel", target = "Contrasts")
-          } else {
-            shiny::hideTab("tabpanel", target = "Times")
-            shiny::hideTab("tabpanel", target = "Contrasts")
-          }
-        } else {
-          shiny::hideTab("tabpanel", target = "Traits")
-          shiny::hideTab("tabpanel", target = "Times")
-          shiny::hideTab("tabpanel", target = "Contrasts")
-          shiny::hideTab("tabpanel", target = "Stats")
-          shiny::hideTab("tabpanel", target = "About")
-        }
-      })
-    timetraits_all <- shiny::reactive({
-      foundr::timetraitsall(traitSignal)
-    })
-    
     # Don't show Entry Key if there is no need.
     output$entrykey <- shiny::renderUI({
       if(shiny::isTruthy(customSettings$entrykey))
         shiny::textInput(ns("appEntry"), "Entry Key:")
     })
+
+    # Does project have time data? If not, hide those tabs.
+    has_time_data <- length(foundr::timetraitsall(traitSignal) > 0)
+    
+    # Hide all tabs unless Entry word provided.
+    shiny::observeEvent(
+      shiny::tagList(input$height, entrykey(), input$tabpanel), {
+      if(shiny::isTruthy(entrykey())) {
+        shiny::showTab("tabpanel", target = "Traits")
+        shiny::showTab("tabpanel", target = "Stats")
+        shiny::showTab("tabpanel", target = "About")
+        # Times and Contrasts tabs hidden for calcium study for now.
+        if(has_time_data) {
+          shiny::showTab("tabpanel", target = "Times")
+          shiny::showTab("tabpanel", target = "Contrasts")
+        } else {
+          shiny::hideTab("tabpanel", target = "Times")
+          shiny::hideTab("tabpanel", target = "Contrasts")
+        }
+      } else {
+        shiny::hideTab("tabpanel", target = "Traits")
+        shiny::hideTab("tabpanel", target = "Times")
+        shiny::hideTab("tabpanel", target = "Contrasts")
+        shiny::hideTab("tabpanel", target = "Stats")
+        shiny::hideTab("tabpanel", target = "About")
+      }
+    })
+    
     # Side Input
     output$sideInput <- shiny::renderUI({
       shiny::req(input$tabpanel)
@@ -98,7 +97,7 @@ foundrServer <- function(id,
               switch(input$tabpanel, # key_trait and 
                 Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
                 Contrasts = contrastInput(ns("tabContrasts")), # time_unit
-                Times     = if(length(timetraits_all()))
+                Times     = if(has_time_data)
                   timeInput(ns("tabTimes"))) # time_unit, response
             },
             border_line(),
@@ -110,7 +109,7 @@ foundrServer <- function(id,
                 Traits    = traitUI(ns("tabTraits")),
                 Contrasts = contrastUI(ns("tabContrasts")),
                 Stats     = statsUI(ns("tabStats")),
-                Times     = if(length(timetraits_all()))
+                Times     = if(has_time_data)
                   timeUI(ns("tabTimes")))
               ),
             ),

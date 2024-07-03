@@ -27,31 +27,24 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
     # Select traits
     output$trait_names <- shiny::renderUI({
       inputId <- ifelse(multiples, "Related Traits:", "Key Trait:")
-      shiny::selectizeInput(ns("trait_names"), inputId, choices = NULL,
-                            multiple = multiples)
+      shiny::selectizeInput(ns("trait_names"), inputId,
+        choices = shiny::req(traitNamesArranged()), multiple = multiples)
     })
     shiny::observeEvent(
       shiny::req(main_par$dataset, main_par$order, traitArranged()), {
       choices <- traitNamesArranged()
-      selected <- input$trait_names # trait_selection()
+      selected <- input$trait_names
       if(!shiny::isTruthy(selected)) {
         selected <- NULL
-      } else if (!(all(selected %in% choices))) {
-        selected <- NULL
+      } else {
+        if (!(all(selected %in% choices))) selected <- NULL
       }
-      if(!multiples & is.null(selected)) {
-        selected <- choices[1]
-      } 
+      if(!multiples & is.null(selected)) selected <- choices[1]
       shiny::updateSelectizeInput(session, "trait_names", choices = choices,
                                   server = TRUE, selected = selected)
     },
     ignoreNULL = FALSE, label = "update_trait")
-    trait_selection <- shiny::reactiveVal(NULL, label = "trait_selection")
-    shiny::observeEvent(input$trait_names, trait_selection(input$trait_names),
-                        ignoreNULL = !multiples)
-    shiny::observeEvent(traitArranged(), trait_selection(NULL),
-                        ignoreNULL = FALSE)
-    
+
     traitNamesArranged <- shiny::reactive({
       if(shiny::isTruthy(traitArranged())) {
         foundr::unite_datatraits(
@@ -66,7 +59,7 @@ traitNamesServer <- function(id, main_par, traitArranged, multiples = FALSE) {
     
     ###############################################
     # vector returned as reactive
-    trait_selection
+    shiny::reactive(input$trait_names)
   })
 }
 #' Shiny Module UI for Trait Names

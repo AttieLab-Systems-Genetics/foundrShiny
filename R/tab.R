@@ -1,26 +1,16 @@
-#' Shiny bare bones Server for foundr Package
+#' Shiny tab Server for foundr Package
 #'
 #' @param id identifier for shiny reactive
 #' @param traitData,traitSignal,traitStats,traitModule static objects
 #' @param customSettings list of custom settings
-#'
 #' @return reactive server
-#' 
 #' @export
-#' 
-#' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
-#'             reactiveVal renderUI req showTab
-#' @importFrom grDevices dev.off pdf
-#' @importFrom utils write.csv
-#' @importFrom foundr timetraitsall
-#'
-bareServer <- function(id,
+tabServer <- function(id,
                    traitData = NULL, traitSignal = NULL, traitStats = NULL,
                    customSettings = NULL, traitModule = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # CALL MODULES
     main_par <- mainParServer("main_par", traitStats)
     trait_list <- traitServer("tabTraits", main_par,
       traitData, traitSignal, traitStats, customSettings)
@@ -30,10 +20,6 @@ bareServer <- function(id,
       traitStats, customSettings)
     time_list <- timeServer("tabTimes", main_par,
       traitData, traitSignal, traitStats)
-    
-    timetraits_all <- shiny::reactive({
-      foundr::timetraitsall(traitSignal)
-    })
     
     # Side Input
     output$sideInput <- shiny::renderUI({
@@ -49,10 +35,11 @@ bareServer <- function(id,
               shiny::column(6, mainParUI(ns("main_par"))), # order
           ),
           if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
+            has_time_data <- length(foundr::timetraitsall(traitSignal) > 0)
             switch(input$tabpanel, # key_trait and 
                    Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
                    Contrasts = contrastInput(ns("tabContrasts")), # time_unit
-                   Times     = if(length(timetraits_all()))
+                   Times     = if(has_time_data)
                      timeInput(ns("tabTimes"))) # time_unit, response
           }
         )
@@ -71,36 +58,36 @@ bareServer <- function(id,
   })
 }
 #' @export
-#' @rdname bareServer
-bareInput <- function(id) {
+#' @rdname tabServer
+tabInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("sideInput")),
     shiny::uiOutput(ns("entrykey")))
 }
 #' @export
-#' @rdname bareServer
-bareOutput <- function(id) {
+#' @rdname tabServer
+tabOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("mainOutput"))
 }
 #' @param title title of app
 #' @export
-#' @rdname bareServer
-bareApp <- function(title = "") {
+#' @rdname tabServer
+tabApp <- function(title = "") {
   ui <- shiny::fluidPage(
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        bareInput("bare")
+        tabInput("tab")
       ),
       shiny::mainPanel(
-        bareOutput("bare")
+        tabOutput("tab")
       )
     )
   )
   server <- function(input, output, session) {
-    bareServer("bare",
+    tabServer("tab",
                  traitData, traitSignal, traitStats,
                  customSettings, traitModule)
   }
