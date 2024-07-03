@@ -31,12 +31,31 @@ foundrServer <- function(id,
     time_list <- timeServer("tabTimes", main_par,
       traitData, traitSignal, traitStats)
     aboutServer("about", customSettings$help)
-    downloadServer("download", "Contrast", main_par,
-      switch(shiny::req(input$tabpanel),
-        Traits    = trait_list,
-        Contrasts = contrast_list,
-        Stats     = stats_list,
-        Times     = time_list))
+    downloadServer("download", "Foundr", main_par, download_list)
+    download_list <- shiny::reactiveValues(
+      panel       = shiny::reactive(shiny::req(input$tabpanel)),
+      postfix     = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = shiny::req(trait_list$postfix()),
+               Contrasts = shiny::req(contrast_list$postfix()),
+               Stats     = shiny::req(stats_list$postfix()),
+               Times     = shiny::req(time_list$postfix()))
+      }),
+      plotObject  = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = shiny::req(trait_list$plotObject()),
+               Contrasts = shiny::req(contrast_list$plotObject()),
+               Stats     = shiny::req(stats_list$plotObject()),
+               Times     = shiny::req(time_list$plotObject()))
+      }),
+      tableObject = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = shiny::req(trait_list$tableObject()),
+               Contrasts = shiny::req(contrast_list$tableObject()),
+               Stats     = shiny::req(stats_list$tableObject()),
+               Times     = shiny::req(time_list$tableObject()))
+      })
+    )
 
     # Entry key
     entrykey <- shiny::reactive({

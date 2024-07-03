@@ -21,7 +21,8 @@ downloadServer <- function(id, prefix, main_par, download_list) {
       shiny::downloadButton(ns(plot_table), plot_table)
     })
     output$filename <- renderUI({
-      filename <- paste0(prefix, "_", shiny::req(download_list$postfix()))
+      filename <- paste0(shiny::req(download_list$panel()), "_",
+                         shiny::req(download_list$postfix()))
       shiny::textAreaInput(ns("filename"), "File Prefix:", filename)
     })
     output$Plots <- shiny::downloadHandler(

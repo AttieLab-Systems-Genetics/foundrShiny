@@ -26,7 +26,7 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
     })
     contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
       trait_stats, customSettings, shiny::reactive("Stats Contrasts"))
-    contrast_list$panel <- shiny::reactive("Contrasts")
+    contrast_list$panel <- shiny::reactive("Stats")
     ###############################################################
     contrast_list
   })
