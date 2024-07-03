@@ -109,7 +109,7 @@ traitServer <- function(id, main_par,
         if(length(shiny::req(trait_names())) > 1)
           print(pairs_plot())
         if(foundr::is_bestcor(cors_table()) & shiny::isTruthy(cors_table()))
-          print(cors_table())
+          print(shiny::req(cors_plot()))
       }),
       tableObject = shiny::reactive({
         shiny::req(trait_table())

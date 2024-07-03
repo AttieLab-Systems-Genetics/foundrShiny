@@ -46,7 +46,7 @@ downloadServer <- function(id, prefix, main_par, download_list) {
 downloadOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::renderText("DownloadsOutput"),
+    shiny::h5("Download:"),
     shiny::fluidRow(
       shiny::column(3, shiny::uiOutput(ns("downloads"))),
       shiny::column(9, shiny::uiOutput(ns("filename")))))
@@ -60,8 +60,8 @@ downloadApp <- function(id) {
     shiny::fluidRow(
       shiny::column(6, mainParInput("main_par")), # dataset
       shiny::column(6, mainParUI("main_par"))), # order
-    downloadOutput("download"),
-    mainParOutput("main_par") # plot_table, height
+    mainParOutput("main_par"), # plot_table, height
+    downloadOutput("download")
   )
   server <- function(input, output, session) { 
     # Test sets

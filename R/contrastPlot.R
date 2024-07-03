@@ -64,6 +64,11 @@ contrastPlotServer <- function(id, panel_par, main_par,
       }
     })
     
+    output$vol_sliders <- shiny::renderUI({
+      #if(shiny::req(main_par$plot_table) == "Plots")
+        plotParUI(ns("plot_par")) # volsd, volvert (sliders)
+    })
+    
     ###############################################################
     shiny::reactiveValues(
       postfix = shiny::reactive({
@@ -71,11 +76,11 @@ contrastPlotServer <- function(id, panel_par, main_par,
         paste(unique(contrast_table()$dataset), collapse = ",")
       }),
       plotObject = shiny::reactive({
-        if("Volcano" %in% input$plot)
+        if("Volcano" %in% input$plot_choice)
           print(shiny::req(volcano()))
-        if("BiPlot" %in% input$plot)
+        if("BiPlot" %in% input$plot_choice)
           print(shiny::req(biplot()))
-        if("DotPlot" %in% input$plot)
+        if("DotPlot" %in% input$plot_choice)
           print(shiny::req(dotplot()))
       }),
       tableObject = tableObject)
@@ -96,7 +101,7 @@ contrastPlotUI <- function(id) {
 contrastPlotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    plotParUI(ns("plot_par")), # volsd, volvert (sliders)
+    shiny::uiOutput(ns("vol_sliders")), # volsd, volvert (sliders)
     plotParOutput(ns("plot_par")), # rownames (strains/terms)
     shiny::uiOutput(ns("plot_table")))
 }
@@ -115,7 +120,8 @@ contrastPlotApp <- function() {
           mainParInput("main_par"), # dataset
           mainParUI("main_par"), # order
           border_line(),
-          mainParOutput("main_par") # plot_table, height
+          mainParOutput("main_par"), # plot_table, height
+          downloadOutput("download")
         ),
         shiny::mainPanel(
           shiny::fluidRow(
@@ -131,8 +137,9 @@ contrastPlotApp <- function() {
     panel_par <- panelParServer("panel_par", main_par, traitStats)
     contrast_table <- contrastTableServer("contrast_table", main_par,
       traitSignal, traitStats, customSettings)
-    contrastPlotServer("contrast_plot", panel_par, main_par,
+    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
       contrast_table, customSettings)
+    downloadServer("download", "Contrasts", main_par, contrast_list)
   }
   shiny::shinyApp(ui = ui, server = server)
 }
