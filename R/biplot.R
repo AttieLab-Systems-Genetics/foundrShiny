@@ -2,8 +2,8 @@
 #'
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
+#' @param plot_info reactive values from contrastPlot
 #' @param contrast_table reactive data frame
-#' @param info,filter_rownames,threshold reactive items from contrastPlot
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
@@ -14,19 +14,19 @@
 #'             summary_strainstats
 #' @export
 #'
-biplotServer <- function(id, panel_par, plot_par,
-  contrast_table, info, filter_rownames, threshold) {
+biplotServer <- function(id, panel_par, plot_par, plot_info,
+  contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
     contrastBiPlot <- shiny::reactive({
-      shiny::req(filter_rownames(), plot_par$ordername,
-                 threshold())
+      shiny::req(plot_info$rownames(), plot_par$ordername,
+                 plot_info$threshold())
       # Generic plot function for `traits` and `eigens`.``
       foundr::ggplot_conditionContrasts(
-        filter_rownames(), bysex = panel_par$sex,
+        plot_info$rownames(), bysex = panel_par$sex,
         ordername = plot_par$ordername,
-        plottype = "biplot", threshold = threshold(),
+        plottype = "biplot", threshold = plot_info$threshold(),
         strain = input$strain,
         interact = shiny::isTruthy(plot_par$interact))
     }, label = "contrastBiPlot")

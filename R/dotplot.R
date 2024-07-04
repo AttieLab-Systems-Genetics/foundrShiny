@@ -2,8 +2,8 @@
 #'
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
+#' @param plot_info reactive values from contrastPlot
 #' @param contrast_table reactive data frame
-#' @param info,filter_rownames,threshold reactive items from contrastPlot
 #'
 #' @return reactive object 
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
@@ -14,20 +14,20 @@
 #'             summary_strainstats
 #' @export
 #'
-dotplotServer <- function(id, panel_par, plot_par,
-  contrast_table, info, filter_rownames, threshold) {
+dotplotServer <- function(id, panel_par, plot_par, plot_info,
+  contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
     contrastDotPlot <- shiny::reactive({
-      shiny::req(filter_rownames(), plot_par$ordername,
-                 threshold())
+      shiny::req(plot_info$rownames(), plot_par$ordername,
+                 plot_info$threshold())
       # Generic plot function for `traits` and `eigens`.``
       foundr::ggplot_conditionContrasts(
-        filter_rownames(), bysex = panel_par$sex,
+        plot_info$rownames(), bysex = panel_par$sex,
         ntrait = input$ntrait,
         ordername = plot_par$ordername,
-        plottype = "dotplot", threshold = threshold(),
+        plottype = "dotplot", threshold = plot_info$threshold(),
         interact = shiny::isTruthy(plot_par$interact))
     }, label = "contrastDotPlot")
     

@@ -22,39 +22,37 @@ contrastPlotServer <- function(id, panel_par, main_par,
     ns <- session$ns
     
     plot_par <- plotParServer("plot_par", contrast_table)
-    volcano <- volcanoServer("volcano", panel_par, plot_par,
-      contrast_table, info, filter_rownames, threshold)
-    biplot  <- biplotServer("biplot", panel_par, plot_par,
-      contrast_table, info, filter_rownames, threshold)
-    dotplot <- dotplotServer("dotplot", panel_par, plot_par,
-      contrast_table, info, filter_rownames, threshold)
+    volcano <- volcanoServer("volcano", panel_par, plot_par, plot_info,
+      contrast_table)
+    biplot  <- biplotServer("biplot", panel_par, plot_par, plot_info,
+      contrast_table)
+    dotplot <- dotplotServer("dotplot", panel_par, plot_par, plot_info,
+      contrast_table)
     
-    # Plot
-    info <- shiny::reactive({
-      # Set up particulars for contrast or stat
-      if(inherits(shiny::req(contrast_table()), "conditionContrasts"))
-        list(row = "strain", col = "value", title = "Strains")
-      else
-        list(row = "term", col = "SD", title = "Terms")
+    # Plot Info
+    has_contrasts <- shiny::reactive({
+      inherits(shiny::req(contrast_table()), "conditionContrasts")
     })
-    # Filter to desired rownames (strains or terms).
-    filter_rownames <- shiny::reactive({
-      shiny::req(contrast_table(), plot_par$rownames, info())
-      
-      dplyr::filter(contrast_table(), .data[[info()$row]] %in% plot_par$rownames)
+    plot_row = shiny::reactive({
+      ifelse(has_contrasts(), "strain", "term")
     })
-    # Threshold List.
-    threshold <- shiny::reactive({
-      shiny::req(plot_par$volvert, plot_par$volsd, plot_par$ordername)
-      
-      out <- c(SD = plot_par$volsd,
-               p.value = 0.01, kME = 0.8, module = 10, size = 15)
-      if(plot_par$ordername == "p.value")
-        out[plot_par$ordername] <- 10 ^ -plot_par$volvert
-      else
-        out[plot_par$ordername] <- plot_par$volvert
-      out
-    })
+    plot_info <- shiny::reactiveValues(
+      # Threshold List.
+      threshold = shiny::reactive({
+        shiny::req(plot_par$volvert, plot_par$volsd, plot_par$ordername)
+        out <- c(SD = plot_par$volsd, p.value = 0.01, kME = 0.8, module = 10,
+                 size = 15)
+        out[plot_par$ordername] <- ifelse(plot_par$ordername == "p.value",
+          10 ^ -plot_par$volvert, plot_par$volvert)
+        out
+      }),
+      # Filter to desired rownames (strains or terms).
+      rownames = shiny::reactive({
+        shiny::req(contrast_table(), plot_par$rownames, plot_row())
+        dplyr::filter(contrast_table(),
+                      .data[[plot_row()]] %in% plot_par$rownames)
+      })
+    )
     
     output$plot_table <- shiny::renderUI({
       shiny::tagList(
@@ -81,8 +79,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
 
     tableObject <- shiny::reactive({
       shiny::req(contrast_table())
-      title <- ifelse(inherits(contrast_table(), "conditionContrasts"),
-                      "Strains", "Terms")
+      title <- ifelse(has_contrasts(), "Strains", "Terms")
       if(title == "Strains") {
         foundr::summary_conditionContrasts(
           dplyr::filter(contrast_table(), sex == shiny::req(panel_par$sex)),
@@ -101,6 +98,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
     
     ###############################################################
     shiny::reactiveValues(
+      panel = shiny::reactive(NULL),
       postfix = shiny::reactive({
         shiny::req(contrast_table())
         paste(unique(contrast_table()$dataset), collapse = ",")
