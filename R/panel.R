@@ -1,11 +1,11 @@
-#' Shiny tab Server for foundr Package
+#' Shiny panel Server for foundr Package
 #'
 #' @param id identifier for shiny reactive
 #' @param traitData,traitSignal,traitStats,traitModule static objects
 #' @param customSettings list of custom settings
 #' @return reactive server
 #' @export
-tabServer <- function(id,
+panelServer <- function(id,
                    traitData = NULL, traitSignal = NULL, traitStats = NULL,
                    customSettings = NULL, traitModule = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -58,36 +58,36 @@ tabServer <- function(id,
   })
 }
 #' @export
-#' @rdname tabServer
-tabInput <- function(id) {
+#' @rdname panelServer
+panelInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("sideInput")),
     shiny::uiOutput(ns("entrykey")))
 }
 #' @export
-#' @rdname tabServer
-tabOutput <- function(id) {
+#' @rdname panelServer
+panelOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("mainOutput"))
 }
 #' @param title title of app
 #' @export
-#' @rdname tabServer
-tabApp <- function(title = "") {
+#' @rdname panelServer
+panelApp <- function(title = "") {
   ui <- shiny::fluidPage(
     shiny::titlePanel(title),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        tabInput("tab")
+        panelInput("panel")
       ),
       shiny::mainPanel(
-        tabOutput("tab")
+        panelOutput("panel")
       )
     )
   )
   server <- function(input, output, session) {
-    tabServer("tab",
+    panelServer("panel",
                  traitData, traitSignal, traitStats,
                  customSettings, traitModule)
   }

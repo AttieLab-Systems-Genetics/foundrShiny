@@ -26,9 +26,8 @@ for an overview of package(s) use and components.
 - SD and logp calc and guideline defaults
 - add pct eigenvalue from module
 - larger points on several plots
-- Need to add group element to customSettings (done)
 - need to rethink foundr::ggplot_conditionContrasts, which is now bloated
-- added `tabApp()` as a diagnostic tool to investigate tabs
+- added `panelApp()` as a diagnostic tool to investigate tabs and panels
 
 ## foundrShiny Modular Organization
 
