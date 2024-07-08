@@ -21,7 +21,7 @@ foundrServer <- function(id,
     ns <- session$ns
 
     # CALL MODULES
-    entrykey <- entryServer("entrykey", customSettings)
+    entry <- entryServer("entry", customSettings)
     main_par <- mainParServer("main_par", traitStats)
     trait_list <- traitServer("tabTraits", main_par,
       traitData, traitSignal, traitStats, customSettings)
@@ -63,8 +63,8 @@ foundrServer <- function(id,
     
     # Hide all tabs unless Entry word provided.
     shiny::observeEvent(
-      shiny::tagList(input$height, entrykey(), input$tabpanel), {
-      if(shiny::isTruthy(entrykey())) {
+      shiny::tagList(input$height, entry(), input$tabpanel), {
+      if(entry()) {
         shiny::showTab("tabpanel", target = "Traits")
         shiny::showTab("tabpanel", target = "Stats")
         shiny::showTab("tabpanel", target = "About")
@@ -89,7 +89,7 @@ foundrServer <- function(id,
     output$sideInput <- shiny::renderUI({
       shiny::req(input$tabpanel)
       
-      if(shiny::isTruthy(entrykey())) {
+      if(entry()) {
         # Tab-specific side panel.
         shiny::req(input$tabpanel)
         if(input$tabpanel != "About") {
@@ -126,7 +126,7 @@ foundrServer <- function(id,
     })
     # Main Output
     output$mainOutput <- shiny::renderUI({
-      if(shiny::isTruthy(entrykey())) {
+      if(entry()) {
         shiny::tabsetPanel(
           type = "tabs", header = "", id = ns("tabpanel"),
           shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
@@ -145,7 +145,7 @@ foundrInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("sideInput")),
-    entryInput(ns("entrykey")))
+    entryInput(ns("entry")))
 }
 #' @export
 #' @rdname foundrServer

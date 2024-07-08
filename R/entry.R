@@ -18,35 +18,35 @@ entryServer <- function(id, customSettings = NULL) {
     ns <- session$ns
 
     # Don't show Entry Key if there is no need.
-    output$entrykey <- shiny::renderUI({
+    output$entry <- shiny::renderUI({
       if(shiny::isTruthy(customSettings$entrykey))
-        shiny::textInput(ns("appEntry"), "Entry Key:")
+        shiny::textInput(ns("entry_key"), "Entry Key:")
     })
-    entrykey <- shiny::reactive({
+    entry <- shiny::reactive({
       out <- !shiny::isTruthy(customSettings$entrykey)
-      if(!out & shiny::isTruthy(input$appEntry)) {
-        out <- (input$appEntry == customSettings$entrykey)
+      if(!out & shiny::isTruthy(input$entry_key)) {
+        out <- (input$entry_key == customSettings$entrykey)
       }
       shiny::isTruthy(out)
     })
-    output$entryflow <- shiny::renderUI({
-      shiny::h3(entrykey())
+    output$entry_show <- shiny::renderUI({
+      shiny::h3(entry())
     })
     ############################################################
-    entrykey
+    entry
   })
 }
 #' @export
 #' @rdname entryServer
 entryInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("entrykey"))
+  shiny::uiOutput(ns("entry"))
 }
 #' @export
 #' @rdname entryServer
 entryOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("entryflow"))
+  shiny::uiOutput(ns("entry_show"))
 }
 #' @param title title of app
 #' @export
