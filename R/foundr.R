@@ -21,6 +21,7 @@ foundrServer <- function(id,
     ns <- session$ns
 
     # CALL MODULES
+    entrykey <- entryServer("entrykey", customSettings)
     main_par <- mainParServer("main_par", traitStats)
     trait_list <- traitServer("tabTraits", main_par,
       traitData, traitSignal, traitStats, customSettings)
@@ -56,20 +57,6 @@ foundrServer <- function(id,
                Times     = shiny::req(time_list$tableObject()))
       })
     )
-
-    # Entry key
-    entrykey <- shiny::reactive({
-      out <- !shiny::isTruthy(customSettings$entrykey)
-      if(!out & shiny::isTruthy(input$appEntry)) {
-        out <- (input$appEntry == customSettings$entrykey)
-      }
-      out
-    })
-    # Don't show Entry Key if there is no need.
-    output$entrykey <- shiny::renderUI({
-      if(shiny::isTruthy(customSettings$entrykey))
-        shiny::textInput(ns("appEntry"), "Entry Key:")
-    })
 
     # Does project have time data? If not, hide those tabs.
     has_time_data <- length(foundr::timetraitsall(traitSignal) > 0)
@@ -158,7 +145,7 @@ foundrInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("sideInput")),
-    shiny::uiOutput(ns("entrykey")))
+    entryInput(ns("entrykey")))
 }
 #' @export
 #' @rdname foundrServer
