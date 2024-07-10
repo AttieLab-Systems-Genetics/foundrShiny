@@ -54,8 +54,8 @@ contrastGroupServer <- function(id, panel_par, main_par,
     sexes <- c(B = "Both Sexes", F = "Female", M = "Male", C = "Sex Contrast")
     datatraits <- shiny::reactive({
       shiny::req(panel_par$sex, main_par$dataset, datagroup())
+      dataset <- main_par$dataset[1]
       if(is_sex_module(datagroup())) {
-        dataset <- main_par$dataset[1]
         sex_name <- names(sexes)[match(panel_par$sex, sexes)]
         out <- unique(datagroup()[[dataset]][[panel_par$sex]]$modules$module)
         paste0(dataset, ": ", sex_name, "_", out)
@@ -117,7 +117,6 @@ contrastGroupApp <- function() {
   title <- "Shiny Module Contrast Group"
   
   ui <- function() {
-    
     shiny::fluidPage(
       shiny::titlePanel(title),
       shiny::sidebarLayout(
@@ -135,7 +134,6 @@ contrastGroupApp <- function() {
       )
     )
   }
-  
   server <- function(input, output, session) {
     main_par <- mainParServer("main_par", traitStats)
     panel_par <- panelParServer("panel_par", main_par, traitStats)
@@ -149,16 +147,12 @@ contrastGroupApp <- function() {
     contrast_list <- contrastGroupServer("contrast_group", panel_par, main_par,
       traitModule, trait_table, group_table)
 
-    # SERVER-SIDE INPUTS
-    
     keepDatatraits <- reactive({
       group <- NULL
       if(shiny::isTruthy(input$group))
         group <- input$group
-      
       foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1], group)
     })
   }
-  
   shiny::shinyApp(ui = ui, server = server)
 }
