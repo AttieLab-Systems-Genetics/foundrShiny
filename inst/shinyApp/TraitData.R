@@ -13,7 +13,7 @@ if(!exists("dirpath")) {
 }
 cat("dirpath (...) =", dirpath, "\n")
 
-if(!(exists("data_instance") & tolower(data_instance) %in% c("trait","liver"))) {
+if(!(exists("data_instance") && tolower(data_instance) %in% c("trait","liver"))) {
   data_instance <- "trait"
 }
 data_instance <- tolower(data_instance)

@@ -35,6 +35,13 @@ foundrServer <- function(id,
     downloadServer("download", "Foundr", main_par, download_list)
     download_list <- shiny::reactiveValues(
       panel       = shiny::reactive(shiny::req(input$tabpanel)),
+      height      = shiny::reactive({
+        switch(shiny::req(input$tabpanel),
+               Traits    = shiny::req(trait_list$height()),
+               Contrasts = shiny::req(contrast_list$height()),
+               Stats     = shiny::req(stats_list$height()),
+               Times     = shiny::req(time_list$height()))
+      }),
       postfix     = shiny::reactive({
         switch(shiny::req(input$tabpanel),
                Traits    = shiny::req(trait_list$postfix()),
@@ -113,8 +120,8 @@ foundrServer <- function(id,
               # panelParOutput(ns("panel_par")) # height or table
               shiny::column(6, switch(input$tabpanel,
                 Traits    = traitUI(ns("tabTraits")),
-                Contrasts = contrastUI(ns("tabContrasts")),
-                Stats     = statsUI(ns("tabStats")),
+                #Contrasts = contrastUI(ns("tabContrasts")), # not working
+                #Stats     = statsUI(ns("tabStats")), # not working
                 Times     = if(has_time_data)
                   timeUI(ns("tabTimes")))
               ),

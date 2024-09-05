@@ -127,6 +127,7 @@ contrastServer <- function(id, main_par,
     ###############################################################
     shiny::reactiveValues(
       panel       = shiny::reactive("Contrasts"),
+      height      = shiny::reactive(panel_par$height),
       postfix     = shiny::reactive({
         switch(shiny::req(contrast_type()),
                Trait = trait_list$postfix(),

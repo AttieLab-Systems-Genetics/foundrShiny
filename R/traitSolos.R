@@ -18,9 +18,13 @@ traitSolosServer <- function(id, panel_par, main_par, trait_table) {
     ns <- session$ns
 
     # Output: Plots or Data
-    output$solos_plot <- shiny::renderPlot({
+    output$solos <- shiny::renderPlot({
+      shiny::req(solos_plot())
+      print(solos_plot())
+    })
+    output$solos_plot <- shiny::renderUI({
       shiny::req(solos_plot(), panel_par$height)
-      print(solos_plot(), height = paste0(panel_par$height, "in"))
+      shiny::plotOutput(ns("solos"), height = paste0(panel_par$height, "in"))
     })
 
     # Plot
@@ -44,7 +48,7 @@ traitSolosOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h3("Trait Plots"),
-    shiny::plotOutput(ns("solos_plot"))
+    shiny::uiOutput(ns("solos_plot"))
   )
 }
 #' Shiny Module AI for traitSolos
@@ -63,7 +67,9 @@ traitSolosApp <- function() {
           shiny::column(3, mainParUI("main_par")), # order
           shiny::column(6, traitNamesUI("key_trait"))), # key_trait
         traitTableUI("trait_table"), # butresp
-        mainParOutput("main_par") # plot_table, height
+        shiny::fluidRow(
+          shiny::column(6, mainParOutput1("main_par")), # plot_table
+          shiny::column(6, panelParOutput("panel_par"))) # height or table
       ),
       shiny::mainPanel(
         panelParInput("panel_par"), # strains, facet

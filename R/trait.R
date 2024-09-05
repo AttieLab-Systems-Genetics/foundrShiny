@@ -95,6 +95,7 @@ traitServer <- function(id, main_par,
     ###############################################################
     shiny::reactiveValues(
       panel       = shiny::reactive("Traits"),
+      height      = shiny::reactive(panel_par$height),
       postfix     = shiny::reactive({
         filename <- stringr::str_replace(trait_names()[1], ": ", "_")
         if(shiny::req(main_par$plot_table) == "Tables")
@@ -103,7 +104,7 @@ traitServer <- function(id, main_par,
         filename
       }),
       plotObject  = shiny::reactive({
-        shiny::req(trait_plot(), panel_par$height)
+        shiny::req(trait_plot())
         
         print(trait_plot())
         if(length(shiny::req(trait_names())) > 1)

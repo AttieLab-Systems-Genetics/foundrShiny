@@ -3,7 +3,7 @@
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param CorTable reactive data frames
-#' @param main_par reactive inputs from calling modules
+#' @param panel_par reactive inputs from calling modules
 #' @param customSettings static list of settings
 #'
 #' @return reactive object
@@ -12,7 +12,7 @@
 #' @importFrom foundr ggplot_bestcor
 #' @export
 #'
-corPlotServer <- function(id, main_par, cors_table,
+corPlotServer <- function(id, panel_par, cors_table,
                          customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -28,7 +28,7 @@ corPlotServer <- function(id, main_par, cors_table,
     })
     output$cors_plot <- shiny::renderUI({
       shiny::req(cors_plot())
-      height <- main_par$height
+      height <- panel_par$height
       if(is.null(height)) height <- 6
       shiny::plotOutput(ns("plot"), height = paste0(height, "in"))
     })

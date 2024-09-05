@@ -30,7 +30,6 @@ volcanoServer <- function(id, panel_par, plot_par, plot_info,
         strain = panel_par$strain,
         interact = shiny::isTruthy(plot_par$interact))
     }, label = "contrastVolcano")
-    
     output$plot <- shiny::renderUI({
       shiny::tagList(
         shiny::h4("Volcano Plot"),

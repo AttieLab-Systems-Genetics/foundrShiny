@@ -47,6 +47,7 @@ timePlotServer <- function(id, panel_par, main_par,
     # time_list
     shiny::reactiveValues(
       panel       = shiny::reactive("Times"),
+      height      = shiny::reactive(panel_par$height),
       postfix     = shiny::reactive({
         shiny::req(time_table())
         filename <- paste(names(time_table()$traits), collapse = ",")

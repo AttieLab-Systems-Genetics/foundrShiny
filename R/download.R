@@ -28,7 +28,8 @@ downloadServer <- function(id, prefix, main_par, download_list) {
     output$Plots <- shiny::downloadHandler(
       filename = function() paste0(shiny::req(input$filename), ".pdf"),
       content = function(file) {
-        grDevices::pdf(file, width = 9, height = main_par$height)
+        grDevices::pdf(file, width = 9,
+                       height = shiny::req(download_list$height()))
         shiny::req(download_list$plotObject())
         grDevices::dev.off()
       })
@@ -68,7 +69,9 @@ downloadApp <- function(id) {
     # Test sets
     prefix <- "Download"
     download_list <- list(
+      panel = shiny::reactive("Download"),
       postfix = shiny::reactive("postfix"),
+      height = shiny::reactive(main_par$height),
       plotObject = shiny::reactive(print(plot_null())),
       tableObject = shiny::reactive(matrix(1:12,nrow=3)))
     

@@ -22,9 +22,13 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
     ns <- session$ns
     
     # Output: Plots or Data
-    output$pairs_plot <- shiny::renderPlot({
-      shiny::req(trait_names(), trait_table())
-      print(pairs_plot(), height = paste0(panel_par$height, "in"))
+    output$pairs <- shiny::renderPlot({
+      shiny::req(pairs_plot())
+      print(pairs_plot())
+    })
+    output$pairs_plot <- shiny::renderUI({
+      shiny::req(pairs_plot(), panel_par$height)
+      shiny::plotOutput(ns("pairs"), height = paste0(panel_par$height, "in"))
     })
     
     # Plot
@@ -48,7 +52,6 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
     label = "pair")
     # Obsolete
     output$pair <- shiny::renderUI({
-      # Somehow when panel_par$height is changed this is reset.
       shiny::req(trait_names())
       if(length(trait_names()) < 2)
         return(NULL)
@@ -71,7 +74,7 @@ traitPairsServer <- function(id, panel_par, main_par, trait_names,
 #' @export
 traitPairsOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::plotOutput(ns("pairs_plot"))
+  shiny::uiOutput(ns("pairs_plot"))
 }
 #' Shiny Module App for TraitPairs
 #' @return nothing returned
@@ -92,7 +95,9 @@ traitPairsApp <- function(id) {
             shiny::column(6, corTableInput("cors_table")),
             shiny::column(6, traitNamesUI("rel_traits"))),
           traitTableUI("trait_table"), # butresp
-          mainParOutput("main_par") # plot_table, height
+          shiny::fluidRow(
+            shiny::column(6, mainParOutput1("main_par")), # plot_table
+            shiny::column(6, panelParOutput("panel_par"))) # height or table
         ),
         
         shiny::mainPanel(

@@ -24,11 +24,12 @@ statsServer <- function(id, main_par, traitStats, customSettings = NULL,
       shiny::req(main_par$dataset)
       dplyr::filter(traitStats, .data$dataset %in% main_par$dataset)
     })
-    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
+    stats_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
       trait_stats, customSettings, shiny::reactive("Stats Contrasts"))
-    contrast_list$panel <- shiny::reactive("Stats")
+    stats_list$panel <- shiny::reactive("Stats")
+    stats_list$height <- shiny::reactive(panel_par$height)
     ###############################################################
-    contrast_list
+    stats_list
   })
 }
 #' @rdname statsServer
