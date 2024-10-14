@@ -39,7 +39,7 @@ timePlotServer <- function(id, panel_par, main_par,
         shiny::h3("Plot over Time"),
         shiny::plotOutput(ns("timeplots"),
                           height = paste0(panel_par$height, "in")),
-        shiny::h3("Plot of Time Summaries"),
+        shiny::h3("Stats over Time as -log10(p)"),
         shiny::plotOutput(ns("timestats"),
                           height = paste0(panel_par$height, "in")))
     })

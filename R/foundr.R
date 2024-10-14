@@ -71,69 +71,68 @@ foundrServer <- function(id,
     # Hide all tabs unless Entry word provided.
     shiny::observeEvent(
       shiny::tagList(input$height, entry(), input$tabpanel), {
-      if(entry()) {
-        shiny::showTab("tabpanel", target = "Traits")
-        shiny::showTab("tabpanel", target = "Stats")
         shiny::showTab("tabpanel", target = "About")
-        # Times and Contrasts tabs hidden for calcium study for now.
-        if(has_time_data) {
-          shiny::showTab("tabpanel", target = "Times")
-          shiny::showTab("tabpanel", target = "Contrasts")
+        if(entry()) {
+          shiny::showTab("tabpanel", target = "Traits")
+          shiny::showTab("tabpanel", target = "Stats")
+          # Times and Contrasts tabs hidden for calcium study for now.
+          if(has_time_data) {
+            shiny::showTab("tabpanel", target = "Times")
+            shiny::showTab("tabpanel", target = "Contrasts")
+          } else {
+            shiny::hideTab("tabpanel", target = "Times")
+            shiny::hideTab("tabpanel", target = "Contrasts")
+          }
         } else {
+          shiny::hideTab("tabpanel", target = "Traits")
           shiny::hideTab("tabpanel", target = "Times")
           shiny::hideTab("tabpanel", target = "Contrasts")
+          shiny::hideTab("tabpanel", target = "Stats")
+          #        shiny::hideTab("tabpanel", target = "About")
         }
-      } else {
-        shiny::hideTab("tabpanel", target = "Traits")
-        shiny::hideTab("tabpanel", target = "Times")
-        shiny::hideTab("tabpanel", target = "Contrasts")
-        shiny::hideTab("tabpanel", target = "Stats")
-        shiny::hideTab("tabpanel", target = "About")
-      }
-    })
+      })
     
     # Side Input
     output$sideInput <- shiny::renderUI({
       shiny::req(input$tabpanel)
       
-      if(entry()) {
-        # Tab-specific side panel.
-        shiny::req(input$tabpanel)
-        if(input$tabpanel != "About") {
-          shiny::tagList(
-            shiny::fluidRow(
-              shiny::column(6, mainParInput(ns("main_par"))), # dataset
-              if(input$tabpanel %in% c("Traits", "Times"))
-                shiny::column(6, mainParUI(ns("main_par"))), # order
+      # Tab-specific side panel.
+      if(input$tabpanel == "About") {
+        entryInput(ns("entry"))
+      } else {
+        shiny::tagList(
+          shiny::fluidRow(
+            shiny::column(6, mainParInput(ns("main_par"))), # dataset
+            if(input$tabpanel %in% c("Traits", "Times"))
+              shiny::column(6, mainParUI(ns("main_par"))), # order
+          ),
+          if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
+            switch(input$tabpanel, # key_trait and 
+                   Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
+                   Contrasts = contrastInput(ns("tabContrasts")), # time_unit
+                   Times     = if(has_time_data)
+                     timeInput(ns("tabTimes"))) # time_unit, response
+          },
+          border_line(),
+          shiny::fluidRow(
+            shiny::column(6, mainParOutput1(ns("main_par"))), # plot_table
+            # Within-panel call of panelPar.
+            # panelParOutput(ns("panel_par")) # height or table
+            shiny::column(6, switch(input$tabpanel,
+                                    Traits    = traitUI(ns("tabTraits")),
+                                    #Contrasts = contrastUI(ns("tabContrasts")), # not working
+                                    #Stats     = statsUI(ns("tabStats")), # not working
+                                    Times     = if(has_time_data)
+                                      timeUI(ns("tabTimes")))
             ),
-            if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
-              switch(input$tabpanel, # key_trait and 
-                Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
-                Contrasts = contrastInput(ns("tabContrasts")), # time_unit
-                Times     = if(has_time_data)
-                  timeInput(ns("tabTimes"))) # time_unit, response
-            },
-            border_line(),
-            shiny::fluidRow(
-              shiny::column(6, mainParOutput1(ns("main_par"))), # plot_table
-              # Within-panel call of panelPar.
-              # panelParOutput(ns("panel_par")) # height or table
-              shiny::column(6, switch(input$tabpanel,
-                Traits    = traitUI(ns("tabTraits")),
-                #Contrasts = contrastUI(ns("tabContrasts")), # not working
-                #Stats     = statsUI(ns("tabStats")), # not working
-                Times     = if(has_time_data)
-                  timeUI(ns("tabTimes")))
-              ),
-            ),
-            downloadOutput(ns("download"))
-          )
-        }
+          ),
+          downloadOutput(ns("download"))
+        )
       }
     })
     # Main Output
     output$mainOutput <- shiny::renderUI({
-      if(entry()) {
+#      if(entry()) {
         shiny::tabsetPanel(
           type = "tabs", header = "", id = ns("tabpanel"),
           shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
@@ -142,7 +141,7 @@ foundrServer <- function(id,
           shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
           shiny::tabPanel("About",     aboutOutput(ns("about")))
         )
-      }
+#      }
     })
   })
 }
@@ -150,9 +149,7 @@ foundrServer <- function(id,
 #' @rdname foundrServer
 foundrInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::uiOutput(ns("sideInput")),
-    entryInput(ns("entry")))
+  shiny::uiOutput(ns("sideInput"))
 }
 #' @export
 #' @rdname foundrServer

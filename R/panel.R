@@ -61,9 +61,7 @@ panelServer <- function(id,
 #' @rdname panelServer
 panelInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::uiOutput(ns("sideInput")),
-    shiny::uiOutput(ns("entrykey")))
+  shiny::uiOutput(ns("sideInput"))
 }
 #' @export
 #' @rdname panelServer

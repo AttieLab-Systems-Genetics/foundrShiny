@@ -20,7 +20,7 @@ entryServer <- function(id, customSettings = NULL) {
     # Don't show Entry Key if there is no need.
     output$entry <- shiny::renderUI({
       if(shiny::isTruthy(customSettings$entrykey))
-        shiny::passwordInput(ns("entry_key"), "Entry Key:")
+        shiny::passwordInput(ns("entry_key"), "Entry Key:", input$entry_key)
     })
     entry <- shiny::reactive({
       out <- !shiny::isTruthy(customSettings$entrykey)
