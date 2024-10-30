@@ -31,7 +31,7 @@ foundrServer <- function(id,
       traitStats, customSettings)
     time_list <- timeServer("tabTimes", main_par,
       traitData, traitSignal, traitStats)
-    aboutServer("about", customSettings$help)
+    aboutServer("about", customSettings$help, entry)
     downloadServer("download", "Foundr", main_par, download_list)
     download_list <- shiny::reactiveValues(
       panel       = shiny::reactive(shiny::req(input$tabpanel)),
@@ -134,7 +134,7 @@ foundrServer <- function(id,
     output$mainOutput <- shiny::renderUI({
 #      if(entry()) {
         shiny::tabsetPanel(
-          type = "tabs", header = "", id = ns("tabpanel"),
+          type = "tabs", header = "", selected = "About", id = ns("tabpanel"),
           shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
           shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
           shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),

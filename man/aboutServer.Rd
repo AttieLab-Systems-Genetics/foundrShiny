@@ -6,7 +6,7 @@
 \alias{aboutApp}
 \title{About Server}
 \usage{
-aboutServer(id, helppath = NULL)
+aboutServer(id, helppath = NULL, entry = shiny::reactive(TRUE))
 
 aboutOutput(id)
 
@@ -16,6 +16,8 @@ aboutApp(id)
 \item{id}{identifier for shiny reactive}
 
 \item{helppath}{path to help markdown}
+
+\item{entry}{entry logical flag}
 }
 \value{
 reactive server

@@ -2,10 +2,14 @@
 #'
 #' @param id identifier for shiny reactive
 #' @param helppath path to help markdown
+#' @param entry entry logical flag
 #'
 #' @return reactive server
 #' @export
-aboutServer <- function(id, helppath = NULL) {
+#' @importFrom shiny a bootstrapPage br includeMarkdown isTruthy NS reactive
+#'             renderUI shinyApp strong uiOutput
+aboutServer <- function(id, helppath = NULL,
+                        entry = shiny::reactive( TRUE )) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -17,6 +21,9 @@ aboutServer <- function(id, helppath = NULL) {
           system.file(file.path("shinyApp", "help.md"), package='foundrShiny'))
       }
       tagList(
+        if(shiny::isTruthy(entry())) {
+          shiny::strong("Click on tabs above this line to see data panels.")
+        },
         shiny::includeMarkdown(
           system.file(file.path("shinyApp", "intro.md"), package='foundrShiny')),
         "See GitHub:",
