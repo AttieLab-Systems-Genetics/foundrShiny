@@ -9,7 +9,7 @@
 #' @export
 #' 
 #' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
-#'             reactiveVal renderUI req showTab
+#'             reactiveVal renderUI req showTab updateTabsetPanel
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
@@ -142,6 +142,9 @@ foundrServer <- function(id,
           shiny::tabPanel("About",     aboutOutput(ns("about")))
         )
 #      }
+    })
+    shiny::observeEvent(entry(), {
+      shiny::updateTabsetPanel(session, "tabpanel", selected = "Traits")
     })
   })
 }

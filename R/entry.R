@@ -7,8 +7,8 @@
 #' 
 #' @export
 #' 
-#' @importFrom shiny checkboxGroupInput hideTab observeEvent passwordInput
-#'             reactive reactiveVal renderUI req showTab
+#' @importFrom shiny checkboxGroupInput debounce hideTab observeEvent
+#'             passwordInput reactive reactiveVal renderUI req showTab
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
@@ -20,8 +20,13 @@ entryServer <- function(id, customSettings = NULL) {
     # Don't show Entry Key if there is no need.
     output$entry <- shiny::renderUI({
       if(shiny::isTruthy(customSettings$entrykey))
-        shiny::passwordInput(ns("entry_key"), "Entry Key:", input$entry_key)
+        # Debounce password to prevent chatter.
+        password_debounce()
     })
+    password <- shiny::reactive({
+      shiny::passwordInput(ns("entry_key"), "Entry Key:", input$entry_key)
+    })
+    password_debounce <- shiny::debounce(password, 10000)
     entry <- shiny::reactive({
       out <- !shiny::isTruthy(customSettings$entrykey)
       if(!out & shiny::isTruthy(input$entry_key)) {

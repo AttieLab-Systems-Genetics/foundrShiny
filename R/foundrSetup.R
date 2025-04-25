@@ -9,7 +9,9 @@
 #' @export
 foundrSetup <- function(data_instance = c("Liver","Trait"),
                         data_subset = NULL,
-                        custom_settings = TRUE,
+                        customSettings = list(
+                          help = "help.md", 
+                        ),
                         dirpath = file.path("~", "founder_diet_study",
                                             "HarmonizedData")) {
   data_instance <- match.arg(data_instance)

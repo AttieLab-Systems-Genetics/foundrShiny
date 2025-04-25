@@ -8,6 +8,17 @@
 #' @export
 #' @importFrom shiny a bootstrapPage br includeMarkdown isTruthy NS reactive
 #'             renderUI shinyApp strong uiOutput
+aboutApp <- function(id) {
+  ui <- shiny::bootstrapPage(
+    aboutOutput("about")
+  )
+  server <- function(input, output, session) {
+    aboutServer("about", helppath = customSettings$help)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname aboutApp
 aboutServer <- function(id, helppath = NULL,
                         entry = shiny::reactive( TRUE )) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -41,20 +52,8 @@ aboutServer <- function(id, helppath = NULL,
   })
 }
 #' @export
-#' @rdname aboutServer
+#' @rdname aboutApp
 aboutOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("about"))
 }
-#' @export
-#' @rdname aboutServer
-aboutApp <- function(id) {
-  ui <- shiny::bootstrapPage(
-    aboutOutput("about")
-  )
-  server <- function(input, output, session) {
-    aboutServer("about", helppath = customSettings$help)
-  }
-  shiny::shinyApp(ui, server)
-}
-

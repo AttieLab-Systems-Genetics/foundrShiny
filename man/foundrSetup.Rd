@@ -7,7 +7,7 @@
 foundrSetup(
   data_instance = c("Liver", "Trait"),
   data_subset = NULL,
-  custom_settings = TRUE,
+  customSettings = list(help = "help.md", ),
   dirpath = file.path("~", "founder_diet_study", "HarmonizedData")
 )
 }
@@ -16,9 +16,9 @@ foundrSetup(
 
 \item{data_subset}{focus instance to selected dataset(s) if not `NULL`}
 
-\item{custom_settings}{setup custom if `TRUE`}
-
 \item{dirpath}{path to data directory}
+
+\item{custom_settings}{setup custom if `TRUE`}
 }
 \value{
 invisible
