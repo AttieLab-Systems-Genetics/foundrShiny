@@ -1,18 +1,27 @@
-#' Shiny Server for entry Key
+#' Entry App for password
 #'
 #' @param id identifier for shiny reactive
 #' @param customSettings list of custom settings
-#'
 #' @return reactive server
-#' 
-#' @export
 #' 
 #' @importFrom shiny checkboxGroupInput debounce hideTab observeEvent
 #'             passwordInput reactive reactiveVal renderUI req showTab
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
-#'
+#' @export
+entryApp <- function() {
+  ui <- shiny::bootstrapPage(
+    entryInput("entry"),
+    entryOutput("entry")
+  )
+  server <- function(input, output, session) {
+    entryServer("entry", customSettings)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname entryApp
 entryServer <- function(id, customSettings = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -42,27 +51,14 @@ entryServer <- function(id, customSettings = NULL) {
   })
 }
 #' @export
-#' @rdname entryServer
+#' @rdname entryApp
 entryInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("entry"))
 }
 #' @export
-#' @rdname entryServer
+#' @rdname entryApp
 entryOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("entry_show"))
-}
-#' @param title title of app
-#' @export
-#' @rdname entryServer
-entryApp <- function(title = "") {
-  ui <- shiny::bootstrapPage(
-    entryInput("entry"),
-    entryOutput("entry")
-  )
-  server <- function(input, output, session) {
-    entryServer("entry", customSettings)
-  }
-  shiny::shinyApp(ui, server)
 }

@@ -1,19 +1,37 @@
-#' Shiny Server for foundr Package
+#' foundr App for foundr package
 #'
 #' @param id identifier for shiny reactive
 #' @param traitData,traitSignal,traitStats,traitModule static objects
 #' @param customSettings list of custom settings
-#'
 #' @return reactive server
-#' 
-#' @export
 #' 
 #' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
 #'             reactiveVal renderUI req showTab updateTabsetPanel
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
-#'
+#' @export
+foundrApp <- function() {
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Foundr App"),
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        foundrInput("foundr")
+      ),
+      shiny::mainPanel(
+        foundrOutput("foundr")
+      )
+    )
+  )
+  server <- function(input, output, session) {
+    foundrServer("foundr",
+                 traitData, traitSignal, traitStats,
+                 customSettings, traitModule)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname foundrApp
 foundrServer <- function(id,
                    traitData = NULL, traitSignal = NULL, traitStats = NULL,
                    customSettings = NULL, traitModule = NULL) {
@@ -149,36 +167,14 @@ foundrServer <- function(id,
   })
 }
 #' @export
-#' @rdname foundrServer
+#' @rdname foundrApp
 foundrInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("sideInput"))
 }
 #' @export
-#' @rdname foundrServer
+#' @rdname foundrApp
 foundrOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("mainOutput"))
-}
-#' @param title title of app
-#' @export
-#' @rdname foundrServer
-foundrApp <- function(title = "") {
-  ui <- shiny::fluidPage(
-    shiny::titlePanel(title),
-    shiny::sidebarLayout(
-      shiny::sidebarPanel(
-        foundrInput("foundr")
-      ),
-      shiny::mainPanel(
-        foundrOutput("foundr")
-      )
-    )
-  )
-  server <- function(input, output, session) {
-    foundrServer("foundr",
-                 traitData, traitSignal, traitStats,
-                 customSettings, traitModule)
-  }
-  shiny::shinyApp(ui, server)
 }
