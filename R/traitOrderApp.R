@@ -1,13 +1,12 @@
-#' Shiny Module Server for Trait Order
-#'
+#' Trait Order App
 #' 
 #' @param id identifier for shiny reactive
 #' @param main_par input reactive list
 #' @param traitStats static data frame
 #' @param customSettings custom settings list
 #' @param keepDatatraits keep datatraits if not `NULL`
-#'
 #' @return reactive object
+#'
 #' @importFrom shiny column fluidRow h3 isTruthy moduleServer NS observeEvent
 #'             reactive  reactiveVal renderUI req selectInput shinyApp tagList
 #'             uiOutput updateSelectInput
@@ -15,7 +14,39 @@
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom foundr summary_strainstats
 #' @export
-#'
+traitOrderApp <- function() {
+  title <- "Test Shiny Trait Order Table"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          # Key Datasets and Trait.
+          mainParInput("main_par"), # dataset
+          mainParUI("main_par"), # order
+          # Related Datasets and Traits.
+          shiny::uiOutput("reldataset")
+        ),
+        shiny::mainPanel(
+          shiny::textOutput("key_trait"),
+          traitOrderUI("stats_table")
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par, traitStats)
+    
+    output$key_trait <- renderText({
+      shiny::req(stats_table())
+      foundr::unite_datatraits(stats_table(), key = TRUE)[1]
+    })
+  }
+  shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname traitOrderApp
+#' @export
 traitOrderServer <- function(id, main_par,
   traitStats, customSettings = NULL, keepDatatraits = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -65,44 +96,11 @@ traitOrderServer <- function(id, main_par,
     stats_table
   })
 }
+#' @rdname traitOrderApp
+#' @export
 traitOrderUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(  
     shiny::h3("Stats"),
     DT::dataTableOutput(ns("key_stats")))
-}
-#' Shiny Module App for Trait Order
-#' @rdname traitOrderServer
-#' @export
-traitOrderApp <- function() {
-  title <- "Test Shiny Trait Order Table"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          # Key Datasets and Trait.
-          mainParInput("main_par"), # dataset
-          mainParUI("main_par"), # order
-          # Related Datasets and Traits.
-          shiny::uiOutput("reldataset")
-        ),
-        shiny::mainPanel(
-          shiny::textOutput("key_trait"),
-          traitOrderUI("stats_table")
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    stats_table <- traitOrderServer("stats_table", main_par, traitStats)
-    
-    output$key_trait <- renderText({
-      shiny::req(stats_table())
-      foundr::unite_datatraits(stats_table(), key = TRUE)[1]
-    })
-  }
-  
-  shiny::shinyApp(ui = ui, server = server)
 }

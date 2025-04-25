@@ -1,12 +1,11 @@
-#' Shiny Module Server for Trait Table
+#' Trait Table App
 #'
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param panel_par reactive arguments
 #' @param key_trait,rel_traits reactives with trait names
 #' @param traitData,traitSignal static objects 
-#'
-#' @return reactive object for `shinyTrait` routines
+#' @return reactive object
 #' 
 #' @importFrom shiny h3 moduleServer NS radioButtons reactive reactiveVal
 #'             renderUI req tagList uiOutput
@@ -14,7 +13,41 @@
 #' @importFrom foundr subset_trait_names traitSolos unite_datatraits
 #' @importFrom utils write.csv
 #' @export
-#'
+traitTableApp <- function() {
+  title <- "Test Shiny Trait Table"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(3, mainParUI("main_par")), # order
+            shiny::column(6, traitNamesUI("key_trait"))), # key_trait
+          traitTableUI("trait_table")
+        ),
+        shiny::mainPanel(
+          panelParInput("panel_par"), # strains, facet
+          traitTableOutput("trait_table")
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    stats_table <- traitOrderServer("stats_table", main_par,
+                                    traitStats, customSettings)
+    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
+    rel_traits <- shiny::reactive(NULL, label = "rel_traits")
+    trait_table <- traitTableServer("trait_table", panel_par,
+                                    key_trait, rel_traits, traitData, traitSignal)
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname traitTableApp
+#' @export
 traitTableServer <- function(id, panel_par, key_trait, rel_traits,
                             traitData, traitSignal,
                             customSettings = NULL) {
@@ -62,9 +95,7 @@ traitTableServer <- function(id, panel_par, key_trait, rel_traits,
     trait_table
   })
 }
-#' Shiny Module UI for Trait Table
-#' @return nothing returned
-#' @rdname traitTableServer
+#' @rdname traitTableApp
 #' @export
 traitTableUI <- function(id) {
   ns <- shiny::NS(id)
@@ -72,50 +103,11 @@ traitTableUI <- function(id) {
                       c("value", "normed", "cellmean"),
                       "value", inline = TRUE)
 }
-#' Shiny Module UI for Trait Table
-#' @return nothing returned
-#' @rdname traitTableServer
+#' @rdname traitTableApp
 #' @export
 traitTableOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h3("Cell Means"),
     DT::dataTableOutput(ns("trait_table")))
-}
-#' Shiny Module App for Trait Table
-#' @return nothing returned
-#' @rdname traitTableServer
-#' @export
-traitTableApp <- function() {
-  title <- "Test Shiny Trait Table"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")), # dataset
-            shiny::column(3, mainParUI("main_par")), # order
-            shiny::column(6, traitNamesUI("key_trait"))), # key_trait
-          traitTableUI("trait_table")
-        ),
-        shiny::mainPanel(
-          panelParInput("panel_par"), # strains, facet
-          traitTableOutput("trait_table")
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    stats_table <- traitOrderServer("stats_table", main_par,
-      traitStats, customSettings)
-    key_trait    <- traitNamesServer("key_trait", main_par, stats_table)
-    rel_traits <- shiny::reactive(NULL, label = "rel_traits")
-    trait_table <- traitTableServer("trait_table", panel_par,
-      key_trait, rel_traits, traitData, traitSignal)
-  }
-  
-  shiny::shinyApp(ui = ui, server = server)
 }
