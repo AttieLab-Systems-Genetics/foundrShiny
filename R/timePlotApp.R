@@ -1,12 +1,12 @@
-#' Shiny Module Server for Time Plots
+#' Time Plots App
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par reactive arguments 
 #' @param traitSignal static object
 #' @param time_table reactive object
 #' @param responses possible types of responses
-#'
 #' @return nothing returned
+#'
 #' @importFrom shiny column fluidRow h3 moduleServer NS observeEvent plotOutput
 #'             radioButtons reactive reactiveVal reactiveValues renderPlot
 #'             renderUI req selectInput selectizeInput tagList uiOutput
@@ -15,7 +15,39 @@
 #' @importFrom stringr str_remove str_replace_all
 #' @importFrom foundr ggplot_traitTimes timetraitsall
 #' @export
-#'
+timePlotApp <- function() {
+  title <- "Test shinyTime Module"
+  
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::fluidRow(
+            shiny::column(3, mainParInput("main_par")), # dataset
+            shiny::column(9, timeTableInput("time_table"))), # traits
+          timeTableUI("time_table"), # time_units, response
+          mainParOutput("main_par"), # plot_table, height
+        ),
+        
+        shiny::mainPanel(
+          panelParInput("panel_par"), # strains, facet
+          timePlotOutput("time_plot")
+        )))
+  }
+  
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    time_table <- timeTableServer("time_table", panel_par, main_par,
+                                  traitData, traitSignal, traitStats)
+    timePlotServer("time_plot", panel_par, main_par, traitSignal, time_table)
+  }
+  
+  shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname timePlotApp
+#' @export
 timePlotServer <- function(id, panel_par, main_par,
                           traitSignal, time_table) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -69,47 +101,10 @@ timePlotServer <- function(id, panel_par, main_par,
     )
   })
 }
-#' Shiny Module Output for Time Plots
-#' @return nothing returned
-#' @rdname timePlotServer
+#' @rdname timePlotApp
 #' @export
 timePlotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("plots"))
-}
-#' Shiny Module App for Times Plot
-#' @return nothing returned
-#' @rdname timeServer
-#' @export
-timePlotApp <- function() {
-  title <- "Test shinyTime Module"
-  
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          shiny::fluidRow(
-            shiny::column(3, mainParInput("main_par")), # dataset
-            shiny::column(9, timeTableInput("time_table"))), # traits
-          timeTableUI("time_table"), # time_units, response
-          mainParOutput("main_par"), # plot_table, height
-        ),
-        
-        shiny::mainPanel(
-          panelParInput("panel_par"), # strains, facet
-          timePlotOutput("time_plot")
-        )))
-  }
-  
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    time_table <- timeTableServer("time_table", panel_par, main_par,
-                                  traitData, traitSignal, traitStats)
-    timePlotServer("time_plot", panel_par, main_par, traitSignal, time_table)
-  }
-  
-  shiny::shinyApp(ui = ui, server = server)
 }
 
