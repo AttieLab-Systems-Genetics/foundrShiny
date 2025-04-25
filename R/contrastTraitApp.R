@@ -1,51 +1,15 @@
-#' Shiny Trait Server for Contrast Plots
+#' Contrast Trait Plots App
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par input parameters
 #' @param contrastTable reactive data frame
 #' @param customSettings list of custom settings
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
 #'             reactive renderUI req selectInput tagList uiOutput
 #'             updateSelectInput
 #' @importFrom DT renderDataTable
-#' @export
-#'
-contrastTraitServer <- function(id, panel_par, main_par,
-                             contrastTable, customSettings = NULL) {
-  shiny::moduleServer(id, function(input, output, session) {
-    ns <- session$ns
-
-    # Contrast Trait Plots
-    contrastPlotServer("contrast_plot",
-                      panel_par, main_par,
-                      contrastTable, customSettings, 
-                      shiny::reactive("Trait Contrasts"))
-  })
-}
-#' Shiny Trait Input for Contrast Plots
-#'
-#' @return nothing returned
-#' @rdname contrastTraitServer
-#' @export
-contrastTraitInput <- function(id) {
-  ns <- shiny::NS(id)
-  contrastPlotUI(ns("contrast_plot")) # ordername, interact
-}
-#' Shiny Trait Output for Contrast Plots
-#'
-#' @return nothing returned
-#' @rdname contrastTraitServer
-#' @export
-contrastTraitOutput <- function(id) {
-  ns <- shiny::NS(id)
-  contrastPlotOutput(ns("contrast_plot")) # volsd, volvert, rownames
-}
-#' Shiny Trait App for Contrast Plots
-#'
-#' @return nothing returned
-#' @rdname contrastTraitServer
 #' @export
 contrastTraitApp <- function() {
   title <- "Test contrastTrait Module"
@@ -75,11 +39,37 @@ contrastTraitApp <- function() {
     panel_par <- panelParServer("panel_par", main_par, traitStats)
     # Contrast Trait Table
     contrast_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
+                                          traitSignal, traitStats, customSettings)
     # Contrast List
     contrast_list <- contrastTraitServer("contrast_list", panel_par, main_par,
-      contrast_table, traitModule)
+                                         contrast_table, traitModule)
   }
   
   shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname contrastTraitApp
+#' @export
+contrastTraitServer <- function(id, panel_par, main_par,
+                             contrastTable, customSettings = NULL) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # Contrast Trait Plots
+    contrastPlotServer("contrast_plot",
+                      panel_par, main_par,
+                      contrastTable, customSettings, 
+                      shiny::reactive("Trait Contrasts"))
+  })
+}
+#' @rdname contrastTraitApp
+#' @export
+contrastTraitInput <- function(id) {
+  ns <- shiny::NS(id)
+  contrastPlotUI(ns("contrast_plot")) # ordername, interact
+}
+#' @rdname contrastTraitApp
+#' @export
+contrastTraitOutput <- function(id) {
+  ns <- shiny::NS(id)
+  contrastPlotOutput(ns("contrast_plot")) # volsd, volvert, rownames
 }

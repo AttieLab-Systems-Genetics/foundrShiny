@@ -1,11 +1,11 @@
-#' Shiny Module Server for DotPlots
+#' DotPlots App
 #'
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
 #' @param plot_info reactive values from contrastPlot
 #' @param contrast_table reactive data frame
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
 #'             radioButtons reactive reactiveVal reactiveValues renderUI
 #'             req selectInput tagList uiOutput updateSelectInput
@@ -13,7 +13,38 @@
 #' @importFrom foundr ggplot_conditionContrasts summary_conditionContrasts
 #'             summary_strainstats
 #' @export
-#'
+dotplotApp <- function() {
+  title <- "Shiny DotPlot"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mainParInput("main_par"), # dataset
+          plotParInput("plot_par") # ordername, interact
+        ),
+        shiny::mainPanel(
+          mainParOutput("main_par"), # plot_table, height
+          plotParUI("plot_par"), # volsd, volvert (sliders)
+          plotParOutput("plot_par"), # rownames (strains/terms)
+          panelParUI("panel_par"), # sex
+          dotplotOutput("dotplot")
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    contrast_table <- contrastTableServer("contrast_table", main_par,
+                                          traitSignal, traitStats, customSettings)
+    plot_par <- plotParServer("plot_par", contrast_table)
+    dotplotServer("dotplot", panel_par, plot_par, contrast_table)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @rdname dotplotApp
+#' @export
 dotplotServer <- function(id, panel_par, plot_par, plot_info,
   contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -48,9 +79,7 @@ dotplotServer <- function(id, panel_par, plot_par, plot_info,
     contrastDotPlot
   })
 }
-#' Shiny Module Output for Contrast Plots
-#' @return nothing returned
-#' @rdname dotplotServer
+#' @rdname dotplotApp
 #' @export
 dotplotOutput <- function(id) {
   ns <- shiny::NS(id)
@@ -58,38 +87,4 @@ dotplotOutput <- function(id) {
     shiny::uiOutput(ns("title")),
     shiny::uiOutput(ns("plot"))
   )
-}
-#' Shiny App for DotPlot Plots
-#' @return nothing returned
-#' @rdname dotplotServer
-#' @export
-dotplotApp <- function() {
-  title <- "Shiny DotPlot"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          mainParInput("main_par"), # dataset
-          plotParInput("plot_par") # ordername, interact
-        ),
-        shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
-          plotParUI("plot_par"), # volsd, volvert (sliders)
-          plotParOutput("plot_par"), # rownames (strains/terms)
-          panelParUI("panel_par"), # sex
-          dotplotOutput("dotplot")
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    contrast_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
-    plot_par <- plotParServer("plot_par", contrast_table)
-    dotplotServer("dotplot", panel_par, plot_par, contrast_table)
-  }
-  shiny::shinyApp(ui, server)
 }

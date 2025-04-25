@@ -1,17 +1,60 @@
-#' Shiny Module Server for Groups of Contrasts
+#' Groups of Contrasts App
 #'
 #' @param id identifier for shiny reactive
 #' @param panel_par,main_par reactive arguments 
 #' @param trait_table,traitContast reactive data frames
 #' @param traitModule static data frames
 #' @param customSettings list of custom settings
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny h3 moduleServer NS reactive renderPlot renderUI req
 #'             selectizeInput tagList uiOutput updateSelectizeInput
 #' @importFrom stringr str_to_title
 #' @export
-#'
+contrastGroupApp <- function() {
+  title <- "Shiny Module Contrast Group"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mainParInput("main_par") # dataset
+        ),
+        shiny::mainPanel(
+          mainParOutput("main_par"), # plot_table, height
+          contrastGroupInput("contrast_group"), # ordername, interact
+          shiny::fluidRow(
+            shiny::column(4, panelParUI("panel_par")), # sex
+            shiny::column(8, contrastGroupUI("contrast_group"))), # group
+          contrastGroupOutput("contrast_group") # volsd, volvert, rownames
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    # Contrast Trait Table
+    trait_table <- contrastTableServer("contrast_table", main_par,
+                                       traitSignal, traitStats, customSettings)
+    # Contrast Traits within Group Table
+    group_table <- contrastTableServer("contrast_table", main_par,
+                                       traitSignal, traitStats, customSettings, keepDatatraits)
+    # Contrast Groups.
+    contrast_list <- contrastGroupServer("contrast_group", panel_par, main_par,
+                                         traitModule, trait_table, group_table)
+    
+    keepDatatraits <- reactive({
+      group <- NULL
+      if(shiny::isTruthy(input$group))
+        group <- input$group
+      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1], group)
+    })
+  }
+  shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname contrastGroupApp
+#' @export
 contrastGroupServer <- function(id, panel_par, main_par,
                                 traitModule, trait_table, group_table,
                                 customSettings = NULL) {
@@ -85,74 +128,21 @@ contrastGroupServer <- function(id, panel_par, main_par,
     contrast_list
   })
 }
-#' Shiny Module Input for Groups of Contrasts
-#' @return nothing returned
-#' @rdname contrastGroupServer
+#' @rdname contrastGroupApp
 #' @export
 contrastGroupInput <- function(id) {
   ns <- shiny::NS(id)
   contrastPlotUI(ns("contrast_plot")) # ordername, interact
 }
-#' Shiny Module UI for Groups of Contrasts
-#' @return nothing returned
-#' @rdname contrastGroupServer
+#' @rdname contrastGroupApp
 #' @export
 contrastGroupUI <- function(id) { # group
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("group"))
 }
-#' Shiny Module Output for Groups of Contrasts
-#' @return nothing returned
-#' @rdname contrastGroupServer
+#' @rdname contrastGroupApp
 #' @export
 contrastGroupOutput <- function(id) {
   ns <- shiny::NS(id)
   contrastPlotOutput(ns("contrast_plot"))
-}
-#' Shiny Module App for Groups of Contrasts
-#' @return nothing returned
-#' @rdname contrastGroupServer
-#' @export
-contrastGroupApp <- function() {
-  title <- "Shiny Module Contrast Group"
-  
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          mainParInput("main_par") # dataset
-        ),
-        shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
-          contrastGroupInput("contrast_group"), # ordername, interact
-          shiny::fluidRow(
-            shiny::column(4, panelParUI("panel_par")), # sex
-            shiny::column(8, contrastGroupUI("contrast_group"))), # group
-          contrastGroupOutput("contrast_group") # volsd, volvert, rownames
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    # Contrast Trait Table
-    trait_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
-    # Contrast Traits within Group Table
-    group_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings, keepDatatraits)
-    # Contrast Groups.
-    contrast_list <- contrastGroupServer("contrast_group", panel_par, main_par,
-      traitModule, trait_table, group_table)
-
-    keepDatatraits <- reactive({
-      group <- NULL
-      if(shiny::isTruthy(input$group))
-        group <- input$group
-      foundr:::keptDatatraits(traitModule, shiny::req(main_par$dataset)[1], group)
-    })
-  }
-  shiny::shinyApp(ui = ui, server = server)
 }

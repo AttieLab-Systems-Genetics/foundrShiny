@@ -1,12 +1,12 @@
-#' Shiny Module Server for Contrast Plots
+#' Contrast Plots App
 #'
 #' @param id identifier
 #' @param panel_par,main_par input parameters
 #' @param contrast_table reactive data frame
 #' @param customSettings list of custom settings
 #' @param modTitle character string title for section
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
 #'             radioButtons reactive reactiveVal reactiveValues renderUI
 #'             req selectInput tagList uiOutput updateSelectInput
@@ -14,7 +14,41 @@
 #' @importFrom foundr ggplot_conditionContrasts summary_conditionContrasts
 #'             summary_strainstats
 #' @export
-#'
+contrastPlotApp <- function() {
+  title <- "Test contrastPlot Module"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mainParInput("main_par"), # dataset
+          mainParUI("main_par"), # order
+          border_line(),
+          mainParOutput("main_par"), # plot_table, height
+          downloadOutput("download")
+        ),
+        shiny::mainPanel(
+          shiny::fluidRow(
+            shiny::column(4, panelParUI("panel_par")), # sex
+            shiny::column(8, contrastPlotUI("contrast_plot"))), # ordername, interact
+          contrastPlotOutput("contrast_plot") # volsd, volvert, rownames
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    contrast_table <- contrastTableServer("contrast_table", main_par,
+                                          traitSignal, traitStats, customSettings)
+    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
+                                        contrast_table, customSettings)
+    downloadServer("download", "Contrasts", main_par, contrast_list)
+  }
+  shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname contrastPlotApp
+#' @export
 contrastPlotServer <- function(id, panel_par, main_par,
                               contrast_table, customSettings = NULL,
                               modTitle = shiny::reactive("Contrasts")) {
@@ -114,17 +148,13 @@ contrastPlotServer <- function(id, panel_par, main_par,
       tableObject = tableObject)
   })
 }
-#' Shiny Module UI for Contrast Plots
-#' @return nothing returned
-#' @rdname contrastPlotServer
+#' @rdname contrastPlotApp
 #' @export
 contrastPlotUI <- function(id) {
   ns <- shiny::NS(id)
   plotParInput(ns("plot_par")) # ordername, interact
 }
-#' Shiny Module Output for Contrast Plots
-#' @return nothing returned
-#' @rdname contrastPlotServer
+#' @rdname contrastPlotApp
 #' @export
 contrastPlotOutput <- function(id) {
   ns <- shiny::NS(id)
@@ -132,42 +162,4 @@ contrastPlotOutput <- function(id) {
     shiny::uiOutput(ns("vol_sliders")), # volsd, volvert (sliders)
     plotParOutput(ns("plot_par")), # rownames (strains/terms)
     shiny::uiOutput(ns("plot_table")))
-}
-#' Shiny App for Contrast Plots
-#'
-#' @return nothing returned
-#' @rdname contrastPlotServer
-#' @export
-contrastPlotApp <- function() {
-  title <- "Test contrastPlot Module"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          mainParInput("main_par"), # dataset
-          mainParUI("main_par"), # order
-          border_line(),
-          mainParOutput("main_par"), # plot_table, height
-          downloadOutput("download")
-        ),
-        shiny::mainPanel(
-          shiny::fluidRow(
-            shiny::column(4, panelParUI("panel_par")), # sex
-            shiny::column(8, contrastPlotUI("contrast_plot"))), # ordername, interact
-          contrastPlotOutput("contrast_plot") # volsd, volvert, rownames
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    contrast_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
-    contrast_list <- contrastPlotServer("contrast_plot", panel_par, main_par,
-      contrast_table, customSettings)
-    downloadServer("download", "Contrasts", main_par, contrast_list)
-  }
-  shiny::shinyApp(ui = ui, server = server)
 }
