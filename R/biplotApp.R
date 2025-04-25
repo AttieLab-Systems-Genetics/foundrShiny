@@ -1,11 +1,11 @@
-#' Shiny Module Server for BiPlots
+#' BiPlot App
 #'
 #' @param id identifier
 #' @param panel_par,plot_par input parameters
 #' @param plot_info reactive values from contrastPlot
 #' @param contrast_table reactive data frame
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
 #'             radioButtons reactive reactiveVal reactiveValues renderUI
 #'             req selectInput tagList uiOutput updateSelectInput
@@ -13,7 +13,38 @@
 #' @importFrom foundr ggplot_conditionContrasts summary_conditionContrasts
 #'             summary_strainstats
 #' @export
-#'
+biplotApp <- function() {
+  title <- "Shiny BiPlot"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mainParInput("main_par"), # dataset
+          plotParInput("plot_par") # ordername, interact
+        ),
+        shiny::mainPanel(
+          mainParOutput("main_par"), # plot_table, height
+          plotParUI("plot_par"), # volsd, volvert (sliders)
+          plotParOutput("plot_par"), # rownames (strains/terms)
+          panelParUI("panel_par"), # sex
+          biplotOutput("biplot")
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panel_par <- panelParServer("panel_par", main_par, traitStats)
+    contrast_table <- contrastTableServer("contrast_table", main_par,
+                                          traitSignal, traitStats, customSettings)
+    plot_par <- plotParServer("plot_par", contrast_table)
+    biplotServer("biplot", input, plot_par, contrast_table)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @rdname biplotApp
+#' @export
 biplotServer <- function(id, panel_par, plot_par, plot_info,
   contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -47,14 +78,13 @@ biplotServer <- function(id, panel_par, plot_par, plot_info,
         }
       )
     })
-
     ###############################################################
     contrastBiPlot
   })
 }
 #' Shiny Module Output for Contrast Plots
 #' @return nothing returned
-#' @rdname biplotServer
+#' @rdname biplotApp
 #' @export
 biplotOutput <- function(id) {
   ns <- shiny::NS(id)
@@ -62,38 +92,4 @@ biplotOutput <- function(id) {
     shiny::uiOutput(ns("title")),
     shiny::uiOutput(ns("plot"))
   )
-}
-#' Shiny App for BiPlot Plots
-#' @return nothing returned
-#' @rdname biplotServer
-#' @export
-biplotApp <- function() {
-  title <- "Shiny BiPlot"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          mainParInput("main_par"), # dataset
-          plotParInput("plot_par") # ordername, interact
-        ),
-        shiny::mainPanel(
-          mainParOutput("main_par"), # plot_table, height
-          plotParUI("plot_par"), # volsd, volvert (sliders)
-          plotParOutput("plot_par"), # rownames (strains/terms)
-          panelParUI("panel_par"), # sex
-          biplotOutput("biplot")
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panel_par <- panelParServer("panel_par", main_par, traitStats)
-    contrast_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
-    plot_par <- plotParServer("plot_par", contrast_table)
-    biplotServer("biplot", input, plot_par, contrast_table)
-  }
-  shiny::shinyApp(ui, server)
 }
