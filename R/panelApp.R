@@ -1,10 +1,36 @@
-#' Shiny panel Server for foundr Package
+#' Panel App
 #'
 #' @param id identifier for shiny reactive
 #' @param traitData,traitSignal,traitStats,traitModule static objects
 #' @param customSettings list of custom settings
 #' @return reactive server
+#' 
+#' @importFrom shiny column fluidRow mainPanel moduleServer NS panelInput
+#'             renderUI req shinyApp sidebarLayout sidebarPanel tabPanel
+#'             tabsetPanel tagList titlePanel uiOutput
+#' @importFrom foundr timetraitsall
 #' @export
+panelApp <- function() {
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Panel App"),
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        panelInput("panel")
+      ),
+      shiny::mainPanel(
+        panelOutput("panel")
+      )
+    )
+  )
+  server <- function(input, output, session) {
+    panelServer("panel",
+                traitData, traitSignal, traitStats,
+                customSettings, traitModule)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname panelApp
 panelServer <- function(id,
                    traitData = NULL, traitSignal = NULL, traitStats = NULL,
                    customSettings = NULL, traitModule = NULL) {
@@ -58,36 +84,14 @@ panelServer <- function(id,
   })
 }
 #' @export
-#' @rdname panelServer
+#' @rdname panelApp
 panelInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("sideInput"))
 }
 #' @export
-#' @rdname panelServer
+#' @rdname panelApp
 panelOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("mainOutput"))
-}
-#' @param title title of app
-#' @export
-#' @rdname panelServer
-panelApp <- function(title = "") {
-  ui <- shiny::fluidPage(
-    shiny::titlePanel(title),
-    shiny::sidebarLayout(
-      shiny::sidebarPanel(
-        panelInput("panel")
-      ),
-      shiny::mainPanel(
-        panelOutput("panel")
-      )
-    )
-  )
-  server <- function(input, output, session) {
-    panelServer("panel",
-                 traitData, traitSignal, traitStats,
-                 customSettings, traitModule)
-  }
-  shiny::shinyApp(ui, server)
 }

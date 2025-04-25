@@ -1,14 +1,31 @@
-#' Shiny Server for mainPar Server
+#' mainPar App
 #'
 #' @param id identifier for shiny reactive
 #' @param traitStats static object
 #' @return reactive input
 #' 
-#' @export
 #' @importFrom shiny bootstrapPage h4 moduleServer NS observeEvent radioButtons
 #'             reactiveVal reactiveValues renderUI req selectInput shinyApp
 #'             sliderInput uiOutput
-#'
+#' @export
+mainParApp <- function() {
+  ui <- shiny::bootstrapPage(
+    shiny::h3("main_par parameters"),
+    shiny::h4("mainParInput: dataset"),
+    mainParInput("main_par"), # dataset
+    shiny::h4("mainParUI: order"),
+    mainParUI("main_par"), # order
+    shiny::h4("mainParOutput: plot_table, height"),
+    mainParOutput("main_par") # plot_table, height
+  )
+  
+  server <- function(input, output, session) {
+    mainParServer("main_par", traitStats)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname mainParApp
 mainParServer <- function(id, traitStats = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -32,19 +49,19 @@ mainParServer <- function(id, traitStats = NULL) {
   })
 }
 #' @export
-#' @rdname mainParServer
+#' @rdname mainParApp
 mainParInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("dataset")) # dataset
 }
 #' @export
-#' @rdname mainParServer
+#' @rdname mainParApp
 mainParUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("order")) # order
 }
 #' @export
-#' @rdname mainParServer
+#' @rdname mainParApp
 mainParOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::fluidRow(
@@ -59,23 +76,4 @@ mainParOutput1 <- function(id) { # plot_table
 mainParOutput2 <- function(id) {
   ns <- shiny::NS(id)
   shiny::sliderInput(ns("height"), "Plot height (in):", 3, 10, 6, step = 1)
-}
-#' @param title title of app
-#' @export
-#' @rdname mainParServer
-mainParApp <- function(title = "") {
-  ui <- shiny::bootstrapPage(
-    shiny::h3("main_par parameters"),
-    shiny::h4("mainParInput: dataset"),
-    mainParInput("main_par"), # dataset
-    shiny::h4("mainParUI: order"),
-    mainParUI("main_par"), # order
-    shiny::h4("mainParOutput: plot_table, height"),
-    mainParOutput("main_par") # plot_table, height
-  )
-  
-  server <- function(input, output, session) {
-    mainParServer("main_par", traitStats)
-  }
-  shiny::shinyApp(ui, server)
 }

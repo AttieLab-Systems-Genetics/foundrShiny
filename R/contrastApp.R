@@ -1,4 +1,4 @@
-#' Shiny Module Server for Contrast Panel
+#' Contrast Panel App
 #'
 #' @param id identifier for shiny reactive
 #' @param main_par reactive arguments 
@@ -10,7 +10,37 @@
 #'             reactive reactiveVal renderText renderUI tagList uiOutput
 #' @importFrom stringr str_to_title
 #' @export
-#'
+contrastApp <- function() {
+  title <- "Test Shiny Contrast Trait Panel"
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel(title),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mainParInput("main_par"), # dataset
+          contrastInput("contrast_list"),
+          border_line(),
+          shiny::fluidRow(
+            shiny::column(6, mainParOutput1("main_par")), # plot_table
+            shiny::column(6, contrastUI("contrast_list"))), # height or table
+          downloadOutput("download")
+        ),
+        shiny::mainPanel(
+          contrastOutput("contrast_list")
+        )
+      )
+    )
+  }
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    contrast_list <- contrastServer("contrast_list", main_par,
+                                    traitSignal, traitStats, traitModule, customSettings)
+    downloadServer("download", "Contrast", main_par, contrast_list)
+  }
+  shiny::shinyApp(ui = ui, server = server)  
+}
+#' @rdname contrastApp
+#' @export
 contrastServer <- function(id, main_par,
                                traitSignal, traitStats, traitModule,
                                customSettings = NULL) {
@@ -149,9 +179,7 @@ contrastServer <- function(id, main_par,
     )
   })
 }
-#' Shiny Module Input for Contrast Panel
-#' @return nothing returned
-#' @rdname contrastServer
+#' @rdname contrastApp
 #' @export
 contrastInput <- function(id) { # key_trait, time_unit, contrast_type
   ns <- shiny::NS(id)
@@ -160,52 +188,15 @@ contrastInput <- function(id) { # key_trait, time_unit, contrast_type
     shiny::uiOutput(ns("contrast_type")) # contrast_type
   )
 }
-#' Shiny Module Input for Contrast Panel
-#' @return nothing returned
-#' @rdname contrastServer
+#' @rdname contrastApp
 #' @export
 contrastUI <- function(id) { # height or table
   ns <- shiny::NS(id)
   panelParOutput(ns("panel_par")) # height or table
 }
-#' Shiny Module Output for Contrast Panel
-#' @return nothing returned
-#' @rdname contrastServer
+#' @rdname contrastApp
 #' @export
 contrastOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("contrast_output"))
-}
-#' Shiny Module App for Contrast Panel
-#' @return nothing returned
-#' @rdname contrastServer
-#' @export
-contrastApp <- function() {
-  title <- "Test Shiny Contrast Trait Panel"
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel(title),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          mainParInput("main_par"), # dataset
-          contrastInput("contrast_list"),
-          border_line(),
-          shiny::fluidRow(
-            shiny::column(6, mainParOutput1("main_par")), # plot_table
-            shiny::column(6, contrastUI("contrast_list"))), # height or table
-          downloadOutput("download")
-        ),
-        shiny::mainPanel(
-          contrastOutput("contrast_list")
-        )
-      )
-    )
-  }
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    contrast_list <- contrastServer("contrast_list", main_par,
-      traitSignal, traitStats, traitModule, customSettings)
-    downloadServer("download", "Contrast", main_par, contrast_list)
-  }
-  shiny::shinyApp(ui = ui, server = server)  
 }
