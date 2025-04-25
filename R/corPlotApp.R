@@ -1,58 +1,15 @@
-#' Shiny Module Server for Trait Stats
+#' Correlation Plot App
 #'
 #' @param id identifier for shiny reactive
 #' @param input,output,session standard shiny arguments
 #' @param CorTable reactive data frames
 #' @param panel_par reactive inputs from calling modules
 #' @param customSettings static list of settings
-#'
 #' @return reactive object
+#'
 #' @importFrom shiny h3 isTruthy moduleServer NS plotOutput reactive renderUI
 #'             renderPlot req tagList selectInput uiOutput 
 #' @importFrom foundr ggplot_bestcor
-#' @export
-#'
-corPlotServer <- function(id, panel_par, cors_table,
-                         customSettings = NULL) {
-  shiny::moduleServer(id, function(input, output, session) {
-    ns <- session$ns
-    
-    cors_plot <- shiny::reactive({
-      shiny::req(input$mincor, cors_table())
-      foundr::ggplot_bestcor(
-        mutate_datasets(cors_table(), customSettings$dataset, undo = TRUE), 
-        input$mincor, shiny::isTruthy(input$abscor))
-    })
-    output$plot <- shiny::renderPlot({
-      print(shiny::req(cors_plot()))
-    })
-    output$cors_plot <- shiny::renderUI({
-      shiny::req(cors_plot())
-      height <- panel_par$height
-      if(is.null(height)) height <- 6
-      shiny::plotOutput(ns("plot"), height = paste0(height, "in"))
-    })
-    ##############################################################
-    cors_plot
-  })
-}
-#' Shiny Module Output for Trait Correlations
-#' @return nothing returned
-#' @rdname corPlotServer
-#' @export
-corPlotOutput <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::h3("Correlation"),
-    shiny::fluidRow( 
-      shiny::column(6, shiny::sliderInput(ns("mincor"), "Minimum:", 0, 1, 0.7)),
-      shiny::column(6, shiny::checkboxInput(ns("abscor"),
-        "Absolute Correlation?", TRUE))),
-    shiny::uiOutput(ns("cors_plot")))
-}
-#' Shiny Module App for Trait Correlations
-#' @return nothing returned
-#' @rdname corPlotServer
 #' @export
 corPlotApp <- function() {
   title <- "Test Shiny Trait Correlation Plot"
@@ -104,4 +61,42 @@ corPlotApp <- function() {
     })
   }
   shiny::shinyApp(ui = ui, server = server)
+}
+#' @rdname corPlotApp
+#' @export
+corPlotServer <- function(id, panel_par, cors_table,
+                         customSettings = NULL) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
+    cors_plot <- shiny::reactive({
+      shiny::req(input$mincor, cors_table())
+      foundr::ggplot_bestcor(
+        mutate_datasets(cors_table(), customSettings$dataset, undo = TRUE), 
+        input$mincor, shiny::isTruthy(input$abscor))
+    })
+    output$plot <- shiny::renderPlot({
+      print(shiny::req(cors_plot()))
+    })
+    output$cors_plot <- shiny::renderUI({
+      shiny::req(cors_plot())
+      height <- panel_par$height
+      if(is.null(height)) height <- 6
+      shiny::plotOutput(ns("plot"), height = paste0(height, "in"))
+    })
+    ##############################################################
+    cors_plot
+  })
+}
+#' @rdname corPlotApp
+#' @export
+corPlotOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::h3("Correlation"),
+    shiny::fluidRow( 
+      shiny::column(6, shiny::sliderInput(ns("mincor"), "Minimum:", 0, 1, 0.7)),
+      shiny::column(6, shiny::checkboxInput(ns("abscor"),
+        "Absolute Correlation?", TRUE))),
+    shiny::uiOutput(ns("cors_plot")))
 }

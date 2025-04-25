@@ -1,9 +1,9 @@
-#' Shiny Module Server for Plot Parameters
+#' Plot Parameters App
 #'
 #' @param id identifier
 #' @param contrast_table reactive data frame
-#'
 #' @return reactive object 
+#'
 #' @importFrom shiny column fluidRow moduleServer NS observeEvent
 #'             radioButtons reactive reactiveVal reactiveValues renderUI
 #'             req selectInput tagList uiOutput updateSelectInput
@@ -11,7 +11,27 @@
 #' @importFrom foundr ggplot_conditionContrasts summary_conditionContrasts
 #'             summary_strainstats
 #' @export
-#'
+plotParApp <- function() {
+  ui <- shiny::bootstrapPage(
+    mainParInput("main_par"), # dataset
+    shiny::h3("plot_par parameters"),
+    shiny::h4("plotParInput: ordername, interact"),
+    plotParInput("plot_par"), # ordername, interact
+    shiny::h4("plotParUI: volsd, volvert"),
+    plotParUI("plot_par"), # volsd, volvert (sliders)
+    shiny::h4("plotParOutput: rownames"),
+    plotParOutput("plot_par") # rownames (strains/terms)
+  )
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    contrast_table <- contrastTableServer("contrast_table", main_par,
+                                          traitSignal, traitStats, customSettings)
+    plot_par <- plotParServer("plot_par", contrast_table)
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @rdname plotParApp
+#' @export
 plotParServer <- function(id, contrast_table) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -79,9 +99,7 @@ plotParServer <- function(id, contrast_table) {
     input
   })
 }
-#' Shiny Module Input for Plot Parameters
-#' @return nothing returned
-#' @rdname plotParServer
+#' @rdname plotParApp
 #' @export
 plotParInput <- function(id) {
   ns <- shiny::NS(id)
@@ -89,9 +107,7 @@ plotParInput <- function(id) {
     shiny::column(4, shiny::uiOutput(ns("ordername"))),
     shiny::column(8, shiny::checkboxInput(ns("interact"), "Interactive?")))
 }
-#' Shiny Module UI for Plot Parameters
-#' @return nothing returned
-#' @rdname plotParServer
+#' @rdname plotParApp
 #' @export
 plotParUI <- function(id) {
   ns <- shiny::NS(id)
@@ -101,34 +117,9 @@ plotParUI <- function(id) {
       "SD line:", min = 0, max = 2, value = 1, step = 0.1)),
     shiny::column(6, shiny::uiOutput(ns("volvert"))))
 }
-#' Shiny Module Output for Plot Parameters
-#' @return nothing returned
-#' @rdname plotParServer
+#' @rdname plotParApp
 #' @export
 plotParOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("rownames"))
-}
-#' Shiny Module App for Plot Parameters
-#' @return nothing returned
-#' @rdname plotParServer
-#' @export
-plotParApp <- function() {
-  ui <- shiny::bootstrapPage(
-    mainParInput("main_par"), # dataset
-    shiny::h3("plot_par parameters"),
-    shiny::h4("plotParInput: ordername, interact"),
-    plotParInput("plot_par"), # ordername, interact
-    shiny::h4("plotParUI: volsd, volvert"),
-    plotParUI("plot_par"), # volsd, volvert (sliders)
-    shiny::h4("plotParOutput: rownames"),
-    plotParOutput("plot_par") # rownames (strains/terms)
-  )
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    contrast_table <- contrastTableServer("contrast_table", main_par,
-      traitSignal, traitStats, customSettings)
-    plot_par <- plotParServer("plot_par", contrast_table)
-  }
-  shiny::shinyApp(ui, server)
 }

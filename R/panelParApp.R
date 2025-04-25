@@ -1,4 +1,4 @@
-#' Shiny Server for panelPar Server
+#' Panel Parameters App
 #'
 #' @param id identifier for shiny reactive
 #' @param main_par main parameters
@@ -6,11 +6,30 @@
 #' @param panel_name name of panel
 #' @return reactive input
 #' 
-#' @export
 #' @importFrom shiny bootstrapPage h4 moduleServer NS observeEvent radioButtons
 #'             reactiveVal reactiveValues renderUI req selectInput shinyApp
 #'             sliderInput uiOutput
-#'
+#' @export
+panelParApp <- function() {
+  ui <- shiny::bootstrapPage(
+    shiny::h3("panel_par parameters"),
+    shiny::h4("panelParInput: strains, facet"),
+    panelParInput("panel_par"), # strains, facet
+    shiny::h4("panelParUI: sex"),
+    panelParUI("panel_par"), # sex (B/F/M/C)
+    shiny::h4("panelParOutput: height or table"),
+    shiny::fluidRow(
+      shiny::column(6, mainParOutput1("main_par")), # plot_table
+      shiny::column(6, panelParOutput("panel_par"))) # height or table
+  )
+  server <- function(input, output, session) {
+    main_par <- mainParServer("main_par", traitStats)
+    panelParServer("panel_par", main_par, traitStats, "trait")
+  }
+  shiny::shinyApp(ui, server)
+}
+#' @export
+#' @rdname panelParApp
 panelParServer <- function(id, main_par, traitStats = NULL, panel_name = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -43,7 +62,7 @@ panelParServer <- function(id, main_par, traitStats = NULL, panel_name = NULL) {
   })
 }
 #' @export
-#' @rdname panelParServer
+#' @rdname panelParApp
 panelParInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::fluidRow(
@@ -52,35 +71,14 @@ panelParInput <- function(id) {
                                           "Facet by strain?", TRUE)))
 }
 #' @export
-#' @rdname panelParServer
+#' @rdname panelParApp
 panelParUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("sex")) # sex
 }
 #' @export
-#' @rdname panelParServer
+#' @rdname panelParApp
 panelParOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("table")) # height or table
-}
-#' @param title title of app
-#' @export
-#' @rdname panelParServer
-panelParApp <- function(title = "") {
-  ui <- shiny::bootstrapPage(
-    shiny::h3("panel_par parameters"),
-    shiny::h4("panelParInput: strains, facet"),
-    panelParInput("panel_par"), # strains, facet
-    shiny::h4("panelParUI: sex"),
-    panelParUI("panel_par"), # sex (B/F/M/C)
-    shiny::h4("panelParOutput: height or table"),
-    shiny::fluidRow(
-      shiny::column(6, mainParOutput1("main_par")), # plot_table
-      shiny::column(6, panelParOutput("panel_par"))) # height or table
-  )
-  server <- function(input, output, session) {
-    main_par <- mainParServer("main_par", traitStats)
-    panelParServer("panel_par", main_par, traitStats, "trait")
-  }
-  shiny::shinyApp(ui, server)
 }
