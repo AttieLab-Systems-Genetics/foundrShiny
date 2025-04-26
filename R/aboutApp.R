@@ -10,10 +10,14 @@
 #' @export
 aboutApp <- function(id) {
   ui <- shiny::bootstrapPage(
+    entryInput("entry"),
+    entryUI("entry"),
+    entryOutput("entry"),
     aboutOutput("about")
   )
   server <- function(input, output, session) {
-    aboutServer("about", helppath = customSettings$help)
+    entry <- entryServer("entry", customSettings)
+    aboutServer("about", helppath = customSettings$help, entry)
   }
   shiny::shinyApp(ui, server)
 }

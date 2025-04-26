@@ -6,7 +6,7 @@
 #' @return nothing returned
 #'
 #' @importFrom shiny column fluidPage mainPanel moduleServer NS renderUI req
-#'.            shinyApp sidebarPanel tagList titlePanel uiOutput
+#'             shinyApp sidebarPanel tagList titlePanel uiOutput
 #' @export
 timeApp <- function() {
   title <- "Test shinyTime Module"

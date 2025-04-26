@@ -6,7 +6,7 @@
 #' @return reactive server
 #' 
 #' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
-#'             reactiveVal renderUI req showTab updateTabsetPanel
+#'             reactiveVal reactiveValues renderUI req showTab updateTabsetPanel
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
@@ -82,7 +82,6 @@ foundrServer <- function(id,
                Times     = shiny::req(time_list$tableObject()))
       })
     )
-
     # Does project have time data? If not, hide those tabs.
     has_time_data <- length(foundr::timetraitsall(traitSignal) > 0)
     
@@ -116,7 +115,12 @@ foundrServer <- function(id,
       
       # Tab-specific side panel.
       if(input$tabpanel == "About") {
-        entryInput(ns("entry"))
+        if(!shiny::isTruthy(entry())) {
+          shiny::tagList(
+            entryInput(ns("entry")),
+            entryOutput(ns("entry"))
+          )
+        }
       } else {
         shiny::tagList(
           shiny::fluidRow(
@@ -150,18 +154,16 @@ foundrServer <- function(id,
     })
     # Main Output
     output$mainOutput <- shiny::renderUI({
-#      if(entry()) {
-        shiny::tabsetPanel(
-          type = "tabs", header = "", selected = "About", id = ns("tabpanel"),
-          shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
-          shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
-          shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
-          shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
-          shiny::tabPanel("About",     aboutOutput(ns("about")))
-        )
-#      }
+      shiny::tabsetPanel(
+        type = "tabs", header = "", selected = "About", id = ns("tabpanel"),
+        shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
+        shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
+        shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
+        shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
+        shiny::tabPanel("About",     aboutOutput(ns("about")))
+      )
     })
-    shiny::observeEvent(entry(), {
+    shiny::observeEvent(shiny::isTruthy(entry()), {
       shiny::updateTabsetPanel(session, "tabpanel", selected = "Traits")
     })
   })

@@ -5,7 +5,7 @@
 #' @param customSettings list of custom settings
 #' @return reactive server
 #' 
-#' @importFrom shiny column fluidRow mainPanel moduleServer NS panelInput
+#' @importFrom shiny column fluidRow mainPanel moduleServer NS
 #'             renderUI req shinyApp sidebarLayout sidebarPanel tabPanel
 #'             tabsetPanel tagList titlePanel uiOutput
 #' @importFrom foundr timetraitsall
