@@ -33,8 +33,21 @@ entryServer <- function(id, customSettings = NULL) {
       if(shiny::isTruthy(customSettings$entrykey)) password_debounce()
     })
     password <- shiny::reactive({
-      shiny::passwordInput(ns("entry_key"), "Entry Key:", input$entry_key)
+      entry_key <- input$entry_key
+#      if(shiny::isTruthy(entry_val())) entry_key <- entry_val()
+#      message("get entry_key ", entry_key, " input ",
+#              input$entry_key, " val ", entry_val())
+      if(!entry()) {
+        shiny::passwordInput(ns("entry_key"), "Entry Key:", entry_key)
+      }
     })
+#    entry_val <- shiny::reactiveVal("")
+#    shiny::observeEvent(input$entry_key, {
+#      message("observe entry_key ", input$entry_key, " val ", entry_val())
+#      if(shiny::isTruthy(input$entry_key)) {
+#        entry_val(input$entry_key)
+#      }
+#    })
     debounce <- shiny::reactive({
       if(shiny::isTruthy(input$debounce)) {
         10 ^ shiny::req(input$debounce)
@@ -57,6 +70,16 @@ entryServer <- function(id, customSettings = NULL) {
           shiny::h4(paste("Logic: ", entry())))
       }
     })
+    output$debounce <- shiny::renderUI({
+      debounce <- 5
+      if(shiny::isTruthy(input$debounce)) debounce <- input$debounce
+      shiny::sliderInput(ns("debounce"),"Debounce", 3, 10,
+                         debounce, 1)
+    })
+    output$reveal <- shiny::renderUI({
+      reveal <- shiny::isTruthy(input$reveal)
+      shiny::checkboxInput(ns("reveal"), "Show password?", reveal)
+    })
     ############################################################
     entry
   })
@@ -71,13 +94,13 @@ entryInput <- function(id) {
 #' @rdname entryApp
 entryUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::sliderInput(ns("debounce"),"Debounce", 3,10,5,1)
+  shiny::uiOutput(ns("debounce"))
 }
 #' @export
 #' @rdname entryApp
 entryOutput <- function(id) {
   ns <- shiny::NS(id)
   list(
-    shiny::checkboxInput(ns("reveal"), "Show password?", FALSE),
+    shiny::uiOutput(ns("reveal")),
     shiny::uiOutput(ns("entry_show")))
 }

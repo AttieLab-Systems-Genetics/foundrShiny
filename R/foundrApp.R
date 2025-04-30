@@ -87,9 +87,9 @@ foundrServer <- function(id,
     
     # Hide all tabs unless Entry word provided.
     shiny::observeEvent(
-      shiny::tagList(input$height, entry(), input$tabpanel), {
+      shiny::tagList(input$height, entry_ct(), input$tabpanel), {
         shiny::showTab("tabpanel", target = "About")
-        if(entry()) {
+        if(entry_ct()) {
           shiny::showTab("tabpanel", target = "Traits")
           shiny::showTab("tabpanel", target = "Stats")
           # Times and Contrasts tabs hidden for calcium study for now.
@@ -109,18 +109,20 @@ foundrServer <- function(id,
         }
       })
     
+    entry_ct <- shiny::reactiveVal(0)
+    shiny::observeEvent(entry(), {
+      if(shiny::isTruthy(entry())) entry_ct(1)
+    })
     # Side Input
     output$sideInput <- shiny::renderUI({
       shiny::req(input$tabpanel)
       
       # Tab-specific side panel.
       if(input$tabpanel == "About") {
-        if(!shiny::isTruthy(entry())) {
-          shiny::tagList(
-            entryInput(ns("entry")),
-            entryOutput(ns("entry"))
-          )
-        }
+        shiny::tagList(
+          entryInput(ns("entry")),
+          entryUI(ns("entry")),
+          entryOutput(ns("entry")))
       } else {
         shiny::tagList(
           shiny::fluidRow(

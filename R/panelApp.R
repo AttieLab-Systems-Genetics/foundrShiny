@@ -37,14 +37,16 @@ panelServer <- function(id,
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    entry <- entryServer("entry", customSettings)
+    aboutServer("about", customSettings$help, entry)
     main_par <- mainParServer("main_par", traitStats)
-    trait_list <- traitServer("tabTraits", main_par,
+    trait_list <- traitServer("trait", main_par,
       traitData, traitSignal, traitStats, customSettings)
-    contrast_list <- contrastServer("tabContrasts", main_par,
+    contrast_list <- contrastServer("contrast", main_par,
       traitSignal, traitStats, traitModule, customSettings)
-    stats_list <- statsServer("tabStats", main_par,
+    stats_list <- statsServer("stats", main_par,
       traitStats, customSettings)
-    time_list <- timeServer("tabTimes", main_par,
+    time_list <- timeServer("time", main_par,
       traitData, traitSignal, traitStats)
     
     # Side Input
@@ -53,7 +55,13 @@ panelServer <- function(id,
       
       # Tab-specific side panel.
       shiny::req(input$tabpanel)
-      if(input$tabpanel != "About") {
+      if(input$tabpanel == "About") {
+        shiny::tagList(
+          entryInput(ns("entry")),
+          entryUI(ns("entry")),
+          entryOutput(ns("entry"))
+        )
+      } else {
         shiny::tagList(
           shiny::fluidRow(
             shiny::column(6, mainParInput(ns("main_par"))), # dataset
@@ -63,10 +71,10 @@ panelServer <- function(id,
           if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
             has_time_data <- length(foundr::timetraitsall(traitSignal) > 0)
             switch(input$tabpanel, # key_trait and 
-                   Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
-                   Contrasts = contrastInput(ns("tabContrasts")), # time_unit
+                   Traits    = traitInput(ns("trait")), # rel_dataset, rel_traits
+                   Contrasts = contrastInput(ns("contrast")), # time_unit
                    Times     = if(has_time_data)
-                     timeInput(ns("tabTimes"))) # time_unit, response
+                     timeInput(ns("time"))) # time_unit, response
           }
         )
       }
@@ -75,10 +83,11 @@ panelServer <- function(id,
     output$mainOutput <- shiny::renderUI({
       shiny::tabsetPanel(
         type = "tabs", header = "", id = ns("tabpanel"),
-        shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
-        shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
-        shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
-        shiny::tabPanel("Times",     timeOutput(ns("tabTimes")))
+        shiny::tabPanel("About",     aboutOutput(ns("about"))),
+        shiny::tabPanel("Traits",    traitOutput(ns("trait"))),
+        shiny::tabPanel("Contrasts", contrastOutput(ns("contrast"))),
+        shiny::tabPanel("Stats",     statsOutput(ns("stats"))),
+        shiny::tabPanel("Times",     timeOutput(ns("time")))
       )
     })
   })
