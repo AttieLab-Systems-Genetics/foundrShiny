@@ -5,7 +5,7 @@
 \alias{panelServer}
 \alias{panelInput}
 \alias{panelOutput}
-\title{Panel App}
+\title{panel App for foundr package}
 \usage{
 panelApp()
 
@@ -33,5 +33,5 @@ panelOutput(id)
 reactive server
 }
 \description{
-Panel App
+panel App for foundr package
 }

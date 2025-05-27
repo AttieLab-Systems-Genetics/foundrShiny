@@ -40,9 +40,11 @@ cor_table <- function(key_trait, traitSignal, corterm, mincor = 0,
   object <- select_data_pairs(traitSignal, key_trait, reldataset)
   
   # Filter by mincor
-  dplyr::filter(
-    foundr::bestcor(object, key_trait, corterm),
-    .data$absmax >= mincor)
+  out <- foundr::bestcor(object, key_trait, corterm)
+  if(!is.null(out)) {
+    out <-   dplyr::filter(out, .data$absmax >= mincor)
+  }
+  out
 }
 # Data Traits
 data_traits <- function(traitModule, dataset, sex) {
