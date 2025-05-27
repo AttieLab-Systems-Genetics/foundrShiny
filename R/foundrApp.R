@@ -144,8 +144,8 @@ foundrServer <- function(id,
             # panelParOutput(ns("panel_par")) # height or table
             shiny::column(6, switch(input$tabpanel,
                                     Traits    = traitUI(ns("tabTraits")),
-                                    #Contrasts = contrastUI(ns("tabContrasts")), # not working
-                                    #Stats     = statsUI(ns("tabStats")), # not working
+                                    Contrasts = contrastUI(ns("tabContrasts")),
+                                    Stats     = statsUI(ns("tabStats")),
                                     Times     = if(has_time_data)
                                       timeUI(ns("tabTimes")))
             ),

@@ -133,6 +133,7 @@ contrastPlotServer <- function(id, panel_par, main_par,
     ###############################################################
     shiny::reactiveValues(
       panel = shiny::reactive(NULL),
+      height      = shiny::reactive(panel_par$height),
       postfix = shiny::reactive({
         shiny::req(contrast_table())
         paste(unique(contrast_table()$dataset), collapse = ",")

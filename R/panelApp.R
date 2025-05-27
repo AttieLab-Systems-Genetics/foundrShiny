@@ -67,7 +67,6 @@ panelServer <- function(id,
                Times     = shiny::req(time_list$postfix()))
       }),
       plotObject  = shiny::reactive({
-        browser()
         switch(shiny::req(input$tabpanel),
                Traits    = shiny::req(trait_list$plotObject()),
                Contrasts = shiny::req(contrast_list$plotObject()),
@@ -112,8 +111,8 @@ panelServer <- function(id,
             # panelParOutput(ns("panel_par")) # height or table
             shiny::column(6, switch(input$tabpanel,
                                     Traits    = traitUI(ns("tabTraits")),
-                                    #Contrasts = contrastUI(ns("tabContrasts")), # not working
-                                    #Stats     = statsUI(ns("tabStats")), # not working
+                                    Contrasts = contrastUI(ns("tabContrasts")),
+                                    Stats     = statsUI(ns("tabStats")),
                                     Times     = if(has_time_data)
                                       timeUI(ns("tabTimes")))
             ),
