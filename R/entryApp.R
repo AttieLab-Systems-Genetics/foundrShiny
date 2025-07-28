@@ -10,9 +10,10 @@
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @importFrom foundr timetraitsall
+#' @importFrom bslib page
 #' @export
 entryApp <- function() {
-  ui <- shiny::bootstrapPage(
+  ui <- bslib::page(
     entryInput("entry"),
     entryUI("entry"),
     entryOutput("entry")
@@ -34,20 +35,10 @@ entryServer <- function(id, customSettings = NULL) {
     })
     password <- shiny::reactive({
       entry_key <- input$entry_key
-#      if(shiny::isTruthy(entry_val())) entry_key <- entry_val()
-#      message("get entry_key ", entry_key, " input ",
-#              input$entry_key, " val ", entry_val())
-      if(!entry()) {
+      if(entry() == 1) {
         shiny::passwordInput(ns("entry_key"), "Entry Key:", entry_key)
       }
     })
-#    entry_val <- shiny::reactiveVal("")
-#    shiny::observeEvent(input$entry_key, {
-#      message("observe entry_key ", input$entry_key, " val ", entry_val())
-#      if(shiny::isTruthy(input$entry_key)) {
-#        entry_val(input$entry_key)
-#      }
-#    })
     debounce <- shiny::reactive({
       if(shiny::isTruthy(input$debounce)) {
         10 ^ shiny::req(input$debounce)
@@ -61,7 +52,7 @@ entryServer <- function(id, customSettings = NULL) {
       if(!out & shiny::isTruthy(input$entry_key)) {
         out <- (input$entry_key == customSettings$entrykey)
       }
-      shiny::isTruthy(out)
+      1 + shiny::isTruthy(out)
     })
     output$entry_show <- shiny::renderUI({
       if(shiny::isTruthy(input$reveal)) {

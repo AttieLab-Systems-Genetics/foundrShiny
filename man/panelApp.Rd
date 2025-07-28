@@ -7,7 +7,7 @@
 \alias{panelOutput}
 \title{panel App for foundr package}
 \usage{
-panelApp()
+panelApp(apptitle = "Panel App")
 
 panelServer(
   id,
@@ -15,7 +15,10 @@ panelServer(
   traitSignal = NULL,
   traitStats = NULL,
   customSettings = NULL,
-  traitModule = NULL
+  traitModule = NULL,
+  entry = shiny::reactive({
+     2
+ })
 )
 
 panelInput(id)
@@ -23,11 +26,15 @@ panelInput(id)
 panelOutput(id)
 }
 \arguments{
+\item{apptitle}{title for panelApp}
+
 \item{id}{identifier for shiny reactive}
 
 \item{traitData, traitSignal, traitStats, traitModule}{static objects}
 
 \item{customSettings}{list of custom settings}
+
+\item{entry}{reactive entry flag (1 = no show, 2 = show)}
 }
 \value{
 reactive server

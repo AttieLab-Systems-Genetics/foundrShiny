@@ -1,8 +1,10 @@
 #' panel App for foundr package
 #'
 #' @param id identifier for shiny reactive
+#' @param apptitle title for panelApp
 #' @param traitData,traitSignal,traitStats,traitModule static objects
 #' @param customSettings list of custom settings
+#' @param entry reactive entry flag (1 = no show, 2 = show)
 #' @return reactive server
 #' 
 #' @importFrom shiny checkboxGroupInput hideTab observeEvent reactive
@@ -10,12 +12,13 @@
 #' @importFrom grDevices dev.off pdf
 #' @importFrom utils write.csv
 #' @export
-panelApp <- function() {
+panelApp <- function(apptitle = "Panel App") {
   ui <- shiny::fluidPage(
-    shiny::titlePanel("Panel App"),
+    shiny::titlePanel(apptitle),
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        panelInput("panel")
+        panelInput("panel"),
+        shiny::uiOutput("entry")
       ),
       shiny::mainPanel(
         panelOutput("panel")
@@ -23,9 +26,14 @@ panelApp <- function() {
     )
   )
   server <- function(input, output, session) {
+    entry <- entryServer("entry", customSettings)
     panel_list <- panelServer("panel",
                  traitData, traitSignal, traitStats,
-                 customSettings, traitModule)
+                 customSettings, traitModule, entry)
+    output$entry <- shiny::renderUI({
+      if(entry() == 1) 
+        entryInput("entry")
+    })
   }
   shiny::shinyApp(ui, server)
 }
@@ -33,7 +41,8 @@ panelApp <- function() {
 #' @rdname panelApp
 panelServer <- function(id,
                    traitData = NULL, traitSignal = NULL, traitStats = NULL,
-                   customSettings = NULL, traitModule = NULL) {
+                   customSettings = NULL, traitModule = NULL,
+                   entry = shiny::reactive({2})) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -87,53 +96,57 @@ panelServer <- function(id,
     
     # Side Input
     output$sideInput <- shiny::renderUI({
-      shiny::req(input$tabpanel)
-      
-      # Tab-specific side panel.
-      if(input$tabpanel != "About") {
-        shiny::tagList(
-          shiny::fluidRow(
-            shiny::column(6, mainParInput(ns("main_par"))), # dataset
-            if(input$tabpanel %in% c("Traits", "Times"))
-              shiny::column(6, mainParUI(ns("main_par"))), # order
-          ),
-          if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
-            switch(input$tabpanel, # key_trait and 
-                   Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
-                   Contrasts = contrastInput(ns("tabContrasts")), # time_unit
-                   Times     = if(has_time_data)
-                     timeInput(ns("tabTimes"))) # time_unit, response
-          },
-          border_line(),
-          shiny::fluidRow(
-            shiny::column(6, mainParOutput1(ns("main_par"))), # plot_table
-            # Within-panel call of panelPar.
-            # panelParOutput(ns("panel_par")) # height or table
-            shiny::column(6, switch(input$tabpanel,
-                                    Traits    = traitUI(ns("tabTraits")),
-                                    Contrasts = contrastUI(ns("tabContrasts")),
-                                    Stats     = statsUI(ns("tabStats")),
-                                    Times     = if(has_time_data)
-                                      timeUI(ns("tabTimes")))
+      if(shiny::req(entry()) > 1) {
+        shiny::req(input$tabpanel)
+        # Tab-specific side panel.
+        if(input$tabpanel != "About") {
+          shiny::tagList(
+            shiny::fluidRow(
+              shiny::column(6, mainParInput(ns("main_par"))), # dataset
+              if(input$tabpanel %in% c("Traits", "Times"))
+                shiny::column(6, mainParUI(ns("main_par"))), # order
             ),
-          ),
-          downloadOutput(ns("download"))
-        )
+            if(input$tabpanel %in% c("Traits","Times","Contrasts")) {
+              switch(input$tabpanel, # key_trait and 
+                     Traits    = traitInput(ns("tabTraits")), # rel_dataset, rel_traits
+                     Contrasts = contrastInput(ns("tabContrasts")), # time_unit
+                     Times     = if(has_time_data)
+                       timeInput(ns("tabTimes"))) # time_unit, response
+            },
+            border_line(),
+            shiny::fluidRow(
+              shiny::column(6, mainParOutput1(ns("main_par"))), # plot_table
+              # Within-panel call of panelPar.
+              # panelParOutput(ns("panel_par")) # height or table
+              shiny::column(6, switch(input$tabpanel,
+                                      Traits    = traitUI(ns("tabTraits")),
+                                      Contrasts = contrastUI(ns("tabContrasts")),
+                                      Stats     = statsUI(ns("tabStats")),
+                                      Times     = if(has_time_data)
+                                        timeUI(ns("tabTimes")))
+              ),
+            ),
+            downloadOutput(ns("download"))
+          )
+        }
       }
     })
     # Main Output
     output$mainOutput <- shiny::renderUI({
-      shiny::tabsetPanel(
-        type = "tabs", header = "", selected = "Traits", id = ns("tabpanel"),
-        shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
-        if(has_time_data)
+      if(shiny::req(entry()) > 1) {
+        tabpanel <- input$tabpanel
+        if(!shiny::isTruthy(tabpanel)) tabpanel <- "Traits"
+        shiny::tabsetPanel(
+          type = "tabs", header = "", selected = tabpanel, id = ns("tabpanel"),
+          shiny::tabPanel("Traits",    traitOutput(ns("tabTraits"))),
           shiny::tabPanel("Contrasts", contrastOutput(ns("tabContrasts"))),
-        shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
-        if(has_time_data)
+          shiny::tabPanel("Stats",     statsOutput(ns("tabStats"))),
           shiny::tabPanel("Times",     timeOutput(ns("tabTimes"))),
-        shiny::tabPanel("About",     aboutOutput(ns("about")))
-      )
+          shiny::tabPanel("About",     aboutOutput(ns("about")))
+        )
+      }
     })
+
     # Return
     panel_list
   })

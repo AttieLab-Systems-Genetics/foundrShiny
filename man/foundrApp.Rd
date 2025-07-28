@@ -29,9 +29,6 @@ foundrOutput(id)
 
 \item{customSettings}{list of custom settings}
 }
-\value{
-reactive server
-}
 \description{
 foundr App for foundr package
 }
